@@ -51,8 +51,8 @@ class block_helpmenow extends block_base {
         if (isset($this->content)) { return $this->content; }
 
         $this->content = (object) array(
-            text => 'Help Me Now!',
-            footer => '',
+            'text' => 'Help Me Now!',
+            'footer' => '',
         );
 
         return $this->content;
