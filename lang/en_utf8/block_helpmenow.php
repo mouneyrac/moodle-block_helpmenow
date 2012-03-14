@@ -24,7 +24,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname', 'block_helpmenow'] = 'Help Me Now Block';
-$string['helpmenow', 'block_helpmenow'] = 'Help Me Now';
+$string['pluginname'] = 'Help Me Now Block';
+$string['helpmenow'] = 'Help Me Now';
 
 ?>
