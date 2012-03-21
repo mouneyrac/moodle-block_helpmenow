@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Help me now helper class.
+ * Help me now abstract class.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -23,44 +23,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-class helpmenow_helper extends helpmenow_db_object {
+abstract class helpmenow {
     /**
-     * Table of the object.
-     * @var string $table
+     * 
      */
-    private $table = 'block_helpmenow_helper';
-
-    /**
-     * Array of required db fields.
-     * @var array $required_fields
-     */
-    private $required_fields = array(
-        'id',
-        'timecreated',
-        'timemodified',
-        'modifiedby',
-        'queueid',
-        'userid',
-        'isloggedin',
-    );
-
-    /**
-     * Array of optional db fields.
-     * @var array $optional_fields
-     */
-    private $optional_fields = array();
-
-    /**
-     * The queue the meeting belongs to.
-     * @var int $queueid
-     */
-    public $queueid;
-
-    /**
-     * The userid of the helper.
-     * @var int $helper_userid
-     */
-    public $helper_userid;
 }
 
 ?>

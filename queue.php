@@ -41,6 +41,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'modifiedby',
         'context_instanceid',
         'name',
+        'plugin',
     );
 
     /**
