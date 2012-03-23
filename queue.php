@@ -101,6 +101,29 @@ class helpmenow_queue extends helpmenow_db_object {
 
         return true;
     }
+
+    /**
+     * Adds a request to the queue
+     * @param int $userid user.id of the user making the request
+     * @param string $description request description
+     */
+    function add_request($userid, $description) {
+        $request = new helpmenow_request();
+        $request->userid = $userid;
+        $request->description = $description;
+        $request->queueid = $this->id;
+        if (!$request->insert()) {
+            return false;
+        }
+
+        $this->request[$request->id] = $request;
+
+        return true;
+    }
+
+    /**
+     * TODO: write function that turns request into meeting
+     */
 }
 
 ?>

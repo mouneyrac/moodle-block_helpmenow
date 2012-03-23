@@ -50,6 +50,7 @@ class helpmenow_meeting extends helpmenow_db_object {
      */
     private $optional_fields = array(
         'owner_userid',
+        'description',
     );
 
     /**
