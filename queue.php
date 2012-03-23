@@ -30,7 +30,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'block_helpmenow_queue';
+    private $table = 'queue';
 
     /**
      * Array of required db fields.
@@ -44,6 +44,15 @@ class helpmenow_queue extends helpmenow_db_object {
         'context_instanceid',
         'name',
         'plugin',
+    );
+
+    /**
+     * Array of relations
+     * @var array $relations
+     */
+    private $relations = array(
+        'helpers',
+        'requests',
     );
 
     /**
@@ -65,78 +74,10 @@ class helpmenow_queue extends helpmenow_db_object {
     public $helpers = array();
 
     /**
-     * Array of meetings awaiting connections
-     * @var array $meetings
+     * Array of meeting requests
+     * @var array $requests
      */
-    public $meetings = array();
-
-    /**
-     * Constructor. Load meetings and helpers if necessary.
-     * @param int $id id of the queue in the db
-     * @param object $record db record
-     * @param boolean $fetch_related whether to fetch helpers and meetings from the db
-     */
-    function __construct($id=null, $record=null, $fetch_related=true) {
-        parent::__construct($id, $record);
-        if ($fetch_related) {
-            $this->load_helpers();
-            $this->load_meetings();
-        }
-    }
-
-    /**
-     * Deletes queue in db, using object variables. Requires id. Also deletes
-     * associated meetings and helpers.
-     * @return boolean success
-     */
-    function delete() {
-        $success = parent::delete();
-
-        # delete meetings
-        $this->load_meetings();
-        foreach ($this->meetings as $key => $m) {
-            if (!$m->delete()) {
-                $success = false;
-            }
-            unset($this->meetings[$key]);
-        }
-        # delete helpers
-        $this->load_helpers();
-        foreach ($this->helpers as $key => $h) {
-            if (!$h->delete()) {
-                $success = false;
-            }
-            unset($this->helpers[$key]);
-        }
-
-        return $success;
-    }
-
-    /**
-     * Load meetings into $this->meetings. We want an empty array if there are
-     * none.
-     */
-    function load_meetings() {
-        if (!$this->meetings = get_records('block_helpmenow_meetings', 'queueid', $this->id)) {
-            $this->meetings = array();
-        }
-        foreach ($this->meetings as $key => $m) {
-            $this->meetings[$key] = new helpmenow_meeting(null, $m);
-        }
-    }
-
-    /**
-     * Load helpers into $this->helpers. We want an empty array if there are
-     * none.
-     */
-    function load_helpers() {
-        if (!$this->helpers = get_records('block_helpmenow_helpers', 'queueid', $this->id)) {
-            $this->helpers = array();
-        }
-        foreach ($this->helpers as $key => $h) {
-            $this->helpers[$key] = new helpmenow_helper(null, $h);
-        }
-    }
+    public $requests = array();
 }
 
 ?>

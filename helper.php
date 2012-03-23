@@ -25,12 +25,15 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
+# TODO: do we want to track logged in via unixtime or boolean?
+# TODO: do we want to rename this user2queue?
+
 class helpmenow_helper extends helpmenow_db_object {
     /**
      * Table of the object.
      * @var string $table
      */
-    private $table = 'block_helpmenow_helper';
+    private $table = 'helper';
 
     /**
      * Array of required db fields.
@@ -47,12 +50,6 @@ class helpmenow_helper extends helpmenow_db_object {
     );
 
     /**
-     * Array of optional db fields.
-     * @var array $optional_fields
-     */
-    private $optional_fields = array();
-
-    /**
      * The queue the meeting belongs to.
      * @var int $queueid
      */
@@ -63,6 +60,12 @@ class helpmenow_helper extends helpmenow_db_object {
      * @var int $helper_userid
      */
     public $helper_userid;
+
+    /**
+     * Integer boolean, login status of helper
+     * @var int $isloggedin
+     */
+    public $isloggedin;
 }
 
 ?>

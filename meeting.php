@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Help me now meeting class.
+ * Help me now meeting, and meeting2user classes.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -30,7 +30,7 @@ class helpmenow_meeting extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'block_helpmenow_meeting';
+    private $table = 'meeting';
 
     /**
      * Array of required db fields.
@@ -41,8 +41,7 @@ class helpmenow_meeting extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
-        'helpee_userid',
-        'queueid',
+        'plugin',
     );
 
     /**
@@ -50,26 +49,62 @@ class helpmenow_meeting extends helpmenow_db_object {
      * @var array $optional_fields
      */
     private $optional_fields = array(
-        'helper_userid',
+        'owner_userid',
     );
 
     /**
-     * The queue the meeting belongs to.
-     * @var int $queueid
+     * Array of relations
+     * @var array $relations
      */
-    public $queueid;
+    private $relations = array(
+        'meeting2user',
+    );
 
     /**
-     * The userid of the helpee.
-     * @var int $helpee_userid
-     */
-    public $helpee_userid;
-
-    /**
-     * The userid of the helper.
+     * The userid of the user who owns the meeting, usually the queue helper or
+     * the instructor of the course.
      * @var int $helper_userid
      */
-    public $helper_userid;
+    public $owner_userid;
+
+    /**
+     * Array of meeting2user objects
+     * @var array $users
+     */
+    public $meeting2user = array();
+}
+
+class helpmenow_meeting2user extends helpmenow_db_object {
+    /**
+     * Table of the object.
+     * @var string $table
+     */
+    private $table = 'meeting2user';
+
+    /**
+     * Array of required db fields.
+     * @var array $required_fields
+     */
+    private $required_fields = array(
+        'id',
+        'timecreated',
+        'timemodified',
+        'modifiedby',
+        'meetingid',
+        'userid',
+    );
+
+    /**
+     * userid
+     * @var int $userid
+     */
+    public $userid;
+
+    /**
+     * meetingid
+     * @var int $meetingid
+     */
+    public $meetingid;
 }
 
 ?>

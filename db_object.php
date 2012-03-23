@@ -31,7 +31,8 @@ abstract class helpmenow_db_object {
     private $table;
 
     /**
-     * Array of required db fields.
+     * Array of required db fields. This must be overridden by the child. The
+     * required values for all children are below.
      * @var array $required_fields
      */
     private $required_fields = array(
@@ -46,6 +47,12 @@ abstract class helpmenow_db_object {
      * @var array $optional_fields
      */
     private $optional_fields = array();
+
+    /**
+     * Array of relations, such as meeting2user.
+     * @var array $relations
+     */
+    private $relations = array();
 
     /**
      * The id of the object.
@@ -76,14 +83,17 @@ abstract class helpmenow_db_object {
      * from the db and no id, use that.
      * @param int $id id of the queue in the db
      * @param object $record db record
-     * @param boolean $fetch_related whether to fetch helpers and meetings from the db
+     * @param boolean $fetch_related whether to fetch relations from the db
      */
-    function __construct($id=null, $record=null) {
+    function __construct($id=null, $record=null, $fetch_related=true) {
         if (isset($id)) {
             $this->id = $id;
             $this->load_from_db();
         } else if (!empty($record)) {
             $this->load($record);
+        }
+        if ($fetch_related) {
+            $this->load_all_relations();
         }
     }
 
@@ -92,8 +102,8 @@ abstract class helpmenow_db_object {
      * @return boolean success
      */
     function load_from_db() {
-        if (!$record = get_record($this->table, 'id', $this->id)) {
-            debugging("Could not load object from $this->table");
+        if (!$record = get_record("block_helpmenow_$this->table", 'id', $this->id)) {
+            debugging("Could not load $this->table from db.");
             return false;
         }
         $this->load($record);
@@ -132,7 +142,7 @@ abstract class helpmenow_db_object {
             return false;
         }
 
-        return update_record($this->table, $this);
+        return update_record("block_helpmenow_$this->table", $this);
     }
 
     /**
@@ -143,7 +153,7 @@ abstract class helpmenow_db_object {
         global $USER;
 
         if (!empty($this->id)) {
-            debugging("Record already exists in $this->table");
+            debugging("$this->table already exists in db.");
             return false;
         }
 
@@ -155,8 +165,8 @@ abstract class helpmenow_db_object {
             return false;
         }
 
-        if (!$this->id = insert_record($this->table, $this)) {
-            debugging("Could not insert object into $this->table");
+        if (!$this->id = insert_record("block_helpmenow_$this->table", $this)) {
+            debugging("Could not insert $this->table");
             return false;
         }
 
@@ -165,15 +175,33 @@ abstract class helpmenow_db_object {
 
     /**
      * Deletes object in db, using object variables. Requires id.
+     * @param boolean $delete_relations wether or not to delete relations
      * @return boolean success
      */
-    function delete() {
+    function delete($delete_relatoins = true) {
+        $success = true;
+
+        # delete relations if necessary
+        if ($delete_relations) {
+            $this->load_all_relations();
+            foreach ($this->relations as $rel) {
+                foreach ($this->$rel as $key => $r) {
+                    if (!$r->delete()) {
+                        $success = false;
+                    }
+                    unset($this->$rel[$key]);
+                }
+            }
+        }
+
         if (empty($this->id)) {
-            debugging("Can not delete record in $this->table, no id!");
+            debugging("Can not delete $this->table, no id!");
             return false;
         }
 
-        $success = delete_record($this->table, 'id', $this->id);
+        if (!delete_record("block_helpmenow_$this->table", 'id', $this->id)) {
+            $success = false;
+        }
 
         return $success;
     }
@@ -193,6 +221,31 @@ abstract class helpmenow_db_object {
             }
         }
         return $success;
+    }
+
+    /**
+     * Loads relations into member variable array. Eg.: a queues' helpers.
+     * @param string $relation relation to be loaded, this is also the name of
+     *      table and the memeber variable
+     */
+    function load_relation($relation) {
+        if (!$this->$relation = get_records("block_helpmenow_$relation", "{$this->table}id", $this->id)) {
+            $this->$relation = array();
+        } else {
+            $class = "helpmenow_$relation";
+            foreach ($this->$relation as $key => $r) {
+                $this->$relation[$key] = new $class(null, $r);
+            }
+        }
+    }
+
+    /**
+     * Loads all relations in $this->relations
+     */
+    function load_all_relations() {
+        foreach ($this->relations as $r) {
+            load_relation($r);
+        }
     }
 }
 
