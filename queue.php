@@ -51,8 +51,8 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var array $relations
      */
     private $relations = array(
-        'helpers',
-        'requests',
+        'helper',
+        'request',
     );
 
     /**
@@ -69,15 +69,38 @@ class helpmenow_queue extends helpmenow_db_object {
 
     /**
      * Array of user ids of helpers
-     * @var array $helpers
+     * @var array $helper
      */
-    public $helpers = array();
+    public $helper = array();
 
     /**
      * Array of meeting requests
-     * @var array $requests
+     * @var array $request
      */
-    public $requests = array();
+    public $request = array();
+
+    /**
+     * Adds a helper to the queue
+     * @param int $userid user.id of the helper
+     * @return boolean success
+     */
+    function add_helper($userid) {
+        if (record_exists('block_helpmenow_helper', 'queueid', $this->id, 'userid', $userid)) {
+            debugging("User already helper for queue");
+            return false;
+        }
+
+        $helper = new helpmenow_helper();
+        $helper->userid = $userid;
+        $helper->queueid = $this->id;
+        if (!$helper->insert()) {
+            return false;
+        }
+
+        $this->helper[$helper->id] = $helper;
+
+        return true;
+    }
 }
 
 ?>

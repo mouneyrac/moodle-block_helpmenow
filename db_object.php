@@ -240,7 +240,7 @@ abstract class helpmenow_db_object {
     }
 
     /**
-     * Loads all relations in $this->relations
+     * Loads all relations indicated by $this->relations
      */
     function load_all_relations() {
         foreach ($this->relations as $r) {
