@@ -23,6 +23,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once(dirname(__FILE__) . '/db_object.php');
+
 class helpmenow_queue extends helpmenow_db_object {
     /**
      * Table of the object.
