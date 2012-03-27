@@ -51,9 +51,11 @@ class block_helpmenow extends block_base {
         if (isset($this->content)) { return $this->content; }
 
         $this->content = (object) array(
-            'text' => 'Help Me Now!',
+            'text' => '',
             'footer' => '',
         );
+
+        helpmenow_ensure_queue_exists(); # autocreate a course queue if necessary
 
         return $this->content;
     }

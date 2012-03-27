@@ -46,6 +46,14 @@ class helpmenow_request extends helpmenow_db_object {
     );
 
     /**
+     * Array of optional db fields.
+     * @var array $optional_fields
+     */
+    private $optional_fields = array(
+        'queueid',
+    );
+
+    /**
      * The userid of the user who requested the meeting
      * the instructor of the course.
      * @var int $userid
@@ -57,6 +65,12 @@ class helpmenow_request extends helpmenow_db_object {
      * @var string $description
      */
     public $description;
+
+    /**
+     * The queue.id this request belongs to, if any
+     * @var int $queueid
+     */
+    public $queueid;
 }
 
 ?>

@@ -41,7 +41,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
-        'context_instanceid',
+        'contextid',
         'name',
         'plugin',
     );
@@ -57,9 +57,9 @@ class helpmenow_queue extends helpmenow_db_object {
 
     /**
      * The context the queue belongs to.
-     * @var int $context_instanceid
+     * @var int $contextid
      */
-    public $context_instanceid;
+    public $contextid;
 
     /**
      * The name of the queue.
@@ -103,9 +103,29 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Removes a helper from the queue
+     * @param int @helperid helper.id
+     * @return boolean success
+     */
+    function remove_helper($helperid) {
+        if (!isset($this->helper[$helperid])) {
+            $this->load_relation('helper');
+            if (!isset($this->helper[$helperid])) {
+                debugging("Could not load helper where id = $helperid, may not be this queue");
+                return false;
+            }
+        }
+        $success = $this->helper[$helperid]->delete();
+        unset($this->helper[$helperid]);
+
+        return $success;
+    }
+
+    /**
      * Adds a request to the queue
      * @param int $userid user.id of the user making the request
      * @param string $description request description
+     * @return boolean success
      */
     function add_request($userid, $description) {
         $request = new helpmenow_request();
@@ -122,8 +142,28 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * TODO: write function that turns request into meeting
+     * TODO: do we really need this in queueueueueue?
+     *
+     * Fulfills a request.
+     * @param int $requestid request.id
+     * @return object meeting object
      */
+    function fulfill_request($requestid, $helper_userid) {
+        if (!isset($this->request[$requestid])) {
+            $this->load_relation('request');
+            if (!isset($this->request[$requestid])) {
+                debugging("Could not load request where id = $requestid, may not be this queue");
+                return false;
+            }
+        }
+
+        $meeting = $this->request[$requestid]->fulfill_request($helper_userid);
+
+        $this->request[$requestid]->delete();
+        unset($this->request[$requestid]);
+
+        return $meeting;
+    }
 }
 
 ?>
