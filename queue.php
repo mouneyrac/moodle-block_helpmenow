@@ -46,6 +46,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'contextid',
         'name',
         'plugin',
+        'weight',
     );
 
     /**
@@ -68,6 +69,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var string $name
      */
     public $name;
+
+    /**
+     * Weight for queue display order
+     * @var int $weight
+     */
+    public $weight;
 
     /**
      * Array of user ids of helpers
