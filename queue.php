@@ -25,6 +25,8 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
+# TODO: we need a way to order queues in the block
+
 class helpmenow_queue extends helpmenow_db_object {
     /**
      * Table of the object.
@@ -51,8 +53,8 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var array $relations
      */
     private $relations = array(
-        'helper',
-        'request',
+        'helper' => 'userid',
+        'request' => 'id',
     );
 
     /**
@@ -163,6 +165,61 @@ class helpmenow_queue extends helpmenow_db_object {
         unset($this->request[$requestid]);
 
         return $meeting;
+    }
+
+    /**
+     * Returns user's privilege given optional userid
+     * @param int $userid user.id, if none provided uses $USER->id
+     * @return string queue privilege
+     */
+    function get_privilege($userid=null) {
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+
+        # if it's not set, try loading helpers
+        if (!isset($this->helper[$userid])) {
+            $this->load_relation('helper');
+        }
+        # if it's set now, they're a helper
+        if (isset($this->helper[$userid])) {
+            return HELPMENOW_QUEUE_HELPER;
+        }
+
+        $context = get_context_instance_by_id($this->contextid);
+        if (has_capability(HELPMENOW_CAP_QUEUE_REQUEST, $context)) {
+            return HELPMENOW_QUEUE_HELPEE;
+        }
+
+        return HELPMENOW_NOT_PRIVILEGED;
+    }
+
+    /**
+     * Gets an array of queues in the current context
+     * @return array of queues
+     */
+    public static function get_queues() {
+        global $CFG, $COURSE;
+
+        # get contexts for course and system
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+
+        $sql = "
+            SELECT q.*
+            FROM {$CFG->prefix}block_helpmenow_queue q
+            WHERE q.contextid = $sitecontext->id
+            OR q.contextid = $context->id
+            ORDER BY q.weight
+        ";
+
+        $records = get_records_sql($sql);
+        $queues = array();
+        foreach ($records as $r) {
+            $queues[$r->id] = new helpmenow_queue(null, $r);
+        }
+        return $queues;
     }
 }
 

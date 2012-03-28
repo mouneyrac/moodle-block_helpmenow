@@ -184,7 +184,7 @@ abstract class helpmenow_db_object {
         # delete relations if necessary
         if ($delete_relations) {
             $this->load_all_relations();
-            foreach ($this->relations as $rel) {
+            foreach ($this->relations as $rel => $foo) {
                 foreach ($this->$rel as $key => $r) {
                     if (!$r->delete()) {
                         $success = false;
@@ -233,8 +233,9 @@ abstract class helpmenow_db_object {
             $this->$relation = array();
         } else {
             $class = "helpmenow_$relation";
-            foreach ($this->$relation as $key => $r) {
-                $this->$relation[$key] = new $class(null, $r);
+            $key = $this->relation[$relation];
+            foreach ($this->$relation as $r) {
+                $this->$relation[$r->$key] = new $class(null, $r);
             }
         }
     }
@@ -243,8 +244,8 @@ abstract class helpmenow_db_object {
      * Loads all relations indicated by $this->relations
      */
     function load_all_relations() {
-        foreach ($this->relations as $r) {
-            load_relation($r);
+        foreach ($this->relations as $rel => $key) {
+            load_relation($rel);
         }
     }
 }

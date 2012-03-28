@@ -50,12 +50,32 @@ class block_helpmenow extends block_base {
     function get_content() {
         if (isset($this->content)) { return $this->content; }
 
+        global $COURSE;
+
         $this->content = (object) array(
             'text' => '',
             'footer' => '',
         );
 
         helpmenow_ensure_queue_exists(); # autocreate a course queue if necessary
+
+        $queues = helpmenow_queue::get_queues();
+
+        foreach ($queues as $q) {
+            $this->content->text .= $q->name . "<br />";
+            switch $q->get_privilege() {
+            case HELPMENOW_QUEUE_HELPER:
+                # TODO: login/out link & indicator
+                foreach ($q->request as $r) {
+                    # todo: get the name of submitting user
+                    # todo: popuplink
+                    # description
+                    $this->content->text .= $r->description . "<br />";
+                }
+                break;
+            case HELPMENOW_QUEUE_HELPEE:
+                break;
+        }
 
         return $this->content;
     }

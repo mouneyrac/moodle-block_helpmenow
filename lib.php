@@ -27,19 +27,9 @@ require_once(dirname(__FILE__) . '/helpmenow.php');
 require_once(dirname(__FILE__) . '/meeting.php');
 require_once(dirname(__FILE__) . '/queue.php');
 
-define('QUEUE_HELPER', 'helper');
-define('QUEUE_HELPEE', 'helpee');
-define('NOT_PRIVILEGED', 'notprivileged');
-
-/**
- * Get the current course context
- * @return object context
- */
-function helpmenow_get_context() {
-    global $COURSE;
-
-    return get_context_instance(CONTEXT_COURSE, $COURSE->id);
-}
+define('HELPMENOW_QUEUE_HELPER', 'helper');
+define('HELPMENOW_QUEUE_HELPEE', 'helpee');
+define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
@@ -53,9 +43,12 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     # bail if we're not autocreating course queues
     if (!$CFG->helpmenow_autocreate_course_queue) { return; }
 
+    # bail if we're one the front page
+    if ($COURSE->id = SITEID) { return; }
+
     # get the current contextid if we were'nt given one
     if (!isset($contextid)) {
-        $context = helpmenow_get_context();
+        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
         $contextid = $context->id;
     }
 

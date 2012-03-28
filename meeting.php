@@ -58,7 +58,7 @@ class helpmenow_meeting extends helpmenow_db_object {
      * @var array $relations
      */
     private $relations = array(
-        'meeting2user',
+        'meeting2user' => 'id',
     );
 
     /**

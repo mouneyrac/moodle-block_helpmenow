@@ -40,7 +40,7 @@ require_login(0, false);
 # get our parameters
 
 $courseid = required_param('courseid', PARAM_INT);
-$helperid = required_param('helperid', PARAM_INT);
+$queueid = required_param('queueid', PARAM_INT);
 $login = optional_param('login', 0, PARAM_INT);
 
 # get a course url so we can redirect back to where the user clicked login/out
@@ -51,13 +51,9 @@ $course_url = $course_url->out();
 
 # login/out the helper
 
-$helper = new helpmenow_helper($helperid);
-if ($helper->userid !== $USER->id) {
-    debugging("Can not change login status of other helpers");
-    redirect($course_url);
-}
-$helper->isloggedin = $login;
-$helper->update();
+$queue = new helpmenow_helper($queueid);
+$queue->helper[$USER->id]->isloggedin = $login;
+$queue->helper[$USER->id]->update();
 
 # we're done, now redirect
 
