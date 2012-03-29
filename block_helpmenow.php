@@ -67,15 +67,15 @@ class block_helpmenow extends block_base {
                 # login/out link
                 $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
                 $login->params(array(
-                    'course' => $COURSE->id,
-                    'queue' => $q->id,
+                    'courseid' => $COURSE->id,
+                    'queueid' => $q->id,
                 ));
                 if ($q->helper[$USER->id]->isloggedin) {
                     $login->param('login', 0);
-                    $login_text = get_string('block_helpmenow', 'login');
+                    $login_text = get_string('login', 'block_helpmenow');
                 } else {
                     $login->param('login', 1);
-                    $login_text = get_string('block_helpmenow', 'logout');
+                    $login_text = get_string('logout', 'block_helpmenow');
                 }
                 $login = $login->out();
                 $this->content->text .= "<a href='$login'>$login_text</a><br />";
@@ -83,7 +83,7 @@ class block_helpmenow extends block_base {
                 # requests
                 foreach ($q->request as $r) {
                     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-                    $connect->param('request', $r->id);
+                    $connect->param('requestid', $r->id);
                     $name = fullname(get_record('user', 'id', $r->userid));
                     $this->content->text .= link_to_popup_window($connect->out(), null, $name, 400, 500, null, null, true) . "<br />";
                     $this->content->text .= $r->description . "<br />";
@@ -93,13 +93,18 @@ class block_helpmenow extends block_base {
                 # if the user has a request, display it, otherwise give a link
                 # to create one
                 if (isset($q->request[$USER->id])) {
-                    $this->content->text .= get_string('block_helpmenow', 'pending') . "<br />";
+                    $this->content->text .= get_string('pending', 'block_helpmenow') . "<br />";
                     $this->content->text .= $q->request[$USER->id]->description;
                 } else {
-                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-                    $request->param('queue', $q->id);
-                    $request_text = get_string('block_helpmenow', 'new_request');
-                    $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 500, null, null, true) . "<br />";
+                    if ($q->check_available()) {
+                        $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+                        $request->param('queueid', $q->id);
+                        $request_text = get_string('new_request', 'block_helpmenow');
+                        $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 500, null, null, true) . "<br />";
+                    } else {
+                        # todo: make this smarter (helpers leave message or configurable)
+                        $this->content->text .= get_string('queue_na', 'block_helpmenow');
+                    }
                 }
                 break;
             }

@@ -90,6 +90,8 @@ class helpmenow_queue extends helpmenow_db_object {
     public $request = array();
 
     /**
+     * todo: should this take a helper object instead?
+     * todo: do we even really need this?
      * Adds a helper to the queue
      * @param int $userid user.id of the helper
      * @return boolean success
@@ -107,48 +109,31 @@ class helpmenow_queue extends helpmenow_db_object {
             return false;
         }
 
-        $this->helper[$helper->id] = $helper;
+        $this->helper[$helper->userid] = $helper;
 
         return true;
     }
 
     /**
+     * todo: should this take a helper object instead?
+     * todo: do we even really need this?
+     * Adds a helper to the queue
      * Removes a helper from the queue
-     * @param int @helperid helper.id
+     * @param int $userid user.id of helper
      * @return boolean success
      */
-    function remove_helper($helperid) {
-        if (!isset($this->helper[$helperid])) {
+    function remove_helper($userid) {
+        if (!isset($this->helper[$userid])) {
             $this->load_relation('helper');
-            if (!isset($this->helper[$helperid])) {
-                debugging("Could not load helper where id = $helperid, may not be this queue");
+            if (!isset($this->helper[$userid])) {
+                debugging("Could not load helper where userid = $userid");
                 return false;
             }
         }
-        $success = $this->helper[$helperid]->delete();
-        unset($this->helper[$helperid]);
+        $success = $this->helper[$userid]->delete();
+        unset($this->helper[$userid]);
 
         return $success;
-    }
-
-    /**
-     * Adds a request to the queue
-     * @param int $userid user.id of the user making the request
-     * @param string $description request description
-     * @return boolean success
-     */
-    function add_request($userid, $description) {
-        $request = new helpmenow_request();
-        $request->userid = $userid;
-        $request->description = $description;
-        $request->queueid = $this->id;
-        if (!$request->insert()) {
-            return false;
-        }
-
-        $this->request[$request->id] = $request;
-
-        return true;
     }
 
     /**
@@ -201,6 +186,26 @@ class helpmenow_queue extends helpmenow_db_object {
         }
 
         return HELPMENOW_NOT_PRIVILEGED;
+    }
+
+    /**
+     * Returns boolean of helper availability
+     * @return boolean
+     */
+    function check_available() {
+        if (!count($this->helpers)) {
+            $this->load_relation('helper');
+        }
+        if (!count($this->helpers)) {
+            debugging("Queue has no helpers");
+            return false;
+        }
+        foreach ($this->helpers as $h) {
+            if ($h->isloggedin) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
