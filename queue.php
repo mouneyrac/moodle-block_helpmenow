@@ -50,12 +50,13 @@ class helpmenow_queue extends helpmenow_db_object {
     );
 
     /**
-     * Array of relations
+     * Array of relations, key is relation, element is id used to key relation
+     * array.
      * @var array $relations
      */
     private $relations = array(
         'helper' => 'userid',
-        'request' => 'id',
+        'request' => 'userid',
     );
 
     /**

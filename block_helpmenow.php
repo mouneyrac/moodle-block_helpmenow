@@ -50,38 +50,66 @@ class block_helpmenow extends block_base {
     function get_content() {
         if (isset($this->content)) { return $this->content; }
 
-        global $COURSE;
+        global $COURSE, $USER;
 
         $this->content = (object) array(
             'text' => '',
             'footer' => '',
         );
 
-        helpmenow_ensure_queue_exists(); # autocreate a course queue if necessary
+        helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
         $queues = helpmenow_queue::get_queues();
-
         foreach ($queues as $q) {
             $this->content->text .= $q->name . "<br />";
-            switch $q->get_privilege() {
+            switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
-                # TODO: login/out link & indicator
+                # login/out link
+                $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+                $login->params(array(
+                    'course' => $COURSE->id,
+                    'queue' => $q->id,
+                ));
+                if ($q->helper[$USER->id]->isloggedin) {
+                    $login->param('login', 0);
+                    $login_text = get_string('block_helpmenow', 'login');
+                } else {
+                    $login->param('login', 1);
+                    $login_text = get_string('block_helpmenow', 'logout');
+                }
+                $login = $login->out();
+                $this->content->text .= "<a href='$login'>$login_text</a><br />";
+
+                # requests
                 foreach ($q->request as $r) {
-                    # todo: get the name of submitting user
-                    # todo: popuplink
-                    # description
+                    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+                    $connect->param('request', $r->id);
+                    $name = fullname(get_record('user', 'id', $r->userid));
+                    $this->content->text .= link_to_popup_window($connect->out(), null, $name, 400, 500, null, null, true) . "<br />";
                     $this->content->text .= $r->description . "<br />";
                 }
                 break;
             case HELPMENOW_QUEUE_HELPEE:
+                # if the user has a request, display it, otherwise give a link
+                # to create one
+                if (isset($q->request[$USER->id])) {
+                    $this->content->text .= get_string('block_helpmenow', 'pending') . "<br />";
+                    $this->content->text .= $q->request[$USER->id]->description;
+                } else {
+                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+                    $request->param('queue', $q->id);
+                    $request_text = get_string('block_helpmenow', 'new_request');
+                    $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 500, null, null, true) . "<br />";
+                }
                 break;
+            }
         }
 
         return $this->content;
     }
 
     /**
-     * Overriden block_base method that is ccalled when Moodle's cron runs.
+     * Overriden block_base method that is called when Moodle's cron runs.
      *
      * @return boolean
      */

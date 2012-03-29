@@ -39,8 +39,8 @@ require_login(0, false);
 
 # get our parameters
 
-$courseid = required_param('courseid', PARAM_INT);
-$queueid = required_param('queueid', PARAM_INT);
+$courseid = required_param('course', PARAM_INT);
+$queueid = required_param('queue', PARAM_INT);
 $login = optional_param('login', 0, PARAM_INT);
 
 # get a course url so we can redirect back to where the user clicked login/out
