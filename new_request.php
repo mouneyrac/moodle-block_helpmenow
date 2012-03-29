@@ -80,6 +80,11 @@ if ($form->is_cancelled()) {                # cancelled
     # make the new request
     $request = new helpmenow_request(null, $data);
     $request->insert();
+
+    # redirect to connect.php
+    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+    $connect->param('requestid', $request->id);
+    redirect($connect->out());
 } else {                                    # print form
     $form->set_data($params);
     $form->display();
