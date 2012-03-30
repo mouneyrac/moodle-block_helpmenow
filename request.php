@@ -43,6 +43,7 @@ class helpmenow_request extends helpmenow_db_object {
         'modifiedby',
         'userid',
         'description',
+        'last_refresh',
     );
 
     /**
@@ -52,6 +53,7 @@ class helpmenow_request extends helpmenow_db_object {
     private $optional_fields = array(
         'queueid',
         'requested_userid',
+        'meetingid',
     );
 
     /**
@@ -77,6 +79,18 @@ class helpmenow_request extends helpmenow_db_object {
      * @var int $requested_userid
      */
     public $requested_userid;
+
+    /**
+     * The meeting that is created for this request
+     * @var int $meetingid
+     */
+    public $meetingid;
+
+    /**
+     * Time of the last refresh by the requesting user's browser
+     * @var in $last_refresh
+     */
+    public $last_refresh;
 
     /**
      * Overloeading db_object->check_required_fields() to handle that one of

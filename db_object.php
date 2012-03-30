@@ -49,6 +49,22 @@ abstract class helpmenow_db_object {
     private $optional_fields = array();
 
     /**
+     * Array of extra fields that must be defined by the child if the plugin
+     * requires more data be stored in the database. If this anything is
+     * defined here, then the child should also define $this->!fieldname!
+     * @var array $extra_fields
+     */
+    private $extra_fields = array();
+
+    /**
+     * Data simulates database fields in child classes by serializing data.
+     * This is only used if extra_fields is used, and does not need to be
+     * in the database if it's not being used.
+     * @var string $data
+     */
+    private $data;
+
+    /**
      * Array of relations, such as meeting2user.
      * @var array $relations
      */
@@ -111,7 +127,7 @@ abstract class helpmenow_db_object {
     }
 
     /**
-     * Loads the fields from a passed record.
+     * Loads the fields from a passed record. Also unserializes simulated fields
      * @param object $record db record
      */
     function load($record) {
@@ -120,6 +136,14 @@ abstract class helpmenow_db_object {
             if (isset($record->$f)) {
                 $this->$f = $record->$f;
             }
+        }
+
+        # bail at this point if we don't have extra fields
+        if (!count($this->extra_fields)) { return; }
+
+        $extras = unserialize($this->data);
+        foreach ($this->extra_fields as $field) {
+            $this->$field = $extras[$field];
         }
     }
 
@@ -141,6 +165,8 @@ abstract class helpmenow_db_object {
         if (!$this->check_required_fields()) {
             return false;
         }
+
+        $this->serialize_extras();
 
         return update_record("block_helpmenow_$this->table", $this);
     }
@@ -164,6 +190,8 @@ abstract class helpmenow_db_object {
         if (!$this->check_required_fields()) {
             return false;
         }
+
+        $this->serialize_extras();
 
         if (!$this->id = insert_record("block_helpmenow_$this->table", $this)) {
             debugging("Could not insert $this->table");
@@ -247,6 +275,21 @@ abstract class helpmenow_db_object {
         foreach ($this->relations as $rel => $key) {
             load_relation($rel);
         }
+    }
+
+    /**
+     * Serializes simulated fields if necessary
+     */
+    function serialize_extras() {
+        # bail immediately if we don't have any extra fields
+        if (!count($this->extra_fields)) { return; }
+
+        $extras = array();
+        foreach ($this->extra_fields as $field) {
+            $extras[$field] = $this->$field;
+        }
+        $this->data = serialize($extras);
+        return;
     }
 }
 
