@@ -51,7 +51,7 @@ abstract class helpmenow_db_object {
     /**
      * Array of extra fields that must be defined by the child if the plugin
      * requires more data be stored in the database. If this anything is
-     * defined here, then the child should also define $this->!fieldname!
+     * defined here, then the child should also define the member variable
      * @var array $extra_fields
      */
     private $extra_fields = array();
