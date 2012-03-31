@@ -42,7 +42,6 @@ class helpmenow_request extends helpmenow_db_object {
         'timemodified',
         'modifiedby',
         'userid',
-        'description',
         'last_refresh',
     );
 
@@ -51,6 +50,7 @@ class helpmenow_request extends helpmenow_db_object {
      * @var array $optional_fields
      */
     private $optional_fields = array(
+        'description'
         'queueid',
         'requested_userid',
         'meetingid',

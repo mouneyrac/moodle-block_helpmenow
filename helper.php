@@ -56,9 +56,9 @@ class helpmenow_helper extends helpmenow_db_object {
 
     /**
      * The userid of the helper.
-     * @var int $helper_userid
+     * @var int $userid
      */
-    public $helper_userid;
+    public $userid;
 
     /**
      * Integer boolean, login status of helper

@@ -72,10 +72,16 @@ class helpmenow_queue extends helpmenow_db_object {
     public $name;
 
     /**
+     * plugin queue's meetings use
+     * @var string $plugin
+     */
+    public $plugin;
+
+    /**
      * Weight for queue display order
      * @var int $weight
      */
-    public $weight;
+    public $weight = HELPMENOW_DEFAULT_WEIGHT;
 
     /**
      * Array of user ids of helpers

@@ -36,6 +36,9 @@ define('HELPMENOW_QUEUE_HELPER', 'helper');
 define('HELPMENOW_QUEUE_HELPEE', 'helpee');
 define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
+# Default queue weight value
+define('HELPMENOW_DEFAULT_WEIGHT', 50);
+
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
  * need to create a queue for this course and do so if necessary. Also adds
