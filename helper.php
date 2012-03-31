@@ -26,7 +26,6 @@
 require_once(dirname(__FILE__) . '/db_object.php');
 
 # TODO: do we want to track logged in via unixtime or boolean?
-# TODO: do we want to rename this user2queue?
 
 class helpmenow_helper extends helpmenow_db_object {
     /**

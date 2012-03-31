@@ -27,29 +27,41 @@ require_once(dirname(__FILE__) . '/helpmenow.php');
 require_once(dirname(__FILE__) . '/meeting.php');
 require_once(dirname(__FILE__) . '/queue.php');
 
+/**
+ * Some defines for queue privileges. This is disjoint from capabilities, as
+ * a user can have the helper cap but still needs to be added as a helper to
+ * the appropriate queue.
+ */
 define('HELPMENOW_QUEUE_HELPER', 'helper');
 define('HELPMENOW_QUEUE_HELPEE', 'helpee');
 define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
- * need to create a queue for this course and do so if necessary.
- * @parm int $contextid contextid; if none specified, gets the current course
+ * need to create a queue for this course and do so if necessary. Also adds
+ * helpers if configured to do so.
+ * @param int $contextid contextid; if none specified, gets the current course
  *      context
  */
 function helpmenow_ensure_queue_exists($contextid = null) {
-    global $CFG, $COURSE;
+    global $CFG;
 
     # bail if we're not autocreating course queues
     if (!$CFG->helpmenow_autocreate_course_queue) { return; }
 
-    # bail if we're one the front page
-    if ($COURSE->id = SITEID) { return; }
-
     # get the current contextid if we were'nt given one
     if (!isset($contextid)) {
+        global $COURSE;
+        # bail if we're one the front page
+        if ($COURSE->id = SITEID) { return; }
+
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-        $contextid = $context->id;
+    } else {
+        $context = get_context_instance_by_id($contextid);
+        # bail if the passed contextid isn't course level
+        if ($context->contextlevel !== CONTEXT_COURSE) { return; }
+
+        $COURSE = get_record('course', 'id', $context->instanceid);
     }
 
     # check if we need to make a queue
@@ -57,10 +69,27 @@ function helpmenow_ensure_queue_exists($contextid = null) {
 
     # make a queue
     $queue = new helpmenow_queue();
-    $queue->contextid = $contextid;
-    $queue->name = $COURSE->shortname;
+    $queue->contextid = $context->id;
+    $queue->name = $COURSE->shortname;      # todo: maybe this should be configurable?
     $queue->plugin = $CFG->helpmenow_default_plugin;
     $queue->insert();
+
+    # bail if we're not auto creating helpers
+    if (!$CFG->helpmenow_autoadd_course_helpers) { return; }
+
+    # this would be too slow to call all the time, but right now we're only
+    # doing this when we first create the queue, so it might be ok
+    $users = get_users_by_capability($context, HELPMENOW_CAP_HELPER, 'id');
+
+    foreach ($users as $u) {
+        # we currently don't need to check if we already have a helper, as
+        # we're only doing this on new queues
+        $helper = new helpmenow_helper();
+        $helper->queueid = $queue->id;
+        $helper->userid = $u->id;
+        $helper->isloggedin = 0;
+        $helper->insert();
+    }
 }
 
 ?>

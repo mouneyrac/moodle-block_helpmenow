@@ -161,7 +161,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     public final static function create_meeting($plugin = null) {
         if (!isset($plugin)) {
             $plugin = 'native';
-            if (isset($CFG->helpmenow_default_plugin and strlen($CFG->helpmenow_default_plugin) > 0) {
+            if (isset($CFG->helpmenow_default_plugin) and strlen($CFG->helpmenow_default_plugin) > 0) {
                 $plugin = $CFG->helpmenow_default_plugin;
             }
         }

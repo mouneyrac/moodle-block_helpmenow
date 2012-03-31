@@ -36,8 +36,8 @@ require_login(0, false);
 
 # get our parameters
 $params = (object) array(
-    'queueid' => optional_param('queueid', 0, PARAM_INT);
-    'userid' => optional_param('requested_userid', 0, PARAM_INT);
+    'queueid' => optional_param('queueid', 0, PARAM_INT),
+    'userid' => optional_param('requested_userid', 0, PARAM_INT),
 );
 
 

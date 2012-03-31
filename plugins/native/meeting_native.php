@@ -68,4 +68,6 @@ class helpmenow_meeting_native extends helpmenow_meeting {
         parent::check_completion();
         # todo: there's probably some way to figure this out
     }
+}
+
 ?>
