@@ -110,6 +110,18 @@ class block_helpmenow extends block_base {
             }
         }
 
+        # todo: user to user chat?
+
+        # admin link
+        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        if (has_capability(HELPMENOW_CAP_ADMIN, $context)) {
+            $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
+            $admin->param('courseid', $COURSE->id);
+            $admin = $admin->out();
+            $admin_text = get_string('admin_link', 'block_helpmenow');
+            $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
+        }
+
         return $this->content;
     }
 
