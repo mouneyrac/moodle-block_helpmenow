@@ -134,7 +134,17 @@ class block_helpmenow extends block_base {
      * @return boolean
      */
     function cron() {
-        # todo: clean up old meetings
+        # clean up old meetings
+        $meetings = get_records('block_helpmenow_meeting');
+        foreach ($meetings as $k => $m) {
+            $meetings[$k] = helpmenow_meeting::get_meeting(null, $m);
+            if ($meetings[$k]->check_completion) {
+                $meetings[$k]->delete();
+                unset($meetings[$k]);
+            }
+        }
+
+        # call plugin crons
         return helpmenow_meeting::cron_all();
     }
 }

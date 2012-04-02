@@ -146,8 +146,10 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @param int $meetingid meeting.id
      * @return object plugin meeting
      */
-    public final static function get_meeting($meetingid) {
-        $meeting = get_record('block_helpmenow_meeting', 'id', $meetingid);
+    public final static function get_meeting($meetingid=null, $meeting=null) {
+        if (isset($meetingid)) {
+            $meeting = get_record('block_helpmenow_meeting', 'id', $meetingid);
+        }
 
         $plugin = $meeting->plugin;
         $class = "helpmenow_meeting_$plugin";
