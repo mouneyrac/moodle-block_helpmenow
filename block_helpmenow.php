@@ -57,9 +57,13 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
+        # contexts
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+
         helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
-        $queues = helpmenow_queue::get_queues();
+        $queues = helpmenow_queue::get_queues(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
             $this->content->text .= $q->name . "<br />";
             switch ($q->get_privilege()) {
@@ -113,8 +117,7 @@ class block_helpmenow extends block_base {
         # todo: user to user chat?
 
         # admin link
-        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        if (has_capability(HELPMENOW_CAP_ADMIN, $context)) {
+        if (has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
             $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
             $admin->param('courseid', $COURSE->id);
             $admin = $admin->out();

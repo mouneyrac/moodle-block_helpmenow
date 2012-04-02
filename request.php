@@ -50,7 +50,7 @@ class helpmenow_request extends helpmenow_db_object {
      * @var array $optional_fields
      */
     private $optional_fields = array(
-        'description'
+        'description',
         'queueid',
         'requested_userid',
         'meetingid',

@@ -35,11 +35,69 @@ require_once(dirname(__FILE__) . '/lib.php');
 require_login(0, false);
 
 # get our parameters
+$courseid = optional_param('courseid', 0, PARAM_INT);
+
+$COURSE = get_record('course', 'id', $courseid);
+$course_url = new moodle_url("$CFG->wwwroot/course/view.php");
+$course_url->param('id', $COURSE->id);
+$course_url = $course_url->out();
+
+$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
+    redirect($course_url);
+}
 
 # title and navbar
 $title = get_string('admin_heading', 'block_helpmenow');
-$nav = array(array('name' => $title));
+$nav = array(
+    array('name' => $title),
+    array('name' => $COURSE->shortname, 'link' => $course_url),
+);
 print_header($title, $title, build_navigation($nav));
+
+# todo: print heading indicating context?
+if ($courseid) {    # course queues
+    $queues = helpmenow_queue::get_queues(array($context->id));
+} else {            # global queues
+    $queues = helpmenow_queue::get_queues(array($sitecontext->id));
+}
+
+# todo: link to add queue
+
+# start setting up the table
+$table = (object) array(
+    'head' => array(
+        get_string('name'),
+        get_string('weight', 'block_helpmenow'),
+        get_string('plugin', 'block_helpmenow'),
+        get_string('helpers', 'block_helpmenow'),
+    ),
+    'data' => array(),
+);
+
+# non-changing parts of every queue edit.php and assign.php links
+$assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign.php");
+$assign->param('courseid', $courseid);
+$edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/edit.php");
+$edit->param('courseid', $courseid);
+    
+foreach ($queues as $q) {
+    $assign->param('queueid', $q->id);
+    $assign_url = $assign->out();
+    $helper_count = count($q->helper);
+    $edit->param('queueid', $q->id);
+    $edit_url = $edit->out();
+
+    $table->data[] = array(
+        "<a href='$edit_url'>$q->name</a>",
+        $q->weight,
+        $q->plugin,
+        "<a href='$assign_url'>$helper_count</a>",
+    );
+}
+
+print_table($table);
 
 # footer
 print_footer();

@@ -145,20 +145,17 @@ class helpmenow_queue extends helpmenow_db_object {
 
     /**
      * Gets an array of queues in the current context
+     * @param array $contexts array of contextids
      * @return array of queues
      */
-    public static function get_queues() {
-        global $CFG, $COURSE;
+    public static function get_queues($contexts) {
+        global $CFG;
 
-        # get contexts for course and system
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-
+        $contexts = implode(',', $contexts);
         $sql = "
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
-            WHERE q.contextid = $sitecontext->id
-            OR q.contextid = $context->id
+            WHERE q.contextid IN ($contexts)
             ORDER BY q.weight
         ";
 
