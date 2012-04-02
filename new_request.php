@@ -78,7 +78,7 @@ if ($form->is_cancelled()) {                # cancelled
     }
 
     # make the new request
-    $request = new helpmenow_request(null, $data);
+    $request = new helpmenow_request(null, (object) $data);
     $request->insert();
 
     # redirect to connect.php

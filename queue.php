@@ -47,6 +47,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'name',
         'plugin',
         'weight',
+        'description',
     );
 
     /**
@@ -82,6 +83,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var int $weight
      */
     public $weight = HELPMENOW_DEFAULT_WEIGHT;
+
+    /**
+     * Description of the queue
+     * @var string $desription
+     */
+    public $description;
 
     /**
      * Array of user ids of helpers
