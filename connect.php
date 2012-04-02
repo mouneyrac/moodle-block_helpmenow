@@ -83,7 +83,7 @@ if ($connect) {     # for the helper/requested_user
     $meeting->description = $request->description;
 
     # connect user to the meeting
-    redirect($meeting->connect());
+    redirect($meeting->connect_user());
 } else {            # for the helpee/requester
     if ($USER->id !== $request->userid) {
         # todo: print a wrong user permission failure message and close
@@ -98,7 +98,7 @@ if ($connect) {     # for the helper/requested_user
         $request->delete();
 
         # connect user to the meeting
-        redirect($meeting->connect());
+        redirect($meeting->connect_user());
     } else {
         # set the last refresh so cron doesn't clean this up
         $request->last_refresh = time();

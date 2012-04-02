@@ -96,7 +96,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Connects user to the meeting
      * @return $string url
      */
-    final function connect() {
+    final function connect_user() {
         global $USER;
 
         # todo: logging
@@ -111,7 +111,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $this->meeting2user[$meeting2user->userid] = $meeting2user;
 
         # call the plugin's connecting user code
-        $url = $this->plugin_connect();
+        $url = $this->connect();
         $this->insert();
 
         return $url;
@@ -122,7 +122,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * into db after
      * @return $string url
      */
-    abstract function plugin_connect();
+    abstract function connect();
 
     /**
      * Returns boolean of meeting completed or not. Default just uses
@@ -134,6 +134,12 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         global $CFG;
         return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60 * 60));
     }
+
+    /**
+     * Cron that will run everytime block cron is run.
+     * @return boolean
+     */
+    abstract function cron();
 
     /**
      * Factory function to get existing meeting of the correct plugin
@@ -177,6 +183,22 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $meeting->insert();
 
         return $meeting;
+    }
+
+    /**
+     * Calls any existing cron functions of plugins
+     * @return boolean
+     */
+    public final static function cron_all() {
+        $return = true;
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
+            require_once(dirname(__FILE__) . "/plugins/$plugin/meeting_$plugin.php");
+            $class = "helpmenow_meeting_$plugin";
+            if (!$class::cron()) {
+                $return = false;
+            }
+        }
+        return $return;
     }
 }
 

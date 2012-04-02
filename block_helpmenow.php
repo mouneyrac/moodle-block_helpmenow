@@ -134,7 +134,8 @@ class block_helpmenow extends block_base {
      * @return boolean
      */
     function cron() {
-        return true;
+        # todo: clean up old meetings
+        return helpmenow_meeting::cron_all();
     }
 }
 
