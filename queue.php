@@ -88,7 +88,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * Description of the queue
      * @var string $desription
      */
-    public $description;
+    public $description = '';
 
     /**
      * Array of user ids of helpers
