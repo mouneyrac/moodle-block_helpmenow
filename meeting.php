@@ -132,6 +132,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      */
     function check_completion() {
         global $CFG;
+        # todo: right now assuming the setting will be in number of hours
         return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60 * 60));
     }
 
@@ -147,6 +148,8 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @return object plugin meeting
      */
     public final static function get_meeting($meetingid=null, $meeting=null) {
+        # we have to get the meeting instead of passing the meeting id to the
+        # constructor as we have no idea what class the meeting belongs to
         if (isset($meetingid)) {
             $meeting = get_record('block_helpmenow_meeting', 'id', $meetingid);
         }
@@ -192,15 +195,30 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @return boolean
      */
     public final static function cron_all() {
-        $return = true;
+        $success = true;
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
             require_once(dirname(__FILE__) . "/plugins/$plugin/meeting_$plugin.php");
             $class = "helpmenow_meeting_$plugin";
-            if (!$class::cron()) {
-                $return = false;
+            $success = $success and $class::cron();
+        }
+        return $success;
+    }
+
+    /**
+     * Cleans up old meetings
+     * @return boolean
+     */
+    public final static function clean_meetings() {
+        $success = true;
+        $meetings = get_records('block_helpmenow_meeting');
+        foreach ($meetings as $k => $m) {
+            $meetings[$k] = helpmenow_meeting::get_meeting(null, $m);
+            if ($meetings[$k]->check_completion) {
+                $success = $success and $meetings[$k]->delete();
+                unset($meetings[$k]);
             }
         }
-        return $return;
+        return $success;
     }
 }
 

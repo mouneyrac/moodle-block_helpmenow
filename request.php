@@ -105,6 +105,17 @@ class helpmenow_request extends helpmenow_db_object {
         }
         return $success;
     }
+
+    /**
+     * Cleans up abandoned requests
+     * @return boolean
+     */
+    public final static function helpmenow_clean_requests() {
+        global $CFG;
+        # todo: for now assuming setting will be in number of minutes
+        $cutoff = time() - ($CFG->helpmenow_request_timeout * 60);
+        return delete_records_select('block_helpmenow_request', "last_refresh < $cutoff");
+    }
 }
 
 ?>
