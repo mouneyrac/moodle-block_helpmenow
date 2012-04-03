@@ -56,9 +56,8 @@ if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
 # title and navbar
 $title = get_string('queue_edit', 'block_helpmenow');
 $nav = array(
-    array('name' => $title),
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
-    array('name' => $COURSE->shortname, 'link' => $course_url),
+    array('name' => $title),
 );
 print_header($title, $title, build_navigation($nav));
 

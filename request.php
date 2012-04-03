@@ -30,13 +30,13 @@ class helpmenow_request extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'request';
+    protected $table = 'request';
 
     /**
      * Array of required db fields.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',
@@ -49,7 +49,7 @@ class helpmenow_request extends helpmenow_db_object {
      * Array of optional db fields.
      * @var array $optional_fields
      */
-    private $optional_fields = array(
+    protected $optional_fields = array(
         'description',
         'queueid',
         'requested_userid',

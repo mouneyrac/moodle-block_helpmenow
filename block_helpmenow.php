@@ -25,7 +25,6 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
-global $CFG;
 require_once(dirname(__FILE__) . '/lib.php');
 
 class block_helpmenow extends block_base {
@@ -50,7 +49,7 @@ class block_helpmenow extends block_base {
     function get_content() {
         if (isset($this->content)) { return $this->content; }
 
-        global $COURSE, $USER;
+        global $CFG, $COURSE, $USER;
 
         $this->content = (object) array(
             'text' => '',
@@ -76,10 +75,10 @@ class block_helpmenow extends block_base {
                 ));
                 if ($q->helper[$USER->id]->isloggedin) {
                     $login->param('login', 0);
-                    $login_text = get_string('login', 'block_helpmenow');
+                    $login_text = get_string('logout', 'block_helpmenow');
                 } else {
                     $login->param('login', 1);
-                    $login_text = get_string('logout', 'block_helpmenow');
+                    $login_text = get_string('login', 'block_helpmenow');
                 }
                 $login = $login->out();
                 $this->content->text .= "<a href='$login'>$login_text</a><br />";

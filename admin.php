@@ -58,10 +58,7 @@ if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
 
 # title and navbar
 $title = get_string('admin', 'block_helpmenow');
-$nav = array(
-    array('name' => $title),
-    array('name' => $COURSE->shortname, 'link' => $course_url),
-);
+$nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 
 # todo: print heading indicating context?

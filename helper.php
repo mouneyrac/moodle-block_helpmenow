@@ -32,13 +32,13 @@ class helpmenow_helper extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'helper';
+    protected $table = 'helper';
 
     /**
      * Array of required db fields.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',

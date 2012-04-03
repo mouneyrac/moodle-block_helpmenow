@@ -31,13 +31,13 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Table of the object. This should not be overriden by the child.
      * @var string $table
      */
-    private $table = 'meeting';
+    protected $table = 'meeting';
 
     /**
      * Array of required db fields.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',
@@ -49,7 +49,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Array of optional db fields.
      * @var array $optional_fields
      */
-    private $optional_fields = array(
+    protected $optional_fields = array(
         'owner_userid',
         'description',
     );
@@ -58,7 +58,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Array of relations
      * @var array $relations
      */
-    private $relations = array(
+    protected $relations = array(
         'meeting2user' => 'userid',
     );
 
@@ -66,7 +66,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Plugin of the meeting; child should override this.
      * @var string $plugin
      */
-    private $plugin;
+    protected $plugin;
 
     /**
      * The userid of the user who owns the meeting, usually the queue helper or
@@ -227,13 +227,13 @@ class helpmenow_meeting2user extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'meeting2user';
+    protected $table = 'meeting2user';
 
     /**
      * Array of required db fields.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',

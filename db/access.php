@@ -27,7 +27,7 @@ define('HELPMENOW_CAP_QUEUE_REQUEST', 'block/helpmenow:queue_request');
 define('HELPMENOW_CAP_QUEUE_HELPER', 'block/helpmenow:queue_helper');
 define('HELPMENOW_CAP_ADMIN', 'block/helpmenow:manage_queues');
 
-$block_helpdesk_capabilities = array (
+$block_helpmenow_capabilities = array (
     HELPMENOW_CAP_QUEUE_REQUEST => array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
@@ -59,7 +59,6 @@ $block_helpdesk_capabilities = array (
             'admin'             => CAP_ALLOW
         )
     ),
-        
 );
 
 ?>

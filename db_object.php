@@ -28,14 +28,14 @@ abstract class helpmenow_db_object {
      * Table of the object. This must be overridden by the child.
      * @var string $table
      */
-    private $table;
+    protected $table;
 
     /**
      * Array of required db fields. This must be overridden by the child. The
      * required values for all children are below.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',
@@ -46,7 +46,7 @@ abstract class helpmenow_db_object {
      * Array of optional db fields.
      * @var array $optional_fields
      */
-    private $optional_fields = array();
+    protected $optional_fields = array();
 
     /**
      * Array of extra fields that must be defined by the child if the plugin
@@ -54,7 +54,7 @@ abstract class helpmenow_db_object {
      * defined here, then the child should also define the member variable
      * @var array $extra_fields
      */
-    private $extra_fields = array();
+    protected $extra_fields = array();
 
     /**
      * Data simulates database fields in child classes by serializing data.
@@ -62,13 +62,13 @@ abstract class helpmenow_db_object {
      * in the database if it's not being used.
      * @var string $data
      */
-    private $data;
+    protected $data;
 
     /**
      * Array of relations, such as meeting2user.
      * @var array $relations
      */
-    private $relations = array();
+    protected $relations = array();
 
     /**
      * The id of the object.
@@ -108,7 +108,7 @@ abstract class helpmenow_db_object {
         } else if (!empty($record)) {
             $this->load($record);
         }
-        if ($fetch_related) {
+        if ($fetch_related and (isset($id) or isset($record))) {
             $this->load_all_relations();
         }
     }
@@ -257,14 +257,14 @@ abstract class helpmenow_db_object {
      *      table and the memeber variable
      */
     function load_relation($relation) {
-        if (!$this->$relation = get_records("block_helpmenow_$relation", "{$this->table}id", $this->id)) {
-            $this->$relation = array();
-        } else {
-            $class = "helpmenow_$relation";
-            $key = $this->relation[$relation];
-            foreach ($this->$relation as $r) {
-                $this->$relation[$r->$key] = new $class(null, $r);
-            }
+        $this->$relation = array();
+        if (!$tmp = get_records("block_helpmenow_$relation", "{$this->table}id", $this->id)) {
+            return;
+        }
+        $class = "helpmenow_$relation";
+        $key = $this->relations[$relation];
+        foreach ($tmp as $r) {
+            $this->{$relation}[$r->$key] = new $class(null, $r);
         }
     }
 
@@ -273,7 +273,7 @@ abstract class helpmenow_db_object {
      */
     function load_all_relations() {
         foreach ($this->relations as $rel => $key) {
-            load_relation($rel);
+            $this->load_relation($rel);
         }
     }
 

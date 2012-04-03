@@ -32,13 +32,13 @@ class helpmenow_queue extends helpmenow_db_object {
      * Table of the object.
      * @var string $table
      */
-    private $table = 'queue';
+    protected $table = 'queue';
 
     /**
      * Array of required db fields.
      * @var array $required_fields
      */
-    private $required_fields = array(
+    protected $required_fields = array(
         'id',
         'timecreated',
         'timemodified',
@@ -55,7 +55,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * array.
      * @var array $relations
      */
-    private $relations = array(
+    protected $relations = array(
         'helper' => 'userid',
         'request' => 'userid',
     );
@@ -135,14 +135,14 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return boolean
      */
     function check_available() {
-        if (!count($this->helpers)) {
+        if (!count($this->helper)) {
             $this->load_relation('helper');
         }
-        if (!count($this->helpers)) {
+        if (!count($this->helper)) {
             debugging("Queue has no helpers");
             return false;
         }
-        foreach ($this->helpers as $h) {
+        foreach ($this->helper as $h) {
             if ($h->isloggedin) {
                 return true;
             }

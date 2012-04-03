@@ -25,7 +25,10 @@
 
 require_once(dirname(__FILE__) . '/helpmenow.php');
 require_once(dirname(__FILE__) . '/meeting.php');
+require_once(dirname(__FILE__) . '/request.php');
 require_once(dirname(__FILE__) . '/queue.php');
+require_once(dirname(__FILE__) . '/helper.php');
+require_once(dirname(__FILE__) . '/db/access.php');
 
 /**
  * Some defines for queue privileges. This is disjoint from capabilities, as
@@ -56,7 +59,7 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     if (!isset($contextid)) {
         global $COURSE;
         # bail if we're one the front page
-        if ($COURSE->id = SITEID) { return; }
+        if ($COURSE->id == SITEID) { return; }
 
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
     } else {
@@ -68,7 +71,7 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     }
 
     # check if we need to make a queue
-    if (record_exists('block_helpmenow_queue', 'contextid', $contextid)) { return; }
+    if (record_exists('block_helpmenow_queue', 'contextid', $context->id)) { return; }
 
     # make a queue
     $queue = new helpmenow_queue();
@@ -82,7 +85,9 @@ function helpmenow_ensure_queue_exists($contextid = null) {
 
     # this would be too slow to call all the time, but right now we're only
     # doing this when we first create the queue, so it might be ok
-    $users = get_users_by_capability($context, HELPMENOW_CAP_HELPER, 'id');
+    #
+    # todo: this seems to get all admins
+    $users = get_users_by_capability($context, HELPMENOW_CAP_QUEUE_HELPER, 'u.id');
 
     foreach ($users as $u) {
         # we currently don't need to check if we already have a helper, as
