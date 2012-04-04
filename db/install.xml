@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/helpmenow/db" VERSION="20120403" COMMENT="XMLDB file for Moodle blocks/helpmenow"
+<XMLDB PATH="blocks/helpmenow/db" VERSION="20120404" COMMENT="XMLDB file for Moodle blocks/helpmenow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -34,7 +34,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_helpmenow_meeting" COMMENT="help me now queue meetings" PREVIOUS="block_helpmenow_helper" NEXT="block_helpmenow_request">
+    <TABLE NAME="block_helpmenow_meeting" COMMENT="help me now queue meetings" PREVIOUS="block_helpmenow_helper" NEXT="block_helpmenow_meeting2user">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="plugin"/>
         <FIELD NAME="plugin" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="owner_userid"/>
@@ -48,7 +48,20 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_helpmenow_request" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting">
+    <TABLE NAME="block_helpmenow_meeting2user" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting" NEXT="block_helpmenow_request">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="meetingid"/>
+        <FIELD NAME="meetingid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="meetingid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="modifiedby"/>
+        <FIELD NAME="modifiedby" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_helpmenow_request" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting2user">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="last_refresh"/>
