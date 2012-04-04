@@ -52,7 +52,7 @@ if ($connect) {     # for the helper/requested_user
     if (isset($request->queueid)) {     # queue request
         # check privileges
         $queue = new helpmenow_queue($request->queueid);
-        if ($queue->check_privilege !== HELPMENOW_QUEUE_HELPER) {
+        if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
             # todo: print a permission failure message and exit
         }
 
@@ -102,6 +102,7 @@ if ($connect) {     # for the helper/requested_user
     } else {
         # set the last refresh so cron doesn't clean this up
         $request->last_refresh = time();
+        echo get_string('wait', 'block_helpmenow') . "<br />";
         # todo: display some sort of cancel link
         # todo: refresh after some configurable number of seconds
     }

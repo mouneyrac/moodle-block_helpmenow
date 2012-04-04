@@ -112,7 +112,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
 
         # call the plugin's connecting user code
         $url = $this->connect();
-        $this->insert();
+        $this->update();
 
         return $url;
     }
@@ -170,16 +170,17 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @return object plugin meeting
      */
     public final static function create_meeting($plugin = null) {
+        global $CFG;
+
         if (!isset($plugin)) {
             $plugin = 'native';
             if (isset($CFG->helpmenow_default_plugin) and strlen($CFG->helpmenow_default_plugin) > 0) {
                 $plugin = $CFG->helpmenow_default_plugin;
             }
         }
-        $class = "helpmenow_meeting_$plugin";
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/meeting_$plugin.php";
 
-        require_once($classpath);
+        require_once(dirname(__FILE__) . "/plugins/$plugin/meeting_$plugin.php");
+        $class = "helpmenow_meeting_$plugin";
 
         $meeting = new $class;
         $meeting->create();

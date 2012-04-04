@@ -87,8 +87,9 @@ class block_helpmenow extends block_base {
                 foreach ($q->request as $r) {
                     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
                     $connect->param('requestid', $r->id);
+                    $connect->param('connect', 1);
                     $name = fullname(get_record('user', 'id', $r->userid));
-                    $this->content->text .= link_to_popup_window($connect->out(), null, $name, 400, 500, null, null, true) . "<br />";
+                    $this->content->text .= link_to_popup_window($connect->out(), null, $name, 400, 700, null, null, true) . "<br />";
                     $this->content->text .= $r->description . "<br />";
                 }
                 break;
@@ -103,7 +104,7 @@ class block_helpmenow extends block_base {
                         $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
                         $request->param('queueid', $q->id);
                         $request_text = get_string('new_request', 'block_helpmenow');
-                        $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 500, null, null, true) . "<br />";
+                        $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 700, null, null, true) . "<br />";
                     } else {
                         # todo: make this smarter (helpers leave message or configurable)
                         $this->content->text .= get_string('queue_na', 'block_helpmenow');

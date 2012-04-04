@@ -28,8 +28,9 @@ require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->libdir . '/weblib.php');
 
-# helpmenow library
+# helpmenow library & forms
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/form.php');
 
 # require login
 require_login(0, false);
@@ -79,6 +80,8 @@ if ($form->is_cancelled()) {                # cancelled
 
     # make the new request
     $request = new helpmenow_request(null, (object) $data);
+    $request->userid = $USER->id;
+    $request->last_refresh = time();
     $request->insert();
 
     # redirect to connect.php

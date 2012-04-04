@@ -23,20 +23,20 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/db_object.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/db_object.php');
 
 class helpmenow_meeting_native extends helpmenow_meeting {
     /**
      * Plugin name
      * @var string $plugin
      */
-    private $plugin = 'native';
+    protected $plugin = 'native';
 
     /**
      * We'll probably need a sessionid or similar
      * @var array $extra_fields
      */
-    private $extra_fields = array(
+    protected $extra_fields = array(
         'sessionid',
     );
 
@@ -44,12 +44,13 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * Sessionid of the chat
      * @var int $sessionid
      */
-    private $sessionid;
+    protected $sessionid;
 
     /**
      * Create the meeting. Caller will insert record.
      */
     function create() {
+        return true;
     }
 
     /**
@@ -57,7 +58,8 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * into db after
      * @return $string url
      */
-    function plugin_connect() {
+    function connect() {
+        return "http://www.google.com";
     }
 
     /**
@@ -65,8 +67,16 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * @return boolean
      */
     function check_completion() {
-        parent::check_completion();
+        return parent::check_completion();
         # todo: there's probably some way to figure this out
+    }
+
+    /**
+     * Cron
+     * @return boolean
+     */
+    function cron() {
+        return true;
     }
 }
 
