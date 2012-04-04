@@ -27,4 +27,26 @@
 $string['pluginname'] = 'Help Me Now Block';
 $string['helpmenow'] = 'Help Me Now';
 
+# block
+$string['new_request'] = 'Request Meeting';
+$string['pending'] = 'Your pending request:';
+$string['login'] = 'Login';
+$string['logout'] = 'Logout';
+$string['admin_link'] = 'Manage Queues';
+
+# new_request.php
+$string['new_request_heading'] = 'New Request';
+$string['description'] = 'Description (140 characters or less)';
+
+# connect.php
+$string['connect'] = 'Connecting';
+$string['please_wait'] = 'Please wait while we connect you...';
+
+# admin.php
+$string['admin'] = 'Manage Queues';
+$string['new_queue'] = 'Add Queue';
+$string['weight'] = 'Weight';
+$string['plugin'] = 'Plugin';
+$string['helpers'] = 'Helpers';
+
 ?>

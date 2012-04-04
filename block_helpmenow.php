@@ -64,7 +64,8 @@ class block_helpmenow extends block_base {
 
         $queues = helpmenow_queue::get_queues(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
-            $this->content->text .= $q->name . "<br />";
+            # todo: <b>? really?
+            $this->content->text .= "<b>" . $q->name . "</b><br />";
             switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
                 # login/out link
@@ -107,10 +108,11 @@ class block_helpmenow extends block_base {
                         $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 700, null, null, true) . "<br />";
                     } else {
                         # todo: make this smarter (helpers leave message or configurable)
-                        $this->content->text .= get_string('queue_na', 'block_helpmenow');
+                        $this->content->text .= get_string('queue_na', 'block_helpmenow') . "<br />";
                     }
                 }
                 break;
+            default:
             }
         }
 

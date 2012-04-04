@@ -30,6 +30,7 @@ require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/form.php');
 
 # require login
 require_login(0, false);
@@ -43,12 +44,13 @@ $COURSE = get_record('course', 'id', $courseid);
 $course_url = new moodle_url("$CFG->wwwroot/course/view.php");
 $course_url->param('id', $COURSE->id);
 $course_url = $course_url->out();
-$admin_url = new moodle_url("$CFG->wwwroot/block/helpmenow/admin.php");
+$admin_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
 $admin_url->param('courseid', $courseid);
 $admin_url = $admin_url->out();
 
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$context = get_context_instance(CONTEXT_COURSE, $courseid);
 if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
     redirect($course_url);
 }
@@ -66,9 +68,23 @@ $form = new helpmenow_queue_form();
 if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
 } else if ($data = $form->get_data()) {     # submitted
-    $queue = new helpmenow_queue(null, (object) $data);
     if ($queueid) {
-        $queue->id = $queueid;
+        $queue = new helpmenow_queue($queueid);
+    } else {
+        $queue = new helpmenow_queue();
+        if ($courseid == SITEID) {
+            $queue->contextid = $sitecontext->id;
+        } else {
+            $queue->contextid = $context->id;
+        }
+    }
+
+    $queue->name = $data->name;
+    $queue->description = $data->description;
+    $queue->plugin = $data->plugin;
+    $queue->weight = $data->weight;
+
+    if ($queueid) {
         $queue->update();
     } else {
         $queue->insert();
@@ -82,10 +98,10 @@ if ($form->is_cancelled()) {                # cancelled
         $toform = array(
             'queueid' => $queueid,
             'courseid' => $courseid,
-            'name' => $q->name,
-            'description' => $q->description,
-            'plugin', $q->plugin,
-            'weight', $q->weight,
+            'name' => $queue->name,
+            'description' => $queue->description,
+            'plugin' => $queue->plugin,
+            'weight' => $queue->weight,
         );
     } else {            # new queue
         $toform = array(

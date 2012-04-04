@@ -62,10 +62,10 @@ $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 
 # todo: print heading indicating context?
-if ($courseid) {    # course queues
-    $queues = helpmenow_queue::get_queues(array($context->id));
-} else {            # global queues
+if ($courseid == SITEID) {    # global queues
     $queues = helpmenow_queue::get_queues(array($sitecontext->id));
+} else {            # course queues
+    $queues = helpmenow_queue::get_queues(array($context->id));
 }
 
 # link to add queue
