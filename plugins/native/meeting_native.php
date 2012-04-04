@@ -23,28 +23,14 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/db_object.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
 
 class helpmenow_meeting_native extends helpmenow_meeting {
     /**
      * Plugin name
      * @var string $plugin
      */
-    protected $plugin = 'native';
-
-    /**
-     * We'll probably need a sessionid or similar
-     * @var array $extra_fields
-     */
-    protected $extra_fields = array(
-        'sessionid',
-    );
-
-    /**
-     * Sessionid of the chat
-     * @var int $sessionid
-     */
-    protected $sessionid;
+    public $plugin = 'native';
 
     /**
      * Create the meeting. Caller will insert record.
@@ -59,7 +45,15 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * @return $string url
      */
     function connect() {
-        return "http://www.google.com";
+        global $CFG, $USER;
+
+        foreach ($this->meeting2user as $u) {
+            if ($u->userid == $USER->id) { continue; }
+            $userid = $u->userid;
+        }
+        $meeting_url = new moodle_url("$CFG->wwwroot/message/discussion.php");
+        $meeting_url->param('id', $userid);
+        return $meeting_url->out();
     }
 
     /**
@@ -69,6 +63,14 @@ class helpmenow_meeting_native extends helpmenow_meeting {
     function check_completion() {
         return parent::check_completion();
         # todo: there's probably some way to figure this out
+    }
+
+    /**
+     * Return boolean of meeting completed or not.
+     * @return boolean
+     */
+    function check_full() {
+        return count($this->meeting2user) >= 2;
     }
 
     /**

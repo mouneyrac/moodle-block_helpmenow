@@ -62,7 +62,7 @@ abstract class helpmenow_db_object {
      * in the database if it's not being used.
      * @var string $data
      */
-    protected $data;
+    public $data;
 
     /**
      * Array of relations, such as meeting2user.
@@ -206,7 +206,7 @@ abstract class helpmenow_db_object {
      * @param boolean $delete_relations wether or not to delete relations
      * @return boolean success
      */
-    function delete($delete_relatoins = true) {
+    function delete($delete_relations = true) {
         $success = true;
 
         # delete relations if necessary
@@ -227,7 +227,7 @@ abstract class helpmenow_db_object {
             return false;
         }
 
-        if (!delete_record("block_helpmenow_$this->table", 'id', $this->id)) {
+        if (!delete_records("block_helpmenow_$this->table", 'id', $this->id)) {
             $success = false;
         }
 

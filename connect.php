@@ -70,20 +70,25 @@ if ($connect) {     # for the helper/requested_user
         # create the meeting
         $meeting = helpmenow_meeting::create_meeting();
 
-        # update the request with the meetingid so we know its been accepted
-        $request->meetingid = $meeting->id;
-        $request->insert();
-
         # direct requests are owned by the user who sent it
         $meeting->owner_userid = $request->userid;
     } else {
         # todo: "what the heck are you doing?" failure message and close
     }
+    # update the request with the meetingid so we know its been accepted
+    $request->meetingid = $meeting->id;
+    $request->update();
 
+    # get the description from the request
     $meeting->description = $request->description;
 
+    # add the requesting user to the meeting
+    $meeting->add_user($request->userid);
+
     # connect user to the meeting
-    redirect($meeting->connect_user());
+    $url = $meeting->connect_user();
+    $meeting->update(); # new meeting
+    redirect($url);
 } else {            # for the helpee/requester
     if ($USER->id !== $request->userid) {
         # todo: print a wrong user permission failure message and close
@@ -98,13 +103,19 @@ if ($connect) {     # for the helper/requested_user
         $request->delete();
 
         # connect user to the meeting
-        redirect($meeting->connect_user());
+        $url = $meeting->connect_user();
+        $meeting->update();
+        redirect($url);
     } else {
         # set the last refresh so cron doesn't clean this up
         $request->last_refresh = time();
-        echo get_string('wait', 'block_helpmenow') . "<br />";
+        $request->update();
         # todo: display some sort of cancel link
-        # todo: refresh after some configurable number of seconds
+
+        # refresh after some configurable number of seconds
+        $refresh_url = new moodle_url();
+        $refresh_url->param('requestid', $request->id);
+        redirect($refresh_url->out(), get_string('please_wait', 'block_helpmenow'), $CFG->helpmenow_refresh_rate);
     }
 }
 

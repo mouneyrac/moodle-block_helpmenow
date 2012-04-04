@@ -66,7 +66,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Plugin of the meeting; child should override this.
      * @var string $plugin
      */
-    protected $plugin;
+    public $plugin;
 
     /**
      * The userid of the user who owns the meeting, usually the queue helper or
@@ -94,33 +94,48 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
 
     /**
      * Connects user to the meeting
-     * @return $string url
+     * @return mixed false if failed, string url if succeeded
      */
     final function connect_user() {
         global $USER;
 
         # todo: logging
 
-        # add the user to the meeting
-        $meeting2user = (object) array(
-            'meetingid' => $this->id,
-            'userid' => $USER->id,
-        );
-        $meeting2user = new helpmenow_meeting2user(null, $meeting2user);
-        $meeting2user->insert();
-        $this->meeting2user[$meeting2user->userid] = $meeting2user;
+        # add the user to the meeting, if not already
+        if (!isset($this->meeting2user[$USER->id])) {
+            if ($this->check_full()) {
+                return false;
+            }
+            $this->add_user();
+        }
 
         # call the plugin's connecting user code
         $url = $this->connect();
-        $this->update();
 
         return $url;
     }
 
     /**
+     * Adds a user to the meeting
+     */
+    final function add_user($userid = null) {
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+        $meeting2user = (object) array(
+            'meetingid' => $this->id,
+            'userid' => $userid,
+        );
+        $meeting2user = new helpmenow_meeting2user(null, $meeting2user);
+        $meeting2user->insert();
+        $this->meeting2user[$userid] = $meeting2user;
+    }
+
+    /**
      * Plugin specific function to connect USER to meeting. Caller will insert
      * into db after
-     * @return $string url
+     * @return mixed false if failed, string url if succeeded
      */
     abstract function connect();
 
@@ -137,6 +152,12 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     }
 
     /**
+     * Returns boolean of meeting full or not.
+     * @return boolean
+     */
+    abstract function check_full();
+
+    /**
      * Cron that will run everytime block cron is run.
      * @return boolean
      */
@@ -148,6 +169,8 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @return object plugin meeting
      */
     public final static function get_meeting($meetingid=null, $meeting=null) {
+        global $CFG;
+
         # we have to get the meeting instead of passing the meeting id to the
         # constructor as we have no idea what class the meeting belongs to
         if (isset($meetingid)) {
@@ -185,7 +208,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $meeting = new $class;
         $meeting->create();
 
-        # save the meeting immediately
+        # insert the meeting immediately
         $meeting->insert();
 
         return $meeting;
