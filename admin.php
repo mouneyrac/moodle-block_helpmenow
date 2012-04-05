@@ -56,23 +56,32 @@ if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
     redirect($course_url);
 }
 
-# title and navbar
+# title, navbar, and a nice box
 $title = get_string('admin', 'block_helpmenow');
 $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
 
 # todo: print heading indicating context?
 if ($courseid == SITEID) {    # global queues
+    print_heading(get_string('global_admin', 'block_helpmenow'));
     $queues = helpmenow_queue::get_queues(array($sitecontext->id));
+    $tmp = '';
 } else {            # course queues
+    print_heading(get_string('course_admin', 'block_helpmenow') . $COURSE->fullname);
     $queues = helpmenow_queue::get_queues(array($context->id));
+    $global_url = new moodle_url();
+    $global_url->param('courseid', SITEID);
+    $global_url = $global_url->out();
+    $global = get_string('global_link', 'block_helpmenow');
+    $tmp = "<a href='$global_url'>$global</a> | ";
 }
 
 # link to add queue
 $edit->param('queueid', 0);
 $edit_url = $edit->out();
 $new_queue_text = get_string('new_queue', 'block_helpmenow');
-echo "<a href='$edit_url'>$new_queue_text</a><br />";
+echo "<p>$tmp<a href='$edit_url'>$new_queue_text</a></p>";
 
 # start setting up the table
 $table = (object) array(
@@ -103,6 +112,8 @@ foreach ($queues as $q) {
 }
 
 print_table($table);
+
+print_box_end();
 
 # footer
 print_footer();

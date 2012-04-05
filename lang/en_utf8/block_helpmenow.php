@@ -30,9 +30,10 @@ $string['helpmenow'] = 'Help Me Now';
 # block
 $string['new_request'] = 'Request Meeting';
 $string['pending'] = 'Your pending request:';
-$string['login'] = 'Login';
-$string['logout'] = 'Logout';
+$string['login'] = 'Log In';
+$string['logout'] = 'Log Out';
 $string['admin_link'] = 'Manage Queues';
+$string['queue_na_short'] = 'Sorry, this queue is not available.';
 
 # new_request.php
 $string['new_request_heading'] = 'New Request';
@@ -42,11 +43,15 @@ $string['description'] = 'Description (140 characters or less)';
 $string['connect'] = 'Connecting';
 $string['please_wait'] = 'Please wait while we connect you...';
 
-# admin.php
+# admin.php / edit.php
+$string['global_admin'] = 'Global Queues';
+$string['course_admin'] = 'Queues: ';
 $string['admin'] = 'Manage Queues';
 $string['new_queue'] = 'Add Queue';
 $string['weight'] = 'Weight';
 $string['plugin'] = 'Plugin';
 $string['helpers'] = 'Helpers';
+$string['queue_edit'] = 'Edit Queue';
+$string['global_link'] = 'Edit Global Queues';
 
 ?>

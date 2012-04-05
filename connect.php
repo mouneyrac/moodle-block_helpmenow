@@ -40,10 +40,11 @@ require_login(0, false);
 $requestid = required_param('requestid', PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
 
-# title and navbar
+# title, navbar, and a nice box
 $title = get_string('connect', 'block_helpmenow');
 $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
 
 # get the request
 $request = new helpmenow_request($requestid);
@@ -118,6 +119,8 @@ if ($connect) {     # for the helper/requested_user
         redirect($refresh_url->out(), get_string('please_wait', 'block_helpmenow'), $CFG->helpmenow_refresh_rate);
     }
 }
+
+print_box_end();
 
 # footer
 print_footer();

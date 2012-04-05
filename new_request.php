@@ -42,10 +42,11 @@ $params = (object) array(
 );
 
 
-# title and navbar
+# title, navbar, and a nice box
 $title = get_string('new_request_heading', 'block_helpmenow');
 $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
 
 # check privileges/availability
 if ($params->queueid) {
@@ -92,6 +93,8 @@ if ($form->is_cancelled()) {                # cancelled
     $form->set_data($params);
     $form->display();
 }
+
+print_box_end();
 
 # footer
 print_footer();

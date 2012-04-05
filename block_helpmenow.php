@@ -64,8 +64,11 @@ class block_helpmenow extends block_base {
 
         $queues = helpmenow_queue::get_queues(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
+            # todo: This still shows the queue name to those whom are neither helpees nor helpers. Do we want this?
+            # todo: some way to split up queues and in general make the block look nicer
             # todo: <b>? really?
             $this->content->text .= "<b>" . $q->name . "</b><br />";
+
             switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
                 # login/out link
@@ -108,12 +111,13 @@ class block_helpmenow extends block_base {
                         $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 700, null, null, true) . "<br />";
                     } else {
                         # todo: make this smarter (helpers leave message or configurable)
-                        $this->content->text .= get_string('queue_na', 'block_helpmenow') . "<br />";
+                        $this->content->text .= get_string('queue_na_short', 'block_helpmenow') . "<br />";
                     }
                 }
                 break;
             default:
             }
+            $this->content->text .= '<hr />';
         }
 
         # todo: user to user chat?
@@ -137,6 +141,8 @@ class block_helpmenow extends block_base {
      */
     function cron() {
         $success = true;
+
+        # todo: log out helpers who are no longer logged into moodle
 
         # clean up old meetings
         $success = $success and helpmenow_meeting::clean_meetings();

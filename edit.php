@@ -55,13 +55,14 @@ if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
     redirect($course_url);
 }
 
-# title and navbar
+# title, navbar, and a nice box
 $title = get_string('queue_edit', 'block_helpmenow');
 $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
 print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
 
 # form
 $form = new helpmenow_queue_form();
@@ -113,6 +114,8 @@ if ($form->is_cancelled()) {                # cancelled
     $form->set_data($toform);
     $form->display();
 }
+
+print_box_end();
 
 # footer
 print_footer();

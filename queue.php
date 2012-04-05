@@ -139,7 +139,6 @@ class helpmenow_queue extends helpmenow_db_object {
             $this->load_relation('helper');
         }
         if (!count($this->helper)) {
-            debugging("Queue has no helpers");
             return false;
         }
         foreach ($this->helper as $h) {
