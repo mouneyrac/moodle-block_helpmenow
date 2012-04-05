@@ -150,6 +150,17 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Overridding load_relation to make sure requests are ordered by
+     * timecreated ascending
+     */
+    function load_relation($relation) {
+        parent::load_relation($relation);
+        if ($relation = 'request') {
+            uasort($this->request, array('helpmenow_request', 'cmp'));
+        }
+    }
+
+    /**
      * Gets an array of queues in the current context
      * @param array $contexts array of contextids
      * @return array of queues

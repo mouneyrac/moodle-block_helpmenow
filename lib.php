@@ -77,17 +77,14 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     $queue = new helpmenow_queue();
     $queue->contextid = $context->id;
     $queue->name = $COURSE->shortname;      # todo: maybe this should be configurable?
+    $queue->description = get_string('auto_queue_desc', 'block_helpmenow'); # todo: this too
     $queue->plugin = $CFG->helpmenow_default_plugin;
     $queue->insert();
 
     # bail if we're not auto creating helpers
     if (!$CFG->helpmenow_autoadd_course_helpers) { return; }
 
-    # this would be too slow to call all the time, but right now we're only
-    # doing this when we first create the queue, so it might be ok
-    #
-    # todo: this seems to get all admins
-    $users = get_users_by_capability($context, HELPMENOW_CAP_QUEUE_HELPER, 'u.id');
+    $users = get_users_by_capability($context, HELPMENOW_CAP_QUEUE_HELPER, 'u.id', '', '', '', '', '', false);
 
     foreach ($users as $u) {
         # we currently don't need to check if we already have a helper, as

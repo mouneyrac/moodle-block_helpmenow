@@ -76,8 +76,12 @@ class helpmenow_queue_form extends moodleform {
         $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 140, 'client');
 
         # todo: this should be a dropdown
-        $mform->addElement('text', 'plugin', get_string('plugin', 'block_helpmenow'), array('size' => 50));
-        $mform->addRule('plugin', null, 'required', null, 'client');
+        $tmp = get_list_of_plugins('plugins', '', dirname(__FILE__));
+        $plugins = array();
+        foreach ($tmp as $t) {
+            $plugins[$t] = $t;
+        }
+        $mform->addElement('select', 'plugin', get_string('plugin', 'block_helpmenow'), $plugins);
 
         # todo: verify number
         $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 50));

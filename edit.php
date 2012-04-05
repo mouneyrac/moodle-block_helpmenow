@@ -39,11 +39,10 @@ require_login(0, false);
 $queueid = optional_param('queueid', 0, PARAM_INT);
 $courseid = optional_param('courseid', 0, PARAM_INT);
 
-# COURSE and urls
+# COURSE
 $COURSE = get_record('course', 'id', $courseid);
-$course_url = new moodle_url("$CFG->wwwroot/course/view.php");
-$course_url->param('id', $COURSE->id);
-$course_url = $course_url->out();
+
+# urls
 $admin_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
 $admin_url->param('courseid', $courseid);
 $admin_url = $admin_url->out();

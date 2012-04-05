@@ -54,4 +54,8 @@ $string['helpers'] = 'Helpers';
 $string['queue_edit'] = 'Edit Queue';
 $string['global_link'] = 'Edit Global Queues';
 
+# assign.php
+$string['assign'] = 'Assign Helpers';
+
+
 ?>

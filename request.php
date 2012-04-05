@@ -110,11 +110,22 @@ class helpmenow_request extends helpmenow_db_object {
      * Cleans up abandoned requests
      * @return boolean
      */
-    public final static function helpmenow_clean_requests() {
+    public final static function clean_requests() {
         global $CFG;
         # todo: for now assuming setting will be in number of minutes
         $cutoff = time() - ($CFG->helpmenow_request_timeout * 60);
         return delete_records_select('block_helpmenow_request', "last_refresh < $cutoff");
+    }
+
+    /**
+     * Comparison functions for sorting requests by timecreated
+     * @return integer -1, 0, 1
+     */
+    public final static function cmp($a, $b) {
+        if ($a->timecreated == $b->timecreated) {
+            return 0;
+        }
+        return ($a->timecreated < $b->timecreated) ? -1 : 1;
     }
 }
 

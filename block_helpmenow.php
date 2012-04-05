@@ -87,7 +87,7 @@ class block_helpmenow extends block_base {
                 $login = $login->out();
                 $this->content->text .= "<a href='$login'>$login_text</a><br />";
 
-                # requests
+                # requests, these are in ascending order thanks to the queue object
                 foreach ($q->request as $r) {
                     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
                     $connect->param('requestid', $r->id);

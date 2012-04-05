@@ -37,11 +37,8 @@ require_login(0, false);
 # get our parameters
 $courseid = optional_param('courseid', 0, PARAM_INT);
 
-# COURSE and url
+# COURSE
 $COURSE = get_record('course', 'id', $courseid);
-$course_url = new moodle_url("$CFG->wwwroot/course/view.php");
-$course_url->param('id', $COURSE->id);
-$course_url = $course_url->out();
 
 # assign.php and edit.php urls
 $assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign.php");
