@@ -63,5 +63,6 @@ $string['assign'] = 'Assign as helper';
 $string['unassign'] = 'Remove as helper';
 $string['back'] = 'Back to queue management';
 
+$string['auto_queue_desc'] = 'Course Queue';
 
 ?>

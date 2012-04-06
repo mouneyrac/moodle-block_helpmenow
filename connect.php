@@ -40,12 +40,6 @@ require_login(0, false);
 $requestid = required_param('requestid', PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
 
-# title, navbar, and a nice box
-$title = get_string('connect', 'block_helpmenow');
-$nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
-
 # get the request
 $request = new helpmenow_request($requestid);
 
@@ -90,37 +84,42 @@ if ($connect) {     # for the helper/requested_user
     $url = $meeting->connect_user();
     $meeting->update(); # new meeting
     redirect($url);
-} else {            # for the helpee/requester
-    if ($USER->id !== $request->userid) {
-        # todo: print a wrong user permission failure message and close
-    }
-
-    # check if we have a meeting
-    if (isset($request->meetingid)) {
-        # get the meeting
-        $meeting = helpmenow_meeting::get_meeting($request->meetingid);
-
-        # delete the request
-        $request->delete();
-
-        # connect user to the meeting
-        $url = $meeting->connect_user();
-        $meeting->update();
-        redirect($url);
-    } else {
-        # set the last refresh so cron doesn't clean this up
-        $request->last_refresh = time();
-        $request->update();
-        # todo: display some sort of cancel link
-
-        # refresh after some configurable number of seconds
-        $refresh_url = new moodle_url();
-        $refresh_url->param('requestid', $request->id);
-        redirect($refresh_url->out(), get_string('please_wait', 'block_helpmenow'), $CFG->helpmenow_refresh_rate);
-    }
 }
 
-print_box_end();
+# for the helpee/requester
+
+if ($USER->id !== $request->userid) {
+    # todo: print a wrong user permission failure message and close
+}
+
+# if we have a meeting
+if (isset($request->meetingid)) {
+    # get the meeting
+    $meeting = helpmenow_meeting::get_meeting($request->meetingid);
+
+    # delete the request
+    $request->delete();
+
+    # connect user to the meeting
+    $url = $meeting->connect_user();
+    $meeting->update();
+    redirect($url);
+}
+
+# title, navbar, and a nice box
+$title = get_string('connect', 'block_helpmenow');
+$nav = array(array('name' => $title));
+print_header($title, $title, build_navigation($nav));
+
+# set the last refresh so cron doesn't clean this up
+$request->last_refresh = time();
+$request->update();
+# todo: display some sort of cancel link
+
+# refresh after some configurable number of seconds
+$refresh_url = new moodle_url();
+$refresh_url->param('requestid', $request->id);
+redirect($refresh_url->out(), get_string('please_wait', 'block_helpmenow'), $CFG->helpmenow_refresh_rate);
 
 # footer
 print_footer();

@@ -41,13 +41,6 @@ $params = (object) array(
     'userid' => optional_param('requested_userid', 0, PARAM_INT),
 );
 
-
-# title, navbar, and a nice box
-$title = get_string('new_request_heading', 'block_helpmenow');
-$nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
-
 # check privileges/availability
 if ($params->queueid) {
     $queue = new helpmenow_queue($params->queueid);
@@ -89,10 +82,17 @@ if ($form->is_cancelled()) {                # cancelled
     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     $connect->param('requestid', $request->id);
     redirect($connect->out());
-} else {                                    # print form
-    $form->set_data($params);
-    $form->display();
 }
+
+# title, navbar, and a nice box
+$title = get_string('new_request_heading', 'block_helpmenow');
+$nav = array(array('name' => $title));
+print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
+
+# print form
+$form->set_data($params);
+$form->display();
 
 print_box_end();
 

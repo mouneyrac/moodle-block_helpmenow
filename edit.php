@@ -54,16 +54,7 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 
-# title, navbar, and a nice box
-$title = get_string('queue_edit', 'block_helpmenow');
-$nav = array(
-    array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
-    array('name' => $title),
-);
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
-
-# form
+# form stuff
 $form = new helpmenow_queue_form();
 if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
@@ -92,27 +83,36 @@ if ($form->is_cancelled()) {                # cancelled
 
     # redirect back to admin.php
     redirect($admin_url);
-} else {                                    # print form
-    if ($queueid) {     # existing queue
-        $queue = new helpmenow_queue($queueid);
-        $toform = array(
-            'queueid' => $queueid,
-            'courseid' => $courseid,
-            'name' => $queue->name,
-            'description' => $queue->description,
-            'plugin' => $queue->plugin,
-            'weight' => $queue->weight,
-        );
-    } else {            # new queue
-        $toform = array(
-            'queueid' => $queueid,
-            'courseid' => $courseid,
-        );
-    }
+} 
 
-    $form->set_data($toform);
-    $form->display();
+# title, navbar, and a nice box
+$title = get_string('queue_edit', 'block_helpmenow');
+$nav = array(
+    array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
+    array('name' => $title),
+);
+print_header($title, $title, build_navigation($nav));
+print_box_start('generalbox centerpara');
+
+if ($queueid) {     # existing queue
+    $queue = new helpmenow_queue($queueid);
+    $toform = array(
+        'queueid' => $queueid,
+        'courseid' => $courseid,
+        'name' => $queue->name,
+        'description' => $queue->description,
+        'plugin' => $queue->plugin,
+        'weight' => $queue->weight,
+    );
+} else {            # new queue
+    $toform = array(
+        'queueid' => $queueid,
+        'courseid' => $courseid,
+    );
 }
+
+$form->set_data($toform);
+$form->display();
 
 print_box_end();
 
