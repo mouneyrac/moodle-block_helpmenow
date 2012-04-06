@@ -76,11 +76,11 @@ $string['settings_meeting_timeout_desc'] = "Time meeting is 'active' when using 
 $string['settings_request_timeout'] = 'Request timeout';
 $string['settings_request_timeout_desc'] = 'Time before request is deemed abandoned';
 $string['settings_refresh_rate'] = 'Request refresh rate';
-$string['settings_refresh_rate_desc'] = 'Time between refreshes when waiting for a meeting';
+$string['settings_refresh_rate_desc'] = 'Time in seconds between refreshes when waiting for a meeting';
 $string['settings_autocreate_queue'] = 'Autocreate course queues';
 $string['settings_autocreate_queue_desc'] = 'Automatically creates one course queue with the shortname of the course in each course';
 $string['settings_autoadd_helpers'] = 'Autoadd course queue helpers';
-$string['settings_autoadd_helpers_desc'] = 'When autocreate course queues, also add helpers to the queue who have the queue answer capability in the course';
+$string['settings_autoadd_helpers_desc'] = 'When autocreating course queues, also add helpers to the queue who have the queue answer capability in the course';
 
 # caps
 $string['helpmenow:course_queue_answer'] = 'Answer requests in course queues';
