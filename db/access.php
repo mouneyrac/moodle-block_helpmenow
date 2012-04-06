@@ -70,7 +70,7 @@ $block_helpmenow_capabilities = array (
             'admin'             => CAP_ALLOW
         )
     ),
-    HELPMENOW_CAP_ADMIN => array(
+    HELPMENOW_CAP_MANAGE => array(
         'riskbitmask'   => RISK_SPAM + RISK_CONFIG,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
