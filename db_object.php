@@ -168,7 +168,7 @@ abstract class helpmenow_db_object {
 
         $this->serialize_extras();
 
-        return update_record("block_helpmenow_$this->table", $this);
+        return update_record("block_helpmenow_$this->table", addslashes_recursive($this));
     }
 
     /**
@@ -193,7 +193,7 @@ abstract class helpmenow_db_object {
 
         $this->serialize_extras();
 
-        if (!$this->id = insert_record("block_helpmenow_$this->table", $this)) {
+        if (!$this->id = insert_record("block_helpmenow_$this->table", addslashes_recursive($this))) {
             debugging("Could not insert $this->table");
             return false;
         }
