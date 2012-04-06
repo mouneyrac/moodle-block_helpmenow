@@ -25,7 +25,7 @@
  */
 
 $string['pluginname'] = 'Help Me Now Block';
-$string['Blockname'] = 'Help Me Now';
+$string['blockname'] = 'Help Me Now';
 $string['helpmenow'] = 'Help Me Now';
 
 # block
