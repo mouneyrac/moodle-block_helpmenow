@@ -55,7 +55,13 @@ $string['queue_edit'] = 'Edit Queue';
 $string['global_link'] = 'Manage Global Queues';
 
 # assign.php
-$string['assign'] = 'Assign Helpers';
+$string['assign_title'] = 'Assign Helpers';
+$string['assign_heading'] = 'Assigning helpers for: ';
+$string['assigned_status'] = 'Is user a helper?';
+$string['assigned_link'] = 'Update';
+$string['assign'] = 'Assign as helper';
+$string['unassign'] = 'Remove as helper';
+$string['back'] = 'Back to queue management';
 
 
 ?>

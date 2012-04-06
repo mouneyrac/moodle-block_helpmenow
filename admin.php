@@ -49,7 +49,7 @@ $edit->param('courseid', $courseid);
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
+if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 
@@ -73,12 +73,6 @@ if ($courseid == SITEID) {    # global queues
     $global = get_string('global_link', 'block_helpmenow');
     $tmp = "<a href='$global_url'>$global</a> | ";
 }
-
-# link to add queue
-$edit->param('queueid', 0);
-$edit_url = $edit->out();
-$new_queue_text = get_string('new_queue', 'block_helpmenow');
-echo "<p>$tmp<a href='$edit_url'>$new_queue_text</a></p>";
 
 # start setting up the table
 $table = (object) array(
@@ -109,6 +103,12 @@ foreach ($queues as $q) {
 }
 
 print_table($table);
+
+# link to add queue
+$edit->param('queueid', 0);
+$edit_url = $edit->out();
+$new_queue_text = get_string('new_queue', 'block_helpmenow');
+echo "<p>$tmp<a href='$edit_url'>$new_queue_text</a></p>";
 
 print_box_end();
 

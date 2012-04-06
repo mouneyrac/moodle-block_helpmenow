@@ -50,7 +50,7 @@ $admin_url = $admin_url->out();
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 $context = get_context_instance(CONTEXT_COURSE, $courseid);
-if (!has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
+if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 

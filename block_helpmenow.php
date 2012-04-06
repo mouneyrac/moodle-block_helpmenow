@@ -123,7 +123,7 @@ class block_helpmenow extends block_base {
         # todo: user to user chat?
 
         # admin link
-        if (has_capability(HELPMENOW_CAP_ADMIN, $sitecontext)) {
+        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
             $admin->param('courseid', $COURSE->id);
             $admin = $admin->out();

@@ -84,7 +84,7 @@ class helpmenow_queue_form extends moodleform {
         $mform->addElement('select', 'plugin', get_string('plugin', 'block_helpmenow'), $plugins);
 
         # todo: verify number
-        $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 50));
+        $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 4));
         $mform->addRule('weight', null, 'required', null, 'client');
 
         $buttonarray = array();
