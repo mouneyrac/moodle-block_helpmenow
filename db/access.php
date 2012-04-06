@@ -32,9 +32,9 @@ if (!defined('HELPMENOW_CAP_COURSE_QUEUE_ANSWER')) {
 if (!defined('HELPMENOW_CAP_QUEUE_ASK')) {
     define('HELPMENOW_CAP_QUEUE_ASK', 'block/helpmenow:queue_ask');
 }
-if (!defined('HELPMENOW_CAP_REQUEST')) {
-    define('HELPMENOW_CAP_REQUEST', 'block/helpmenow:request');
-}
+# if (!defined('HELPMENOW_CAP_REQUEST')) {
+#     define('HELPMENOW_CAP_REQUEST', 'block/helpmenow:request');
+# }
 if (!defined('HELPMENOW_CAP_MANAGE')) {
     define('HELPMENOW_CAP_MANAGE', 'block/helpmenow:manage_queues');
 }
@@ -78,18 +78,18 @@ $block_helpmenow_capabilities = array (
             'admin'             => CAP_ALLOW
         )
     ),
-    HELPMENOW_CAP_REQUEST => array (
-        'riskbitmask'   => RISK_SPAM,
-        'captype'       => 'write',
-        'contextlevel'  => CONTEXT_SYSTEM,
-        'legecy'        => array (
-            'student'           => CAP_ALLOW,
-            'teacher'           => CAP_ALLOW,
-            'editingteacher'    => CAP_ALLOW,
-            'coursecreator'     => CAP_ALLOW,
-            'admin'             => CAP_ALLOW
-        )
-    ),
+#     HELPMENOW_CAP_REQUEST => array (
+#         'riskbitmask'   => RISK_SPAM,
+#         'captype'       => 'write',
+#         'contextlevel'  => CONTEXT_SYSTEM,
+#         'legecy'        => array (
+#             'student'           => CAP_ALLOW,
+#             'teacher'           => CAP_ALLOW,
+#             'editingteacher'    => CAP_ALLOW,
+#             'coursecreator'     => CAP_ALLOW,
+#             'admin'             => CAP_ALLOW
+#         )
+#     ),
 );
 
 ?>

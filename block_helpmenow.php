@@ -36,8 +36,8 @@ class block_helpmenow extends block_base {
     function init() {
         global $CFG;
         $this->title = get_string('helpmenow', 'block_helpmenow'); 
-        $this->version = 2012031400;
-        # $this->cron = 60; # we're going to use cron, but not yet
+        $this->version = 2012040600;
+        $this->cron = 60;
     }
 
     /**

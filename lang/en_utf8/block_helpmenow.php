@@ -25,6 +25,7 @@
  */
 
 $string['pluginname'] = 'Help Me Now Block';
+$string['Blockname'] = 'Help Me Now';
 $string['helpmenow'] = 'Help Me Now';
 
 # block
@@ -64,5 +65,27 @@ $string['unassign'] = 'Remove as helper';
 $string['back'] = 'Back to queue management';
 
 $string['auto_queue_desc'] = 'Course Queue';
+
+# settings
+# $string['settings_heading'] = 'Help Me Now Settings';
+# $string['settings_heading_desc'] = '';  # todo
+$string['settings_plugin'] = 'Default plugin';
+$string['settings_plugin_desc'] = 'Default plugin queues should use';
+$string['settings_meeting_timeout'] = 'Meeting timeout';
+$string['settings_meeting_timeout_desc'] = "Time meeting is 'active' when using plugins that aren't able to track this";
+$string['settings_request_timeout'] = 'Request timeout';
+$string['settings_request_timeout_desc'] = 'Time before request is deemed abandoned';
+$string['settings_refresh_rate'] = 'Request refresh rate';
+$string['settings_refresh_rate_desc'] = 'Time between refreshes when waiting for a meeting';
+$string['settings_autocreate_queue'] = 'Autocreate course queues';
+$string['settings_autocreate_queue_desc'] = 'Automatically creates one course queue with the shortname of the course in each course';
+$string['settings_autoadd_helpers'] = 'Autoadd course queue helpers';
+$string['settings_autoadd_helpers_desc'] = 'When autocreate course queues, also add helpers to the queue who have the queue answer capability in the course';
+
+# caps
+$string['helpmenow:course_queue_answer'] = 'Answer requests in course queues';
+$string['helpmenow:global_queue_answer'] = 'Answer requests in global queues';
+$string['helpmenow:manage_queues'] = 'Manage queue creation and helper assigning';
+$string['helpmenow:queue_ask'] = 'Ask for meetings in queues';
 
 ?>
