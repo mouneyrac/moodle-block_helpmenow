@@ -123,7 +123,7 @@ class helpmenow_queue extends helpmenow_db_object {
         }
 
         $context = get_context_instance_by_id($this->contextid);
-        if (has_capability(HELPMENOW_CAP_QUEUE_REQUEST, $context)) {
+        if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
             return HELPMENOW_QUEUE_HELPEE;
         }
 

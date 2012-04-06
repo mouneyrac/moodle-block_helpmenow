@@ -39,7 +39,7 @@ define('HELPMENOW_QUEUE_HELPER', 'helper');
 define('HELPMENOW_QUEUE_HELPEE', 'helpee');
 define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
-# Default queue weight value
+# Default queue weight value, used to determine queue display order
 define('HELPMENOW_DEFAULT_WEIGHT', 50);
 
 /**
@@ -84,7 +84,7 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     # bail if we're not auto creating helpers
     if (!$CFG->helpmenow_autoadd_course_helpers) { return; }
 
-    $users = get_users_by_capability($context, HELPMENOW_CAP_QUEUE_HELPER, 'u.id', '', '', '', '', '', false);
+    $users = get_users_by_capability($context, HELPMENOW_CAP_COURSE_QUEUE_ANSWER, 'u.id', '', '', '', '', '', false);
 
     foreach ($users as $u) {
         # we currently don't need to check if we already have a helper, as

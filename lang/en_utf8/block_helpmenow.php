@@ -52,7 +52,7 @@ $string['weight'] = 'Weight';
 $string['plugin'] = 'Plugin';
 $string['helpers'] = 'Helpers';
 $string['queue_edit'] = 'Edit Queue';
-$string['global_link'] = 'Edit Global Queues';
+$string['global_link'] = 'Manage Global Queues';
 
 # assign.php
 $string['assign'] = 'Assign Helpers';

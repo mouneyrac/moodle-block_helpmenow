@@ -23,17 +23,28 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
-define('HELPMENOW_CAP_QUEUE_REQUEST', 'block/helpmenow:queue_request');
-define('HELPMENOW_CAP_QUEUE_HELPER', 'block/helpmenow:queue_helper');
-define('HELPMENOW_CAP_ADMIN', 'block/helpmenow:manage_queues');
+if (!defined('HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER')) {
+    define('HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER', 'block/helpmenow:global_queue_answer');
+}
+if (!defined('HELPMENOW_CAP_COURSE_QUEUE_ANSWER')) {
+    define('HELPMENOW_CAP_COURSE_QUEUE_ANSWER', 'block/helpmenow:course_queue_answer');
+}
+if (!defined('HELPMENOW_CAP_QUEUE_ASK')) {
+    define('HELPMENOW_CAP_QUEUE_ASK', 'block/helpmenow:queue_ask');
+}
+if (!defined('HELPMENOW_CAP_REQUEST')) {
+    define('HELPMENOW_CAP_REQUEST', 'block/helpmenow:request');
+}
+if (!defined('HELPMENOW_CAP_MANAGE')) {
+    define('HELPMENOW_CAP_MANAGE', 'block/helpmenow:manage_queues');
+}
 
 $block_helpmenow_capabilities = array (
-    HELPMENOW_CAP_QUEUE_REQUEST => array (
+    HELPMENOW_CAP_QUEUE_ASK => array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
         'legecy'        => array (
-            'guest'             => CAP_ALLOW,
             'student'           => CAP_ALLOW,
             'teacher'           => CAP_ALLOW,
             'editingteacher'    => CAP_ALLOW,
@@ -41,7 +52,15 @@ $block_helpmenow_capabilities = array (
             'admin'             => CAP_ALLOW
         )
     ),
-    HELPMENOW_CAP_QUEUE_HELPER => array(
+    HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER => array(
+        'riskbitmask'   => RISK_SPAM,
+        'captype'       => 'write',
+        'contextlevel'  => CONTEXT_SYSTEM,
+        'legecy'        => array (
+            'admin'             => CAP_ALLOW
+        )
+    ),
+    HELPMENOW_CAP_COURSE_QUEUE_ANSWER => array(
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
@@ -56,6 +75,18 @@ $block_helpmenow_capabilities = array (
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
         'legecy'        => array (
+            'admin'             => CAP_ALLOW
+        )
+    ),
+    HELPMENOW_CAP_REQUEST => array (
+        'riskbitmask'   => RISK_SPAM,
+        'captype'       => 'write',
+        'contextlevel'  => CONTEXT_SYSTEM,
+        'legecy'        => array (
+            'student'           => CAP_ALLOW,
+            'teacher'           => CAP_ALLOW,
+            'editingteacher'    => CAP_ALLOW,
+            'coursecreator'     => CAP_ALLOW,
             'admin'             => CAP_ALLOW
         )
     ),
