@@ -57,16 +57,7 @@ class helpmenow_meeting_native extends helpmenow_meeting {
     }
 
     /**
-     * Returns boolean of meeting completed or not.
-     * @return boolean
-     */
-    function check_completion() {
-        return parent::check_completion();
-        # todo: there's probably some way to figure this out
-    }
-
-    /**
-     * Return boolean of meeting completed or not.
+     * Return boolean of meeting full or not.
      * @return boolean
      */
     function check_full() {
