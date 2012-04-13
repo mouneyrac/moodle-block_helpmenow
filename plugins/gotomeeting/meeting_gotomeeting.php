@@ -26,7 +26,6 @@
 require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
 
 define('HELPMENOW_G2M_REST_BASE_URI', 'https://api.citrixonline.com/G2M/rest/');
-define('HELPMENOW_G2M_JOIN_URL', 'http://www.gotomeeting.com/join');
 
 class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     /**
@@ -40,29 +39,56 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @var array $extra_fields
      */
     protected $extra_fields = array(
-        'g2m_meetingid',
+        'join_url',
+        'max_participants',
+        'unique_meetingid',
+        'meetingid',
     );
 
     /**
-     * GoToMeeting meetingid
-     * @var int $g2m_meetingid
+     * GoToMeeting joinURL
+     * @var string $join_url
      */
-    public $g2m_meetingid;
+    public $join_url;
+
+    /**
+     * GoToMeeting maxParticipants
+     * @var int $max_participants
+     */
+    public $max_participants;
+
+    /**
+     * GoToMeeting uniquemeetingid
+     * @var int $unique_meetingid
+     */
+    public $unique_meetingid;
+
+    /**
+     * GoToMeeting meetingid
+     * @var int $meetingid
+     */
+    public $meetingid;
 
     /**
      * Create the meeting. Caller will insert record.
      */
     function create() {
         $params = array(
-            'subject' => $this->description,
-            'starttime' => gmdate('Y-m-d\TH:M:S\Z'),
-            'endtime' => gmdate('Y-m-d\TH:M:S\Z', time() + (60*60)),    # endtime of 1 hour from now, maybe a configuration option? (it might not matter)
-            'passwordrequired' => false,
+            'subject' => 'foo',
+            'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (5*60)),
+            'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (60*60)),    # endtime of 1 hour from now, maybe a configuration option? (it might not matter)
+            'passwordrequired' => 'false',
             'conferencecallinfo' => '',
-            'timeZoneKey' => '',
-            'meetingType' => 'Immediate',
+            'timezonekey' => '',
+            'meetingtype' => 'Immediate',
         );
-        $this->g2m_meetingid = helpmenow_meeting_gotomeeting::api('meetings', 'POST', $params);
+        $data = helpmenow_meeting_gotomeeting::api('meetings', 'POST', $params);
+        $data = reset($data);
+        print_object($data);
+        $this->join_url = $data->joinURL;
+        $this->max_participants = $data->maxParticipants;
+        $this->unique_meetingid = $data->uniqueMeetingId;
+        $this->meetingid = $data->meetingid;
         return true;
     }
 
@@ -72,9 +98,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return $string url
      */
     function connect() {
-        $meeting_url = new moodle_url(HELPMENOW_G2M_JOIN_URL);
-        $meeting_url->param('MeetingID', $this->g2m_meetingid);
-        return $meeting_url->out();
+        return $this->join_url;
     }
 
     /**
@@ -82,9 +106,13 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return boolean
      */
     function check_completion() {
-        # todo: there's probably some way to figure this out, probably via get
-        #   attendees by meeting api call
-        return parent::check_completion();
+        $attendees = json_decode(helpmenow_meeting_gotomeeting::api("$this->meetingid/attendees", 'GET'));
+        foreach ($attendees as $a) {
+            if (!isset($a->endTime)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -92,15 +120,14 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return boolean
      */
     function check_full() {
-        # todo: see if there is a limit to the number of participants (15/25 global?)
-        return false;
+        return count($this->meeting2user) >= $this->max_participants;
     }
 
     /**
      * Cron
      * @return boolean
      */
-    function cron() {
+    public static function cron() {
         return true;
     }
 
@@ -112,11 +139,20 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return mixed
      */
     public static function api($uri, $verb, $params = array()) {
-        # todo: oauth
+        global $CFG;
+
         $uri = HELPMENOW_G2M_REST_BASE_URI . $uri;
+        $headers = array(
+            "Accept: application/json",
+            "Content-Type: application/json",
+            "Authorization: OAuth oauth_token={$CFG->helpmenow_g2m_token}"
+        );
 
         $ch = curl_init();
         switch ($verb) {
+        case 'POST':
+            # $headers[] = json_encode($params);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
         case 'PUT':
             # todo: we might not need this
             # todo: if we do, figure out how to do it
@@ -124,9 +160,6 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
         case 'DELETE':
             # todo: we might not need this either
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
-            break;
-        case 'POST':
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
             break;
         case 'GET':
             $fields = array();
@@ -139,13 +172,20 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
         default:
             # todo: unkown verb error
         }
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL, $uri);
+        curl_setopt_array($ch, array(
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HEADER => false,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLINFO_HEADER_OUT => true,
+            CURLOPT_URL => $uri,
+        ));
         $data = curl_exec($ch);
 
         # todo: handle error codes
+        $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        debugging("$uri $verb $responsecode");
 
-        return $data;
+        return json_decode($data);
     }
 }
 

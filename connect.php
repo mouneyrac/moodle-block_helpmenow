@@ -51,8 +51,8 @@ if ($connect) {     # for the helper/requested_user
             # todo: print a permission failure message and exit
         }
 
-        # create the meeting
-        $meeting = helpmenow_meeting::create_meeting($queue->plugin);
+        # new meeting
+        $meeting = helpmenow_meeting::new_meeting($queue->plugin);
 
         # queue meetings are owned by the helper
         $meeting->owner_userid = $USER->id;
@@ -62,8 +62,8 @@ if ($connect) {     # for the helper/requested_user
             # todo: print a wrong user permission failure message and exit
         }
 
-        # create the meeting
-        $meeting = helpmenow_meeting::create_meeting();
+        # new meeting
+        $meeting = helpmenow_meeting::new_meeting();
 
         # direct requests are owned by the user who sent it
         $meeting->owner_userid = $request->userid;
@@ -74,8 +74,9 @@ if ($connect) {     # for the helper/requested_user
     $request->meetingid = $meeting->id;
     $request->update();
 
-    # get the description from the request
+    # get the description from the request and create the meeting
     $meeting->description = $request->description;
+    $meeting->create();
 
     # add the requesting user to the meeting
     $meeting->add_user($request->userid);

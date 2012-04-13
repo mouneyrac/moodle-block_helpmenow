@@ -161,7 +161,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Cron that will run everytime block cron is run.
      * @return boolean
      */
-    abstract function cron();
+    abstract static function cron();
 
     /**
      * Factory function to get existing meeting of the correct plugin
@@ -192,7 +192,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      *      configured default
      * @return object plugin meeting
      */
-    public final static function create_meeting($plugin = null) {
+    public final static function new_meeting($plugin = null) {
         global $CFG;
 
         if (!isset($plugin)) {
@@ -206,9 +206,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $class = "helpmenow_meeting_$plugin";
 
         $meeting = new $class;
-        $meeting->create();
-
-        # insert the meeting immediately
         $meeting->insert();
 
         return $meeting;
