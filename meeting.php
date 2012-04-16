@@ -158,12 +158,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     abstract function check_full();
 
     /**
-     * Cron that will run everytime block cron is run.
-     * @return boolean
-     */
-    abstract static function cron();
-
-    /**
      * Factory function to get existing meeting of the correct plugin
      * @param int $meetingid meeting.id
      * @return object plugin meeting
@@ -212,20 +206,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     }
 
     /**
-     * Calls any existing cron functions of plugins
-     * @return boolean
-     */
-    public final static function cron_all() {
-        $success = true;
-        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
-            require_once(dirname(__FILE__) . "/plugins/$plugin/meeting_$plugin.php");
-            $class = "helpmenow_meeting_$plugin";
-            $success = $success and $class::cron();
-        }
-        return $success;
-    }
-
-    /**
      * Cleans up old meetings
      * @return boolean
      */
@@ -236,7 +216,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
             $meetings[$k] = helpmenow_meeting::get_meeting(null, $m);
             if ($meetings[$k]->check_completion) {
                 $success = $success and $meetings[$k]->delete();
-                unset($meetings[$k]);
             }
         }
         return $success;

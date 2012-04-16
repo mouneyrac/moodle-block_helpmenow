@@ -151,7 +151,7 @@ class block_helpmenow extends block_base {
         $success = $success and helpmenow_request::clean_requests();
 
         # call plugin crons
-        $success = $success and helpmenow_meeting::cron_all();
+        $success = $success and helpmenow_plugin::cron_all();
 
         return $success;
     }

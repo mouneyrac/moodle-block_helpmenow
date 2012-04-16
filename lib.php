@@ -24,6 +24,7 @@
  */
 
 require_once(dirname(__FILE__) . '/meeting.php');
+require_once(dirname(__FILE__) . '/plugin.php');
 require_once(dirname(__FILE__) . '/request.php');
 require_once(dirname(__FILE__) . '/queue.php');
 require_once(dirname(__FILE__) . '/helper.php');

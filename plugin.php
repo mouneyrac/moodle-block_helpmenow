@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Help me now helper class.
+ * Help me now plugin abstract class.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -25,14 +25,12 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
-# TODO: do we want to track logged in via unixtime or boolean?
-
-class helpmenow_helper extends helpmenow_db_object {
+abstract class helpmenow_plugin extends helpmenow_db_object {
     /**
      * Table of the object.
      * @var string $table
      */
-    protected $table = 'helper';
+    protected $table = 'plugin';
 
     /**
      * Array of required db fields.
@@ -43,28 +41,34 @@ class helpmenow_helper extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
-        'queueid',
-        'userid',
-        'isloggedin',
+        'plugin',
     );
 
     /**
-     * The queue the helper belongs to.
-     * @var int $queueid
+     * The plugin name
+     * @var string $plugin
      */
-    public $queueid;
+    public $plugin;
 
     /**
-     * The userid of the helper.
-     * @var int $userid
+     * Cron that will run everytime block cron is run.
+     * @return boolean
      */
-    public $userid;
+    abstract static function cron();
 
     /**
-     * Integer boolean, login status of helper
-     * @var int $isloggedin
+     * Calls any existing cron functions of plugins
+     * @return boolean
      */
-    public $isloggedin;
+    public final static function cron_all() {
+        $success = true;
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
+            require_once(dirname(__FILE__) . "/plugins/$plugin/plugin_$plugin.php");
+            $class = "helpmenow_plugin_$plugin";
+            $success = $success and $class::cron();
+        }
+        return $success;
+    }
 }
 
 ?>

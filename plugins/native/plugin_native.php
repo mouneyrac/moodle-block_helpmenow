@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Native moodle chat helpmenow meeting class
+ * Native moodle chat helpmenow plugin class
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -23,9 +23,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/plugin.php');
 
-class helpmenow_meeting_native extends helpmenow_meeting {
+class helpmenow_plugin_native extends helpmenow_plugin {
     /**
      * Plugin name
      * @var string $plugin
@@ -33,35 +33,11 @@ class helpmenow_meeting_native extends helpmenow_meeting {
     public $plugin = 'native';
 
     /**
-     * Create the meeting. Caller will insert record.
-     */
-    function create() {
-        return true;
-    }
-
-    /**
-     * Plugin specific function to connect USER to meeting. Caller will insert
-     * into db after
-     * @return $string url
-     */
-    function connect() {
-        global $CFG, $USER;
-
-        foreach ($this->meeting2user as $u) {
-            if ($u->userid == $USER->id) { continue; }
-            $userid = $u->userid;
-        }
-        $meeting_url = new moodle_url("$CFG->wwwroot/message/discussion.php");
-        $meeting_url->param('id', $userid);
-        return $meeting_url->out();
-    }
-
-    /**
-     * Return boolean of meeting full or not.
+     * Cron
      * @return boolean
      */
-    function check_full() {
-        return count($this->meeting2user) >= 2;
+    function cron() {
+        return true;
     }
 }
 
