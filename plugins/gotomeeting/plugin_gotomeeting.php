@@ -88,7 +88,6 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
 
         # todo: handle error codes
         $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        debugging("$uri $verb $responsecode");
 
         return json_decode($data);
     }

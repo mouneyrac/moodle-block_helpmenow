@@ -24,8 +24,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
-
-define('HELPMENOW_G2M_REST_BASE_URI', 'https://api.citrixonline.com/G2M/rest/');
+require_once(dirname(__FILE__) . '/plugin_gotomeeting.php');
 
 class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     /**
@@ -82,7 +81,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
             'timezonekey' => '',
             'meetingtype' => 'Immediate',
         );
-        $data = helpmenow_meeting_gotomeeting::api('meetings', 'POST', $params);
+        $data = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params);
         $data = reset($data);
         print_object($data);
         $this->join_url = $data->joinURL;
@@ -106,7 +105,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return boolean
      */
     function check_completion() {
-        $attendees = json_decode(helpmenow_meeting_gotomeeting::api("$this->meetingid/attendees", 'GET'));
+        $attendees = helpmenow_plugin_gotomeeting::api("$this->meetingid/attendees", 'GET');
         foreach ($attendees as $a) {
             if (!isset($a->endTime)) {
                 return false;

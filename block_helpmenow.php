@@ -56,21 +56,18 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
-        # contexts
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-
         helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
-        $queues = helpmenow_queue::get_queues(array($sitecontext->id, $context->id));
+        $queues = helpmenow_queue::get_queues();
+        $herlper = false;
         foreach ($queues as $q) {
             # todo: This still shows the queue name to those whom are neither helpees nor helpers. Do we want this?
             # todo: some way to split up queues and in general make the block look nicer
-            # todo: <b>? really?
             $this->content->text .= "<b>" . $q->name . "</b><br />";
 
             switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
+                $helper = true;
                 # login/out link
                 $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
                 $login->params(array(
@@ -87,15 +84,6 @@ class block_helpmenow extends block_base {
                 $login = $login->out();
                 $this->content->text .= "<a href='$login'>$login_text</a><br />";
 
-                # requests, these are in ascending order thanks to the queue object
-                foreach ($q->request as $r) {
-                    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-                    $connect->param('requestid', $r->id);
-                    $connect->param('connect', 1);
-                    $name = fullname(get_record('user', 'id', $r->userid));
-                    $this->content->text .= link_to_popup_window($connect->out(), null, $name, 400, 700, null, null, true) . "<br />";
-                    $this->content->text .= $r->description . "<br />";
-                }
                 break;
             case HELPMENOW_QUEUE_HELPEE:
                 # if the user has a request, display it, otherwise give a link
@@ -122,7 +110,15 @@ class block_helpmenow extends block_base {
 
         # todo: user to user chat?
 
+        # helper link
+        if ($helper) {
+            $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
+            $helper_text = get_string('helper_link', 'block_helpmenow');
+            $this->content->footer .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+        }
+
         # admin link
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
             $admin->param('courseid', $COURSE->id);

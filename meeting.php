@@ -93,36 +93,24 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     abstract function create();
 
     /**
-     * Connects user to the meeting
-     * @return mixed false if failed, string url if succeeded
-     */
-    final function connect_user() {
-        global $USER;
-
-        # todo: logging
-
-        # add the user to the meeting, if not already
-        if (!isset($this->meeting2user[$USER->id])) {
-            if ($this->check_full()) {
-                return false;
-            }
-            $this->add_user();
-        }
-
-        # call the plugin's connecting user code
-        $url = $this->connect();
-
-        return $url;
-    }
-
-    /**
      * Adds a user to the meeting
+     * @return bool success
      */
-    final function add_user($userid = null) {
+    function add_user($userid = null) {
         if (!isset($userid)) {
             global $USER;
             $userid = $USER->id;
         }
+        # check if this user is already in this meeting
+        if (isset($this->meeting2user[$userid])) {
+            return true;
+        }
+        # return false if meeting is full
+        if ($this->check_full()) {
+            return false;
+        }
+
+        # add user to meeting and return true
         $meeting2user = (object) array(
             'meetingid' => $this->id,
             'userid' => $userid,
@@ -130,6 +118,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $meeting2user = new helpmenow_meeting2user(null, $meeting2user);
         $meeting2user->insert();
         $this->meeting2user[$userid] = $meeting2user;
+        return true;
     }
 
     /**

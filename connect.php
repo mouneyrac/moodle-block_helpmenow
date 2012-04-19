@@ -78,11 +78,12 @@ if ($connect) {     # for the helper/requested_user
     $meeting->description = $request->description;
     $meeting->create();
 
-    # add the requesting user to the meeting
+    # add the both users to the meeting
+    $meeting->add_user();
     $meeting->add_user($request->userid);
 
     # connect user to the meeting
-    $url = $meeting->connect_user();
+    $url = $meeting->connect();
     $meeting->update(); # new meeting
     redirect($url);
 }
@@ -102,7 +103,7 @@ if (isset($request->meetingid)) {
     $request->delete();
 
     # connect user to the meeting
-    $url = $meeting->connect_user();
+    $url = $meeting->connect();
     $meeting->update();
     redirect($url);
 }

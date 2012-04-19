@@ -25,9 +25,7 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
-# TODO: we need a way to order queues in the block
-
-class helpmenow_queue extends helpmenow_db_object {
+abstract class helpmenow_queue extends helpmenow_db_object {
     /**
      * Table of the object.
      * @var string $table
@@ -107,18 +105,15 @@ class helpmenow_queue extends helpmenow_db_object {
      * @param int $userid user.id, if none provided uses $USER->id
      * @return string queue privilege
      */
-    function get_privilege($userid=null) {
-        if (!isset($userid)) {
-            global $USER;
-            $userid = $USER->id;
-        }
+    function get_privilege() {
+        global $USER;
 
         # if it's not set, try loading helpers
-        if (!isset($this->helper[$userid])) {
+        if (!isset($this->helper[$USER->id])) {
             $this->load_relation('helper');
         }
         # if it's set now, they're a helper
-        if (isset($this->helper[$userid])) {
+        if (isset($this->helper[$USER->id])) {
             return HELPMENOW_QUEUE_HELPER;
         }
 
@@ -161,18 +156,26 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * Gets an array of queues in the current context
-     * @param array $contexts array of contextids
+     * Gets an array of queues
+     * todo: queue plugin classes
      * @return array of queues
      */
-    public static function get_queues($contexts) {
-        global $CFG;
+    public static function get_queues() {
+        global $CFG, $USER, $COURSE;
 
+        # contexts
+        $contexts = array(
+            get_context_instance(CONTEXT_SYSTEM, SITEID)->id,
+            get_context_instance(CONTEXT_COURSE, $COURSE->id)->id,
+        );
         $contexts = implode(',', $contexts);
+
         $sql = "
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
+            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
             WHERE q.contextid IN ($contexts)
+            OR h.userid = {$USER->id}
             ORDER BY q.weight
         ";
 
