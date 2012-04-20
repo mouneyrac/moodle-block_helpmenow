@@ -24,39 +24,31 @@
  */
 
 # moodle stuff
-
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once($CFG->libdir . '/moodlelib.php');
 require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
-
 require_once(dirname(__FILE__) . '/lib.php');
 
 # require login
-
 require_login(0, false);
 
 # get our parameters
-
-$courseid = required_param('courseid', PARAM_INT);
 $queueid = required_param('queueid', PARAM_INT);
 $login = optional_param('login', 0, PARAM_INT);
 
-# get a course url so we can redirect back to where the user clicked login/out
-
-$course_url = new moodle_url("$CFG->wwwroot/course/view.php");
-$course_url->param('id', $courseid);
-$course_url = $course_url->out();
-
 # login/out the helper
-
-$queue = new helpmenow_queue($queueid);
-$queue->helper[$USER->id]->isloggedin = $login;
-$queue->helper[$USER->id]->update();
+$queue = helpmenow_queue::get_instance($queueid);
+if ($login) {
+    $queue->login();
+} else {
+    $queue->logout();
+}
 
 # we're done, now redirect
-
-redirect($course_url);
+$helpmenow_url = new moodle_url("$CFG->wwwroot/course/view.php");
+$helpmenow_url = $helpmenow_url->out();
+redirect($helpmenow_url);
 
 ?>

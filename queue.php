@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Help me now queue class.
+ * Help me now queue abstract class.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -101,7 +101,7 @@ abstract class helpmenow_queue extends helpmenow_db_object {
      * @param int $userid user.id, if none provided uses $USER->id
      * @return string queue privilege
      */
-    function get_privilege() {
+    public function get_privilege() {
         global $USER;
 
         # if it's not set, try loading helpers
@@ -125,7 +125,7 @@ abstract class helpmenow_queue extends helpmenow_db_object {
      * Returns boolean of helper availability
      * @return boolean
      */
-    function check_available() {
+    public function check_available() {
         if (!count($this->helper)) {
             $this->load_relation('helper');
         }
@@ -141,14 +141,39 @@ abstract class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * Overridding load_relation to make sure requests are ordered by
-     * timecreated ascending
+     * Logs helper into the queue
+     * @param int $userid user.id
+     * @return boolean success
      */
-    function load_relation($relation) {
-        parent::load_relation($relation);
-        if ($relation = 'request') {
-            uasort($this->request, array('helpmenow_request', 'cmp'));
+    public function login() {
+        global $USER;
+        if (!isset($this->helper[$USER->id])) {
+            $this->load_relation('helper');
         }
+        if (!isset($this->helper[$USER->id])) {
+            debugging("User with userid {$USER->id} is not a queue helper");
+            return false;
+        }
+        $this->helper[$USER->id]->isloggedin = 1;
+        return $this->helper[$USER->id]->update();
+    }
+
+    /**
+     * Logs helper into the queue
+     * @param int $userid user.id
+     * @return boolean success
+     */
+    public function logout() {
+        global $USER;
+        if (!isset($this->helper[$USER->id])) {
+            $this->load_relation('helper');
+        }
+        if (!isset($this->helper[$USER->id])) {
+            debugging("User with userid {$USER->id} is not a queue helper");
+            return false;
+        }
+        $this->helper[$USER->id]->isloggedin = 0;
+        return $this->helper[$USER->id]->update();
     }
 
     /**
@@ -178,9 +203,20 @@ abstract class helpmenow_queue extends helpmenow_db_object {
         $records = get_records_sql($sql);
         $queues = array();
         foreach ($records as $r) {
-            $queues[$r->id] = new helpmenow_queue(null, $r);
+            $queues[$r->id] = helpmenow_queue::get_instance(null, $r);
         }
         return $queues;
+    }
+
+    /**
+     * Overridding load_relation to make sure requests are ordered by
+     * timecreated ascending
+     */
+    protected function load_relation($relation) {
+        parent::load_relation($relation);
+        if ($relation = 'request') {
+            uasort($this->request, array('helpmenow_request', 'cmp'));
+        }
     }
 }
 
