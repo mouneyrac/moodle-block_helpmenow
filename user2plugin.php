@@ -27,11 +27,7 @@
 require_once(dirname(__FILE__) . '/db_object.php');
 
 abstract class helpmenow_user2plugin extends helpmenow_db_object {
-    /**
-     * Table of the object.
-     * @var string $table
-     */
-    protected $table = 'user2plugin';
+    const table = 'user2plugin';
 
     /**
      * Array of required db fields.

@@ -26,11 +26,7 @@
 require_once(dirname(__FILE__) . '/db_object.php');
 
 abstract class helpmenow_queue extends helpmenow_db_object {
-    /**
-     * Table of the object.
-     * @var string $table
-     */
-    protected $table = 'queue';
+    const table = 'queue';
 
     /**
      * Array of required db fields.

@@ -27,11 +27,7 @@
 require_once(dirname(__FILE__) . '/db_object.php');
 
 abstract class helpmenow_meeting extends helpmenow_db_object {
-    /**
-     * Table of the object. This should not be overriden by the child.
-     * @var string $table
-     */
-    protected $table = 'meeting';
+    const table = 'meeting';
 
     /**
      * Array of required db fields.
@@ -147,54 +143,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     abstract function check_full();
 
     /**
-     * Factory function to get existing meeting of the correct plugin
-     * @param int $meetingid meeting.id
-     * @return object plugin meeting
-     */
-    public final static function get_meeting($meetingid=null, $meeting=null) {
-        global $CFG;
-
-        # we have to get the meeting instead of passing the meeting id to the
-        # constructor as we have no idea what class the meeting belongs to
-        if (isset($meetingid)) {
-            $meeting = get_record('block_helpmenow_meeting', 'id', $meetingid);
-        }
-
-        $plugin = $meeting->plugin;
-        $class = "helpmenow_meeting_$plugin";
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/meeting_$plugin.php";
-
-        require_once($classpath);
-
-        return new $class(null, $meeting);
-    }
-
-    /**
-     * Factory function to create a meeting of the correct plugin
-     * @param string $plugin optional plugin parameter, if none supplied uses
-     *      configured default
-     * @return object plugin meeting
-     */
-    public final static function new_meeting($plugin = null) {
-        global $CFG;
-
-        if (!isset($plugin)) {
-            $plugin = 'native';
-            if (isset($CFG->helpmenow_default_plugin) and strlen($CFG->helpmenow_default_plugin) > 0) {
-                $plugin = $CFG->helpmenow_default_plugin;
-            }
-        }
-
-        require_once(dirname(__FILE__) . "/plugins/$plugin/meeting_$plugin.php");
-        $class = "helpmenow_meeting_$plugin";
-
-        $meeting = new $class;
-        $meeting->insert();
-
-        return $meeting;
-    }
-
-    /**
      * Cleans up old meetings
      * @return boolean
      */
@@ -202,7 +150,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         $success = true;
         $meetings = get_records('block_helpmenow_meeting');
         foreach ($meetings as $k => $m) {
-            $meetings[$k] = helpmenow_meeting::get_meeting(null, $m);
+            $meetings[$k] = helpmenow_meeting::get_instance(null, $m);
             if ($meetings[$k]->check_completion) {
                 $success = $success and $meetings[$k]->delete();
             }
@@ -212,11 +160,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
 }
 
 class helpmenow_meeting2user extends helpmenow_db_object {
-    /**
-     * Table of the object.
-     * @var string $table
-     */
-    protected $table = 'meeting2user';
+    const table = 'meeting2user';
 
     /**
      * Array of required db fields.

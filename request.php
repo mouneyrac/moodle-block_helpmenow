@@ -26,11 +26,7 @@
 require_once(dirname(__FILE__) . '/db_object.php');
 
 class helpmenow_request extends helpmenow_db_object {
-    /**
-     * Table of the object.
-     * @var string $table
-     */
-    protected $table = 'request';
+    const table = 'request';
 
     /**
      * Array of required db fields.

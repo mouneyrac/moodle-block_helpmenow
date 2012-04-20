@@ -28,11 +28,7 @@ require_once(dirname(__FILE__) . '/db_object.php');
 # TODO: do we want to track logged in via unixtime or boolean?
 
 class helpmenow_helper extends helpmenow_db_object {
-    /**
-     * Table of the object.
-     * @var string $table
-     */
-    protected $table = 'helper';
+    const table = 'helper';
 
     /**
      * Array of required db fields.

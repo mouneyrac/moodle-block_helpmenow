@@ -24,11 +24,7 @@
  */
 
 abstract class helpmenow_db_object {
-    /**
-     * Table of the object. This must be overridden by the child.
-     * @var string $table
-     */
-    protected $table;
+    const table = false;
 
     /**
      * Array of required db fields. This must be overridden by the child. The
@@ -62,7 +58,7 @@ abstract class helpmenow_db_object {
      * in the database if it's not being used.
      * @var string $data
      */
-    public $data;
+    protected $data;
 
     /**
      * Array of relations, such as meeting2user.
@@ -99,16 +95,15 @@ abstract class helpmenow_db_object {
      * from the db and no id, use that.
      * @param int $id id of the queue in the db
      * @param object $record db record
-     * @param boolean $fetch_related whether to fetch relations from the db
      */
-    function __construct($id=null, $record=null, $fetch_related=true) {
+    public function __construct($id=null, $record=null) {
         if (isset($id)) {
             $this->id = $id;
             $this->load_from_db();
         } else if (!empty($record)) {
             $this->load($record);
         }
-        if ($fetch_related and (isset($id) or isset($record))) {
+        if (isset($id) or isset($record)) {
             $this->load_all_relations();
         }
     }
@@ -117,9 +112,9 @@ abstract class helpmenow_db_object {
      * Load the fields from the database.
      * @return boolean success
      */
-    function load_from_db() {
-        if (!$record = get_record("block_helpmenow_$this->table", 'id', $this->id)) {
-            debugging("Could not load $this->table from db.");
+    public function load_from_db() {
+        if (!$record = get_record("block_helpmenow_" . self::table, 'id', $this->id)) {
+            debugging("Could not load " . self::table . " from db.");
             return false;
         }
         $this->load($record);
@@ -127,10 +122,183 @@ abstract class helpmenow_db_object {
     }
 
     /**
+     * Updates object in db, using object variables. Requires id.
+     * @return boolean success
+     */
+    public function update() {
+        global $USER;
+
+        if (empty($this->id)) {
+            debugging("Can not update " . self::table . ", no id!");
+            return false;
+        }
+
+        $this->timemodified = time();
+        $this->modifiedby = $USER->id;
+
+        if (!$this->check_required_fields()) {
+            return false;
+        }
+
+        $this->serialize_extras();
+
+        return update_record("block_helpmenow_" . self::table, addslashes_recursive($this));
+    }
+
+    /**
+     * Records the object in the db, and sets the id from the return value.
+     * @return int PK ID if successful, false otherwise
+     */
+    public function insert() {
+        global $USER;
+
+        if (!empty($this->id)) {
+            debugging(self::table . " already exists in db.");
+            return false;
+        }
+
+        $this->timecreated = time();
+        $this->timemodified = time();
+        $this->modifiedby = $USER->id;
+
+        if (!$this->check_required_fields()) {
+            return false;
+        }
+
+        $this->serialize_extras();
+
+        if (!$this->id = insert_record("block_helpmenow_" . self::table, addslashes_recursive($this))) {
+            debugging("Could not insert " . self::table);
+            return false;
+        }
+
+        return $this->id;
+    }
+
+    /**
+     * Deletes object in db, using object variables. Requires id.
+     * @param boolean $delete_relations wether or not to delete relations
+     * @return boolean success
+     */
+    public function delete($delete_relations = true) {
+        $success = true;
+
+        # delete relations if necessary
+        if ($delete_relations) {
+            $this->load_all_relations();
+            foreach ($this->relations as $rel => $foo) {
+                foreach ($this->$rel as $key => $r) {
+                    if (!$r->delete()) {
+                        $success = false;
+                    }
+                    unset($this->$rel[$key]);
+                }
+            }
+        }
+
+        if (empty($this->id)) {
+            debugging("Can not delete " . self::table . ", no id!");
+            return false;
+        }
+
+        if (!delete_records("block_helpmenow_" . self::table, 'id', $this->id)) {
+            $success = false;
+        }
+
+        return $success;
+    }
+
+    /**
+     * Loads relations into member variable array. Eg.: a queues' helpers.
+     * @param string $relation relation to be loaded, this is also the name of
+     *      table and the memeber variable
+     */
+    public function load_relation($relation) {
+        $this->$relation = array();
+        if (!$tmp = get_records("block_helpmenow_$relation", self::table."id", $this->id)) {
+            return;
+        }
+        $class = "helpmenow_$relation";
+        $key = $this->relations[$relation];
+        foreach ($tmp as $r) {
+            $this->{$relation}[$r->$key] = new $class(null, $r);
+        }
+    }
+
+    /**
+     * Loads all relations indicated by $this->relations
+     */
+    public function load_all_relations() {
+        foreach ($this->relations as $rel => $key) {
+            $this->load_relation($rel);
+        }
+    }
+
+    /**
+     * Factory function to get existing object of the correct child class
+     * @param int $id *.id
+     * @return object
+     */
+    public final static function get_instance($id=null, $record=null) {
+        global $CFG;
+
+        # make sure this is a class that has plugin children
+        if (!self::allow_factory()) {
+            return false;
+        }
+
+        # we have to get the record instead of passing the id to the
+        # constructor as we have no idea what class the record belongs to
+        if (isset($id)) {
+            $record = get_record("block_helpmenow_" . self::table, 'id', $id);
+        }
+
+        $plugin = $record->plugin;
+        $pluginclass = "helpmenow_" . self::table . "_{$record->plugin}";
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . self::table . "_$plugin.php";
+
+        require_once($classpath);
+
+        return new $pluginclass(null, $record);
+    }
+
+    /**
+     * Factory function to create an object of the correct plugin
+     * @param string $plugin optional plugin parameter, if none supplied uses
+     *      configured default
+     * @return object
+     */
+    public final static function new_instance($plugin = null) {
+        global $CFG;
+
+        # make sure this is a class that has plugin children
+        if (!self::allow_factory()) {
+            return false;
+        }
+
+        if (!isset($plugin)) {
+            $plugin = 'native';
+            if (isset($CFG->helpmenow_default_plugin) and strlen($CFG->helpmenow_default_plugin) > 0) {
+                $plugin = $CFG->helpmenow_default_plugin;
+            }
+        }
+
+        $pluginclass = "helpmenow_" . self::table . "_{$record->plugin}";
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . self::table . "_$plugin.php";
+
+        require_once($classpath);
+
+        $object = new $class;
+        $object->insert();
+
+        return $object;
+    }
+
+    /**
      * Loads the fields from a passed record. Also unserializes simulated fields
      * @param object $record db record
      */
-    function load($record) {
+    private function load($record) {
         $fields = array_merge($this->required_fields, $this->optional_fields);
         foreach ($fields as $f) {
             if (isset($record->$f)) {
@@ -148,98 +316,11 @@ abstract class helpmenow_db_object {
     }
 
     /**
-     * Updates object in db, using object variables. Requires id.
-     * @return boolean success
-     */
-    function update() {
-        global $USER;
-
-        if (empty($this->id)) {
-            debugging("Can not update $this->table, no id!");
-            return false;
-        }
-
-        $this->timemodified = time();
-        $this->modifiedby = $USER->id;
-
-        if (!$this->check_required_fields()) {
-            return false;
-        }
-
-        $this->serialize_extras();
-
-        return update_record("block_helpmenow_$this->table", addslashes_recursive($this));
-    }
-
-    /**
-     * Records the object in the db, and sets the id from the return value.
-     * @return int PK ID if successful, false otherwise
-     */
-    function insert() {
-        global $USER;
-
-        if (!empty($this->id)) {
-            debugging("$this->table already exists in db.");
-            return false;
-        }
-
-        $this->timecreated = time();
-        $this->timemodified = time();
-        $this->modifiedby = $USER->id;
-
-        if (!$this->check_required_fields()) {
-            return false;
-        }
-
-        $this->serialize_extras();
-
-        if (!$this->id = insert_record("block_helpmenow_$this->table", addslashes_recursive($this))) {
-            debugging("Could not insert $this->table");
-            return false;
-        }
-
-        return $this->id;
-    }
-
-    /**
-     * Deletes object in db, using object variables. Requires id.
-     * @param boolean $delete_relations wether or not to delete relations
-     * @return boolean success
-     */
-    function delete($delete_relations = true) {
-        $success = true;
-
-        # delete relations if necessary
-        if ($delete_relations) {
-            $this->load_all_relations();
-            foreach ($this->relations as $rel => $foo) {
-                foreach ($this->$rel as $key => $r) {
-                    if (!$r->delete()) {
-                        $success = false;
-                    }
-                    unset($this->$rel[$key]);
-                }
-            }
-        }
-
-        if (empty($this->id)) {
-            debugging("Can not delete $this->table, no id!");
-            return false;
-        }
-
-        if (!delete_records("block_helpmenow_$this->table", 'id', $this->id)) {
-            $success = false;
-        }
-
-        return $success;
-    }
-
-    /**
      * Returns true if all required db fields are set in the object, false
      * otherwise.
      * @return boolean
      */
-    function check_required_fields() {
+    private function check_required_fields() {
         $success = true;
         foreach ($this->required_fields as $f) {
             if ($f = 'id') { continue; } # id is a special case, only mattering in update()
@@ -252,35 +333,9 @@ abstract class helpmenow_db_object {
     }
 
     /**
-     * Loads relations into member variable array. Eg.: a queues' helpers.
-     * @param string $relation relation to be loaded, this is also the name of
-     *      table and the memeber variable
-     */
-    function load_relation($relation) {
-        $this->$relation = array();
-        if (!$tmp = get_records("block_helpmenow_$relation", "{$this->table}id", $this->id)) {
-            return;
-        }
-        $class = "helpmenow_$relation";
-        $key = $this->relations[$relation];
-        foreach ($tmp as $r) {
-            $this->{$relation}[$r->$key] = new $class(null, $r);
-        }
-    }
-
-    /**
-     * Loads all relations indicated by $this->relations
-     */
-    function load_all_relations() {
-        foreach ($this->relations as $rel => $key) {
-            $this->load_relation($rel);
-        }
-    }
-
-    /**
      * Serializes simulated fields if necessary
      */
-    function serialize_extras() {
+    private function serialize_extras() {
         # bail immediately if we don't have any extra fields
         if (!count($this->extra_fields)) { return; }
 
@@ -290,6 +345,26 @@ abstract class helpmenow_db_object {
         }
         $this->data = serialize($extras);
         return;
+    }
+
+    /**
+     * Used by factory functions to prevent their usage on non-abstract classes
+     * @return bool
+     */
+    private final static function allow_factory() {
+        # we don't want to call this from db_object
+        if (!self::table) {
+            debugging("Can't use block_helpmenow_db_object::get(), must be called from abstract child (queue, meeting, etc)");
+            return false;
+        }
+
+        # we shouldn't be calling this if the class is not abstract
+        $class = new ReflectionClass('block_helpmenow_' . self::table);
+        if (!$class->isAbstract()) {
+            debugging("This class isn't abstract, use the constructor!");
+            return false;
+        }
+        return true;
     }
 }
 
