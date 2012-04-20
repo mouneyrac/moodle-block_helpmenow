@@ -71,7 +71,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     /**
      * Create the meeting. Caller will insert record.
      */
-    function create() {
+    public function create() {
         $params = array(
             'subject' => 'foo',
             'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (5*60)),
@@ -96,7 +96,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * into db after
      * @return $string url
      */
-    function connect() {
+    public function connect() {
         return $this->join_url;
     }
 
@@ -104,7 +104,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * Returns boolean of meeting completed or not.
      * @return boolean
      */
-    function check_completion() {
+    public function check_completion() {
         $attendees = helpmenow_plugin_gotomeeting::api("$this->meetingid/attendees", 'GET');
         foreach ($attendees as $a) {
             if (!isset($a->endTime)) {
@@ -118,7 +118,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * Return boolean of meeting full or not.
      * @return boolean
      */
-    function check_full() {
+    public function check_full() {
         return count($this->meeting2user) >= $this->max_participants;
     }
 }

@@ -56,7 +56,7 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
-        helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
+        // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
         $queues = helpmenow_queue::get_queues();
         $herlper = false;

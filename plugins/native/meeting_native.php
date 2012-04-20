@@ -35,7 +35,7 @@ class helpmenow_meeting_native extends helpmenow_meeting {
     /**
      * Create the meeting. Caller will insert record.
      */
-    function create() {
+    public function create() {
         return true;
     }
 
@@ -44,7 +44,7 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * into db after
      * @return $string url
      */
-    function connect() {
+    public function connect() {
         global $CFG, $USER;
 
         foreach ($this->meeting2user as $u) {
@@ -60,7 +60,7 @@ class helpmenow_meeting_native extends helpmenow_meeting {
      * Return boolean of meeting full or not.
      * @return boolean
      */
-    function check_full() {
+    public function check_full() {
         return count($this->meeting2user) >= 2;
     }
 }

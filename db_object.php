@@ -113,8 +113,8 @@ abstract class helpmenow_db_object {
      * @return boolean success
      */
     public function load_from_db() {
-        if (!$record = get_record("block_helpmenow_" . self::table, 'id', $this->id)) {
-            debugging("Could not load " . self::table . " from db.");
+        if (!$record = get_record("block_helpmenow_" . static::table, 'id', $this->id)) {
+            debugging("Could not load " . static::table . " from db.");
             return false;
         }
         $this->load($record);
@@ -129,7 +129,7 @@ abstract class helpmenow_db_object {
         global $USER;
 
         if (empty($this->id)) {
-            debugging("Can not update " . self::table . ", no id!");
+            debugging("Can not update " . static::table . ", no id!");
             return false;
         }
 
@@ -142,7 +142,7 @@ abstract class helpmenow_db_object {
 
         $this->serialize_extras();
 
-        return update_record("block_helpmenow_" . self::table, addslashes_recursive($this));
+        return update_record("block_helpmenow_" . static::table, addslashes_recursive($this));
     }
 
     /**
@@ -153,7 +153,7 @@ abstract class helpmenow_db_object {
         global $USER;
 
         if (!empty($this->id)) {
-            debugging(self::table . " already exists in db.");
+            debugging(static::table . " already exists in db.");
             return false;
         }
 
@@ -167,8 +167,8 @@ abstract class helpmenow_db_object {
 
         $this->serialize_extras();
 
-        if (!$this->id = insert_record("block_helpmenow_" . self::table, addslashes_recursive($this))) {
-            debugging("Could not insert " . self::table);
+        if (!$this->id = insert_record("block_helpmenow_" . static::table, addslashes_recursive($this))) {
+            debugging("Could not insert " . static::table);
             return false;
         }
 
@@ -197,11 +197,11 @@ abstract class helpmenow_db_object {
         }
 
         if (empty($this->id)) {
-            debugging("Can not delete " . self::table . ", no id!");
+            debugging("Can not delete " . static::table . ", no id!");
             return false;
         }
 
-        if (!delete_records("block_helpmenow_" . self::table, 'id', $this->id)) {
+        if (!delete_records("block_helpmenow_" . static::table, 'id', $this->id)) {
             $success = false;
         }
 
@@ -215,7 +215,7 @@ abstract class helpmenow_db_object {
      */
     public function load_relation($relation) {
         $this->$relation = array();
-        if (!$tmp = get_records("block_helpmenow_$relation", self::table."id", $this->id)) {
+        if (!$tmp = get_records("block_helpmenow_$relation", static::table."id", $this->id)) {
             return;
         }
         $class = "helpmenow_$relation";
@@ -243,21 +243,17 @@ abstract class helpmenow_db_object {
         global $CFG;
 
         # make sure this is a class that has plugin children
-        if (!self::allow_factory()) {
+        if (!static::allow_factory()) {
             return false;
         }
 
         # we have to get the record instead of passing the id to the
         # constructor as we have no idea what class the record belongs to
         if (isset($id)) {
-            $record = get_record("block_helpmenow_" . self::table, 'id', $id);
+            $record = get_record("block_helpmenow_" . static::table, 'id', $id);
         }
 
-        $plugin = $record->plugin;
-        $pluginclass = "helpmenow_" . self::table . "_{$record->plugin}";
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . self::table . "_$plugin.php";
-
-        require_once($classpath);
+        $pluginclass = static::get_pluginclass($record->plugin);
 
         return new $pluginclass(null, $record);
     }
@@ -272,7 +268,7 @@ abstract class helpmenow_db_object {
         global $CFG;
 
         # make sure this is a class that has plugin children
-        if (!self::allow_factory()) {
+        if (!static::allow_factory()) {
             return false;
         }
 
@@ -283,12 +279,9 @@ abstract class helpmenow_db_object {
             }
         }
 
-        $pluginclass = "helpmenow_" . self::table . "_{$record->plugin}";
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . self::table . "_$plugin.php";
+        $pluginclass = static::get_pluginclass($plugin);
 
-        require_once($classpath);
-
-        $object = new $class;
+        $object = new $pluginclass;
         $object->insert();
 
         return $object;
@@ -298,7 +291,7 @@ abstract class helpmenow_db_object {
      * Loads the fields from a passed record. Also unserializes simulated fields
      * @param object $record db record
      */
-    private function load($record) {
+    protected function load($record) {
         $fields = array_merge($this->required_fields, $this->optional_fields);
         foreach ($fields as $f) {
             if (isset($record->$f)) {
@@ -320,7 +313,7 @@ abstract class helpmenow_db_object {
      * otherwise.
      * @return boolean
      */
-    private function check_required_fields() {
+    protected function check_required_fields() {
         $success = true;
         foreach ($this->required_fields as $f) {
             if ($f = 'id') { continue; } # id is a special case, only mattering in update()
@@ -335,7 +328,7 @@ abstract class helpmenow_db_object {
     /**
      * Serializes simulated fields if necessary
      */
-    private function serialize_extras() {
+    protected function serialize_extras() {
         # bail immediately if we don't have any extra fields
         if (!count($this->extra_fields)) { return; }
 
@@ -351,20 +344,34 @@ abstract class helpmenow_db_object {
      * Used by factory functions to prevent their usage on non-abstract classes
      * @return bool
      */
-    private final static function allow_factory() {
+    protected final static function allow_factory() {
         # we don't want to call this from db_object
-        if (!self::table) {
+        if (!static::table) {
             debugging("Can't use block_helpmenow_db_object::get(), must be called from abstract child (queue, meeting, etc)");
             return false;
         }
 
         # we shouldn't be calling this if the class is not abstract
-        $class = new ReflectionClass('block_helpmenow_' . self::table);
+        $class = new ReflectionClass('helpmenow_' . static::table);
         if (!$class->isAbstract()) {
             debugging("This class isn't abstract, use the constructor!");
             return false;
         }
         return true;
+    }
+
+    /**
+     * Return the class name and require_once the file that contains it
+     * @param string $plugin
+     * @return string classname
+     */
+    protected final static function get_pluginclass($plugin) {
+        global $CFG;
+        $pluginclass = "helpmenow_" . static::table . "_$plugin";
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
+        require_once($classpath);
+
+        return $pluginclass;
     }
 }
 

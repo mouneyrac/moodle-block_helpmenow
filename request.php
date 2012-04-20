@@ -93,7 +93,7 @@ class helpmenow_request extends helpmenow_db_object {
      * queueid or requested_userid needs to be set.
      * @return boolean success
      */
-    function check_required_fields() {
+    protected function check_required_fields() {
         $success = parent::check_required_fields();
         if (!(isset($this->queueid) xor isset($this->requested_userid))) {
             debugging("One and only one of queueid or requested_userid needs to be set");

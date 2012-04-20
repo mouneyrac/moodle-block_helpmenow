@@ -92,7 +92,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * Adds a user to the meeting
      * @return bool success
      */
-    function add_user($userid = null) {
+    public function add_user($userid = null) {
         if (!isset($userid)) {
             global $USER;
             $userid = $USER->id;
@@ -130,7 +130,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * way to determine completion it should override this.
      * @return boolean
      */
-    function check_completion() {
+    public function check_completion() {
         global $CFG;
         # todo: right now assuming the setting will be in number of hours
         return time() > ($this->timecreated + ((($CFG->helpmenow_meeting_timeout * 60) + $CFG->helpmenow_meeting_timeout) * 60));

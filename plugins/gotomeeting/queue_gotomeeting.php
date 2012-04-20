@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Native moodle chat helpmenow plugin class
+ * Help me now gotomeeting queue class.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -23,21 +23,23 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/plugin.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/queue.php');
 
-class helpmenow_plugin_native extends helpmenow_plugin {
+class helpmenow_queue_gotomeeting extends helpmenow_queue {
     /**
-     * Plugin name
+     * plugin queue's meetings use
      * @var string $plugin
      */
-    public $plugin = 'native';
+    public $plugin = 'gotomeeting';
 
     /**
-     * Cron
-     * @return boolean
+     * Overriding login to handle user accounts and tokens
      */
-    public static function cron() {
-        return true;
+    public function login() {
+        $rval = parent::login();
+        # todo: check to make sure we have a gotomeeting account for the user
+        # todo: check to make sure we have a valid OAuth token for the user
+        return $rval;
     }
 }
 

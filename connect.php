@@ -46,13 +46,13 @@ $request = new helpmenow_request($requestid);
 if ($connect) {     # for the helper/requested_user
     if (isset($request->queueid)) {     # queue request
         # check privileges
-        $queue = new helpmenow_queue($request->queueid);
+        $queue = helpmenow_queue::get_instance($request->queueid);
         if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
             # todo: print a permission failure message and exit
         }
 
         # new meeting
-        $meeting = helpmenow_meeting::new_meeting($queue->plugin);
+        $meeting = helpmenow_meeting::new_instance($queue->plugin);
 
         # queue meetings are owned by the helper
         $meeting->owner_userid = $USER->id;
@@ -63,7 +63,7 @@ if ($connect) {     # for the helper/requested_user
         }
 
         # new meeting
-        $meeting = helpmenow_meeting::new_meeting();
+        $meeting = helpmenow_meeting::new_instance();
 
         # direct requests are owned by the user who sent it
         $meeting->owner_userid = $request->userid;
@@ -97,7 +97,7 @@ if ($USER->id !== $request->userid) {
 # if we have a meeting
 if (isset($request->meetingid)) {
     # get the meeting
-    $meeting = helpmenow_meeting::get_meeting($request->meetingid);
+    $meeting = helpmenow_meeting::get_instance($request->meetingid);
 
     # delete the request
     $request->delete();

@@ -177,6 +177,17 @@ abstract class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Overridding load_relation to make sure requests are ordered by
+     * timecreated ascending
+     */
+    public function load_relation($relation) {
+        parent::load_relation($relation);
+        if ($relation = 'request') {
+            uasort($this->request, array('helpmenow_request', 'cmp'));
+        }
+    }
+
+    /**
      * Gets an array of queues
      * todo: queue plugin classes
      * @return array of queues
@@ -206,17 +217,6 @@ abstract class helpmenow_queue extends helpmenow_db_object {
             $queues[$r->id] = helpmenow_queue::get_instance(null, $r);
         }
         return $queues;
-    }
-
-    /**
-     * Overridding load_relation to make sure requests are ordered by
-     * timecreated ascending
-     */
-    protected function load_relation($relation) {
-        parent::load_relation($relation);
-        if ($relation = 'request') {
-            uasort($this->request, array('helpmenow_request', 'cmp'));
-        }
     }
 }
 
