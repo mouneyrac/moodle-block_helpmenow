@@ -59,12 +59,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     );
 
     /**
-     * Plugin of the meeting; child should override this.
-     * @var string $plugin
-     */
-    public $plugin;
-
-    /**
      * The userid of the user who owns the meeting, usually the queue helper or
      * the instructor of the course.
      * @var int $helper_userid

@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
-abstract class helpmenow_queue extends helpmenow_db_object {
+class helpmenow_queue extends helpmenow_db_object {
     const table = 'queue';
 
     /**
@@ -37,9 +37,9 @@ abstract class helpmenow_queue extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
+        'plugin',
         'contextid',
         'name',
-        'plugin',
         'weight',
         'description',
     );
@@ -141,38 +141,38 @@ abstract class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * Logs helper into the queue
-     * @param int $userid user.id
+     * Logs $USER into the queue
      * @return boolean success
      */
     public function login() {
         global $USER;
-        if (!isset($this->helper[$USER->id])) {
-            $this->load_relation('helper');
-        }
-        if (!isset($this->helper[$USER->id])) {
-            debugging("User with userid {$USER->id} is not a queue helper");
-            return false;
-        }
-        $this->helper[$USER->id]->isloggedin = 1;
-        return $this->helper[$USER->id]->update();
+        return $this->set_login($USER->id, 1);
     }
 
     /**
-     * Logs helper into the queue
-     * @param int $userid user.id
+     * Logs $USER into the queue
      * @return boolean success
      */
     public function logout() {
         global $USER;
+        return $this->set_login($USER->id, 0);
+    }
+
+    /**
+     * Sets login state for passed user
+     * @param int $userid user.id
+     * @param int $state integer boolean
+     * @return boolean success
+     */
+    public function set_login($userid, $state = 0) {
         if (!isset($this->helper[$USER->id])) {
             $this->load_relation('helper');
+            if (!isset($this->helper[$USER->id])) {
+                debugging("User with userid {$USER->id} is not a queue helper");
+                return false;
+            }
         }
-        if (!isset($this->helper[$USER->id])) {
-            debugging("User with userid {$USER->id} is not a queue helper");
-            return false;
-        }
-        $this->helper[$USER->id]->isloggedin = 0;
+        $this->helper[$USER->id]->isloggedin = $state;
         return $this->helper[$USER->id]->update();
     }
 

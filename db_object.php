@@ -36,6 +36,7 @@ abstract class helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
+        'plugin',
     );
 
     /**
@@ -89,6 +90,12 @@ abstract class helpmenow_db_object {
      * @var int $modifiedby
      */
     public $modifiedby;
+
+    /**
+     * Plugin of the object; child should override this, if using a plugin class
+     * @var string $plugin
+     */
+    public $plugin = '';
 
     /**
      * Constructor. If we get an id, load from the database. If we get a object
@@ -242,20 +249,15 @@ abstract class helpmenow_db_object {
     public final static function get_instance($id=null, $record=null) {
         global $CFG;
 
-        # make sure this is a class that has plugin children
-        if (!static::allow_factory()) {
-            return false;
-        }
-
         # we have to get the record instead of passing the id to the
         # constructor as we have no idea what class the record belongs to
         if (isset($id)) {
             $record = get_record("block_helpmenow_" . static::table, 'id', $id);
         }
 
-        $pluginclass = static::get_pluginclass($record->plugin);
+        $class = static::get_class($record->plugin);
 
-        return new $pluginclass(null, $record);
+        return new $class(null, $record);
     }
 
     /**
@@ -267,21 +269,9 @@ abstract class helpmenow_db_object {
     public final static function new_instance($plugin = null) {
         global $CFG;
 
-        # make sure this is a class that has plugin children
-        if (!static::allow_factory()) {
-            return false;
-        }
+        $class = static::get_class($plugin);
 
-        if (!isset($plugin)) {
-            $plugin = 'native';
-            if (isset($CFG->helpmenow_default_plugin) and strlen($CFG->helpmenow_default_plugin) > 0) {
-                $plugin = $CFG->helpmenow_default_plugin;
-            }
-        }
-
-        $pluginclass = static::get_pluginclass($plugin);
-
-        $object = new $pluginclass;
+        $object = new $class;
         $object->insert();
 
         return $object;
@@ -341,32 +331,17 @@ abstract class helpmenow_db_object {
     }
 
     /**
-     * Used by factory functions to prevent their usage on non-abstract classes
-     * @return bool
-     */
-    protected final static function allow_factory() {
-        # we don't want to call this from db_object
-        if (!static::table) {
-            debugging("Can't use block_helpmenow_db_object::get(), must be called from abstract child (queue, meeting, etc)");
-            return false;
-        }
-
-        # we shouldn't be calling this if the class is not abstract
-        $class = new ReflectionClass('helpmenow_' . static::table);
-        if (!$class->isAbstract()) {
-            debugging("This class isn't abstract, use the constructor!");
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * Return the class name and require_once the file that contains it
      * @param string $plugin
      * @return string classname
      */
-    protected final static function get_pluginclass($plugin) {
+    protected final static function get_class($plugin) {
+        if (!strlen($plugin)) {
+            return "helpmenow_" . static::table;
+        }
+
         global $CFG;
+
         $pluginclass = "helpmenow_" . static::table . "_$plugin";
         $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
         require_once($classpath);

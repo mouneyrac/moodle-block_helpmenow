@@ -37,6 +37,7 @@ class helpmenow_request extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
+        'plugin',
         'userid',
         'last_refresh',
         'description',

@@ -39,6 +39,7 @@ class helpmenow_helper extends helpmenow_db_object {
         'timecreated',
         'timemodified',
         'modifiedby',
+        'plugin',
         'queueid',
         'userid',
         'isloggedin',
