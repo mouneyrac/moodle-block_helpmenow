@@ -266,12 +266,13 @@ abstract class helpmenow_db_object {
      *      configured default
      * @return object
      */
-    public final static function new_instance($plugin = null) {
+    public final static function new_instance($plugin) {
         global $CFG;
 
         $class = static::get_class($plugin);
 
         $object = new $class;
+        $object->plugin = $plugin;
         $object->insert();
 
         return $object;
@@ -336,14 +337,13 @@ abstract class helpmenow_db_object {
      * @return string classname
      */
     protected final static function get_class($plugin) {
-        if (!strlen($plugin)) {
-            return "helpmenow_" . static::table;
-        }
-
         global $CFG;
 
-        $pluginclass = "helpmenow_" . static::table . "_$plugin";
         $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
+        if (!file_exists($classpath)) {
+            return "helpmenow_" . static::table;
+        }
+        $pluginclass = "helpmenow_" . static::table . "_$plugin";
         require_once($classpath);
 
         return $pluginclass;

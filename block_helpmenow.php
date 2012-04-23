@@ -58,34 +58,20 @@ class block_helpmenow extends block_base {
 
         // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
-        $queues = helpmenow_queue::get_queues();
-        $herlper = false;
-        foreach ($queues as $q) {
-            # todo: This still shows the queue name to those whom are neither helpees nor helpers. Do we want this?
-            # todo: some way to split up queues and in general make the block look nicer
-            $this->content->text .= "<b>" . $q->name . "</b><br />";
+        # contexts
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
 
+        $queues = helpmenow_queue::get_queue_by_context(array($sitecontext->id, $context->id));
+        foreach ($queues as $q) {
             switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
-                $helper = true;
-                # login/out link
-                $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-                $login->params(array(
-                    'courseid' => $COURSE->id,
-                    'queueid' => $q->id,
-                ));
-                if ($q->helper[$USER->id]->isloggedin) {
-                    $login->param('login', 0);
-                    $login_text = get_string('logout', 'block_helpmenow');
-                } else {
-                    $login->param('login', 1);
-                    $login_text = get_string('login', 'block_helpmenow');
-                }
-                $login = $login->out();
-                $this->content->text .= "<a href='$login'>$login_text</a><br />";
-
+                # todo: interface for helpers moved to window, but do we want anything here?
                 break;
             case HELPMENOW_QUEUE_HELPEE:
+                # queue name
+                $this->content->text .= "<b>" . $q->name . "</b><br />";
+
                 # if the user has a request, display it, otherwise give a link
                 # to create one
                 if (isset($q->request[$USER->id])) {
@@ -102,29 +88,28 @@ class block_helpmenow extends block_base {
                         $this->content->text .= get_string('queue_na_short', 'block_helpmenow') . "<br />";
                     }
                 }
+                $this->content->text .= '<hr />';
                 break;
             default:
             }
-            $this->content->text .= '<hr />';
         }
 
         # todo: user to user chat?
 
         # helper link
-        if ($helper) {
+        if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
-            $this->content->footer .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+            $this->content->text .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
         }
 
         # admin link
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
             $admin->param('courseid', $COURSE->id);
             $admin = $admin->out();
             $admin_text = get_string('admin_link', 'block_helpmenow');
-            $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
+            $this->content->text .= "<a href='$admin'>$admin_text</a><br />";
         }
 
         return $this->content;

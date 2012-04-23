@@ -44,44 +44,39 @@ $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 print_box_start('generalbox');
 
-$queues = helpmenow_queue::get_queues();
+$queues = helpmenow_queue::get_queues_by_user();
 foreach ($queues as $q) {
-    switch ($q->get_privilege()) {
-    case HELPMENOW_QUEUE_HELPER:
-        print_box_start('generalbox');
-        print_heading($q->name);
-        $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-        $login->params(array(
-            'courseid' => $COURSE->id,
-            'queueid' => $q->id,
-        ));
-        if ($q->helper[$USER->id]->isloggedin) {
-            $login->param('login', 0);
-            $login_status = get_string('loggedin', 'block_helpmenow');
-            $login_text = get_string('logout', 'block_helpmenow');
-        } else {
-            $login->param('login', 1);
-            $login_status = get_string('loggedout', 'block_helpmenow');
-            $login_text = get_string('login', 'block_helpmenow');
-        }
-        $login = $login->out();
-        echo "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
-        echo "<ul>";
-        # requests, these are in ascending order thanks to the queue object
-        foreach ($q->request as $r) {
-            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-            $connect->param('requestid', $r->id);
-            $connect->param('connect', 1);
-            $name = fullname(get_record('user', 'id', $r->userid));
-            echo "<li>" .link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . "<br />";
-            echo $r->description . "</li>";
-        }
-        echo "</ul>";
-        print_box_end();
-        break;
-    case HELPMENOW_QUEUE_HELPEE:
-    default:
+    print_box_start('generalbox');
+    print_heading($q->name);
+    $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+    $login->params(array(
+        'courseid' => $COURSE->id,
+        'queueid' => $q->id,
+    ));
+    if ($q->helper[$USER->id]->isloggedin) {
+        $login->param('login', 0);
+        $login_status = get_string('loggedin', 'block_helpmenow');
+        $login_text = get_string('logout', 'block_helpmenow');
+    } else {
+        $login->param('login', 1);
+        $login_status = get_string('loggedout', 'block_helpmenow');
+        $login_text = get_string('login', 'block_helpmenow');
     }
+    $login = $login->out();
+    echo "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
+    echo "<ul>";
+    # requests, these are in ascending order thanks to the queue object
+    foreach ($q->request as $r) {
+        $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+        $connect->param('requestid', $r->id);
+        $connect->param('connect', 1);
+        $name = fullname(get_record('user', 'id', $r->userid));
+        echo "<li>" .link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . "<br />";
+        echo $r->description . "</li>";
+    }
+    echo "</ul>";
+    print_box_end();
+    break;
 }
 
 print_box_end();

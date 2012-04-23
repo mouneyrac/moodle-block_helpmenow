@@ -38,6 +38,8 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
         'timemodified',
         'modifiedby',
         'plugin',
+        'cron_interval',
+        'last_cron',
     );
 
     /**

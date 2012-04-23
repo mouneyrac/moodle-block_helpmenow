@@ -188,18 +188,12 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * Gets an array of queues
-     * todo: queue plugin classes
+     * Gets an array of queues by contexts
+     * @param array $contexts array of contexts.id
      * @return array of queues
      */
-    public static function get_queues() {
+    public static function get_queues_by_context($contexts) {
         global $CFG, $USER, $COURSE;
-
-        # contexts
-        $contexts = array(
-            get_context_instance(CONTEXT_SYSTEM, SITEID)->id,
-            get_context_instance(CONTEXT_COURSE, $COURSE->id)->id,
-        );
         $contexts = implode(',', $contexts);
 
         $sql = "
@@ -207,11 +201,42 @@ class helpmenow_queue extends helpmenow_db_object {
             FROM {$CFG->prefix}block_helpmenow_queue q
             JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
             WHERE q.contextid IN ($contexts)
-            OR h.userid = {$USER->id}
             ORDER BY q.weight
         ";
 
         $records = get_records_sql($sql);
+        return helpmenow_queue::queues_from_records($records);
+    }
+
+    /**
+     * Gets an array of queues user is a helper for
+     * @param int $userid optional user.id, otherwise uses $USER
+     * @return array of queues
+     */
+    public static function get_queues_by_user($userid = null) {
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+
+        $sql = "
+            SELECT q.*
+            FROM {$CFG->prefix}block_helpmenow_queue q
+            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
+            WHERE h.userid = $userid
+            ORDER BY q.weight
+        ";
+
+        $records = get_records_sql($sql);
+        return helpmenow_queue::queues_from_records($records);
+    }
+
+    /**
+     * Turns an array of db records into an array of queues
+     * @param array $records
+     * @return array of queues
+     */
+    protected static function queues_from_records($records) {
         $queues = array();
         foreach ($records as $r) {
             $queues[$r->id] = helpmenow_queue::get_instance(null, $r);

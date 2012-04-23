@@ -59,14 +59,13 @@ $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 print_box_start('generalbox centerpara');
 
-# todo: print heading indicating context?
 if ($courseid == SITEID) {    # global queues
     print_heading(get_string('global_admin', 'block_helpmenow'));
-    $queues = helpmenow_queue::get_queues(array($sitecontext->id));
+    $queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id));
     $tmp = '';
 } else {            # course queues
     print_heading(get_string('course_admin', 'block_helpmenow') . $COURSE->fullname);
-    $queues = helpmenow_queue::get_queues(array($context->id));
+    $queues = helpmenow_queue::get_queues_by_context(array($context->id));
     $global_url = new moodle_url();
     $global_url->param('courseid', SITEID);
     $global_url = $global_url->out();

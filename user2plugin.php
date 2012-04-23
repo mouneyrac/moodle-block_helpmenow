@@ -47,12 +47,6 @@ abstract class helpmenow_user2plugin extends helpmenow_db_object {
      * @var int $userid
      */
     public $userid;
-
-    /**
-     * plugin.name
-     * @var strnng $plugin
-     */
-    public $plugin;
 }
 
 ?>
