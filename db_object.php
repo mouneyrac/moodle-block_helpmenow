@@ -291,6 +291,24 @@ abstract class helpmenow_db_object {
     }
 
     /**
+     * Return the class name and require_once the file that contains it
+     * @param string $plugin
+     * @return string classname
+     */
+    public final static function get_class($plugin) {
+        global $CFG;
+
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
+        if (!file_exists($classpath)) {
+            return "helpmenow_" . static::table;
+        }
+        $pluginclass = "helpmenow_" . static::table . "_$plugin";
+        require_once($classpath);
+
+        return $pluginclass;
+    }
+
+    /**
      * Loads the fields from a passed record. Also unserializes simulated fields
      * @param object $record db record
      */
@@ -341,24 +359,6 @@ abstract class helpmenow_db_object {
         }
         $this->data = serialize($extras);
         return;
-    }
-
-    /**
-     * Return the class name and require_once the file that contains it
-     * @param string $plugin
-     * @return string classname
-     */
-    protected final static function get_class($plugin) {
-        global $CFG;
-
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
-        if (!file_exists($classpath)) {
-            return "helpmenow_" . static::table;
-        }
-        $pluginclass = "helpmenow_" . static::table . "_$plugin";
-        require_once($classpath);
-
-        return $pluginclass;
     }
 }
 
