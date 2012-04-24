@@ -226,6 +226,67 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Returns moodle form to edit/create queue
+     * @return object moodle form
+     */
+    public static function get_form() {
+        require_once(dirname(__FILE__) . '/form.php');
+        return new helpmenow_queue_form();
+    }
+
+    /**
+     * Process form data
+     * @param object $formdata
+     * @return boolean success
+     */
+    public static function process_form($formdata) {
+        if ($formdata->queueid) {
+            $queue = helpmenow_queue::get_instance($queueid);
+        } else {
+            $queue = helpmenow_queue::new_instance($formdata->plugin);
+            if ($formdata->courseid == SITEID) {
+                $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+            } else {
+                $context = get_context_instance(CONTEXT_COURSE, $formdata->courseid);
+            }
+            $queue->contextid = $context->id;
+        }
+
+        $queue->name = $formdata->name;
+        $queue->description = $formdata->description;
+        $queue->weight = $formdata->weight;
+
+        if ($formdata->queueid) {
+            return $queue->update();
+        }
+        return $queue->insert();
+    }
+
+    /**
+     * Returns array meant for mform's set_data(). If given a valid queueid, use
+     * values in the database, otherwise use some predefined defaults
+     * @param int $queueid queue.id; if passed 0, return some default values
+     *      for a new queue
+     * @return array moodle form set_data() array
+     */
+    public static function get_form_defaults($queueid) {
+        global $COURSE;
+        $toform = array(
+            'queueid' => $queueid,
+            'courseid' => $COURSE->id,
+        );
+        if (!$queueid) {
+            return $toform;
+        }
+        $queue = helpmenow_queue::get_instance($queueid);
+        $toform['name'] = $queue->name;
+        $toform['description'] = $queue->description;
+        $toform['plugin'] = $queue->plugin;
+        $toform['weight'] = $queue->weight;
+        return $toform;
+    }
+
+    /**
      * Gets an array of queues by contexts
      * @param array $contexts array of contexts.id
      * @return array of queues

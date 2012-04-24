@@ -25,12 +25,9 @@
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/form.php');
 
 # require login
 require_login(0, false);
@@ -38,6 +35,7 @@ require_login(0, false);
 # get our parameters
 $queueid = optional_param('queueid', 0, PARAM_INT);
 $courseid = optional_param('courseid', 0, PARAM_INT);
+$plugin = optional_param('plugin', '', PARAM_TEXT);
 
 # COURSE
 $COURSE = get_record('course', 'id', $courseid);
@@ -54,35 +52,20 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 
+# queue class
+if ($queueid) {
+    $plugin = get_field('block_helpmenow_queue', 'plugin', 'queueid', $queueid);
+}
+$class = get_class($plugin);
+
 # form stuff
-$form = new helpmenow_queue_form();
+$form = $class::get_form();
 if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
-} else if ($data = $form->get_data()) {     # submitted
-    if ($queueid) {
-        $queue = new helpmenow_queue($queueid);
-    } else {
-        $queue = new helpmenow_queue();
-        if ($courseid == SITEID) {
-            $queue->contextid = $sitecontext->id;
-        } else {
-            $queue->contextid = $context->id;
-        }
-    }
-
-    $queue->name = $data->name;
-    $queue->description = $data->description;
-    $queue->plugin = $data->plugin;
-    $queue->weight = $data->weight;
-
-    if ($queueid) {
-        $queue->update();
-    } else {
-        $queue->insert();
-    }
-
-    # redirect back to admin.php
-    redirect($admin_url);
+} else if ($formdata = $form->get_data()) {     # submitted
+    # todo: check returned value for success
+    $class::process_form($formdata);
+    redirect($admin_url);   # redirect back to admin.php
 } 
 
 # title, navbar, and a nice box
@@ -94,23 +77,7 @@ $nav = array(
 print_header($title, $title, build_navigation($nav));
 print_box_start('generalbox centerpara');
 
-if ($queueid) {     # existing queue
-    $queue = new helpmenow_queue($queueid);
-    $toform = array(
-        'queueid' => $queueid,
-        'courseid' => $courseid,
-        'name' => $queue->name,
-        'description' => $queue->description,
-        'plugin' => $queue->plugin,
-        'weight' => $queue->weight,
-    );
-} else {            # new queue
-    $toform = array(
-        'queueid' => $queueid,
-        'courseid' => $courseid,
-    );
-}
-
+$toform = $class::get_form_defaults($queueid);
 $form->set_data($toform);
 $form->display();
 

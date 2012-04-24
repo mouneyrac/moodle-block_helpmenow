@@ -75,7 +75,7 @@ class helpmenow_queue_form extends moodleform {
         $mform->addRule('description', null, 'required', null, 'client');
         $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 140, 'client');
 
-        # todo: this should be a dropdown
+        # todo: either make this not editable for existings queues or not at all
         $tmp = get_list_of_plugins('plugins', '', dirname(__FILE__));
         $plugins = array();
         foreach ($tmp as $t) {
