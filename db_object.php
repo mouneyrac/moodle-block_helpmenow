@@ -228,7 +228,7 @@ abstract class helpmenow_db_object {
         $class = "helpmenow_$relation";
         $key = $this->relations[$relation];
         foreach ($tmp as $r) {
-            $this->{$relation}[$r->$key] = new $class(null, $r);
+            $this->{$relation}[$r->$key] = $class::get_instance(null, $r);
         }
     }
 
@@ -273,7 +273,6 @@ abstract class helpmenow_db_object {
 
         $object = new $class;
         $object->plugin = $plugin;
-        $object->insert();
 
         return $object;
     }
