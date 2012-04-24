@@ -39,9 +39,9 @@ $courseid = optional_param('courseid', 0, PARAM_INT);
 $COURSE = get_record('course', 'id', $courseid);
 
 # assign.php and edit.php urls
-$assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign.php");
+$assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign_helper.php");
 $assign->param('courseid', $courseid);
-$edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/edit.php");
+$edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/edit_queue.php");
 $edit->param('courseid', $courseid);
 
 # contexts and cap check
@@ -72,6 +72,7 @@ if ($courseid == SITEID) {    # global queues
 }
 
 # start setting up the table
+# todo: figure out a good way to include plugin specific column(s)
 $table = (object) array(
     'head' => array(
         get_string('name'),

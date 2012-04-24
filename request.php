@@ -104,6 +104,31 @@ class helpmenow_request extends helpmenow_db_object {
     }
 
     /**
+     * Returns moodle form to create new request
+     * @return object moodle form
+     */
+    public static function get_form() {
+        require_once(dirname(__FILE__) . '/form.php');
+        return new helpmenow_request_form();
+    }
+
+    /**
+     * Process form data
+     * @param object $formdata
+     * @return boolean success
+     */
+    public static function process_form($formdata) {
+        global $USER;
+
+        $request = helpmenow_request::new_instance($formdata->plugin);
+        $request->queueid = $formdata->queueid;
+        $request->description = $formdata->description;
+        $request->userid = $USER->id;
+        $request->last_refresh = time();
+        return $request->insert();
+    }
+
+    /**
      * Cleans up abandoned requests
      * @return boolean
      */

@@ -36,6 +36,7 @@ class helpmenow_request_form extends moodleform {
         $hiddenfields = array(
             'queueid',
             'requested_userid',
+            'plugin',
         );
 
         # required description textarea with max length
