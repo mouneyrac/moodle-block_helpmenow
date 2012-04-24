@@ -23,10 +23,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+# todo: right now we're assuming every request is a queue
+
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library & forms
 require_once(dirname(__FILE__) . '/lib.php');
@@ -42,22 +42,22 @@ $params = (object) array(
 );
 
 # check privileges/availability
-if ($params->queueid) {
-    $queue = new helpmenow_queue($params->queueid);
+# if ($params->queueid) {
+    $queue = helpmenow_queue::get_instance($params->queueid);
     if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
         # todo: print a permission failure message and close the window
     }
     if (!$queue->check_available()) {
-        # todo: print a queue not available message
+        # todo: print a queue not available message and close
     }
-} else if ($params->requested_userid) {
-    $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-    if (!has_capability(HELPMENOW_CAP_REQUEST, $context)) {
-        # todo: print a permission failure message and close
-    }
-} else {
-    # todo: "what the heck are you doing?" failure message and close
-}
+# } else if ($params->requested_userid) {
+#     $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+#     if (!has_capability(HELPMENOW_CAP_REQUEST, $context)) {
+#         # todo: print a permission failure message and close
+#     }
+# } else {
+#     # todo: "what the heck are you doing?" failure message and close
+# }
 
 # form
 $form = new helpmenow_request_form();
@@ -66,14 +66,16 @@ if ($form->is_cancelled()) {                # cancelled
 } else if ($data = $form->get_data()) {     # submitted
     # at this point we know we only have one of these, but we also want to
     # unset the other one:
-    if (!$params->queueid) {
-        unset($data->queueid);
-    } else {
-        unset($data->requested_userid);
-    }
+    # if (!$params->queueid) {
+    #     unset($data->queueid);
+    # } else {
+    #     unset($data->requested_userid);
+    # }
 
     # make the new request
-    $request = new helpmenow_request(null, (object) $data);
+    $request = helpmenow_request::new_instance($queue->plugin);
+    $request->queueid = $data->queueid;
+    $request->description = $data->description;
     $request->userid = $USER->id;
     $request->last_refresh = time();
     $request->insert();

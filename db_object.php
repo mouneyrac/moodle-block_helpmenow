@@ -278,6 +278,19 @@ abstract class helpmenow_db_object {
     }
 
     /**
+     * Returns an array of objects from an array of records
+     * @param array $records
+     * @return array of objects
+     */
+    public final static function objects_from_records($records) {
+        $objects = array();
+        foreach ($records as $r) {
+            $objects[$r->id] = static::get_instance(null, $r);
+        }
+        return $objects;
+    }
+
+    /**
      * Loads the fields from a passed record. Also unserializes simulated fields
      * @param object $record db record
      */
@@ -318,7 +331,7 @@ abstract class helpmenow_db_object {
     /**
      * Serializes simulated fields if necessary
      */
-    protected function serialize_extras() {
+    protected final function serialize_extras() {
         # bail immediately if we don't have any extra fields
         if (!count($this->extra_fields)) { return; }
 

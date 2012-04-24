@@ -167,6 +167,7 @@ class helpmenow_meeting2user extends helpmenow_db_object {
         'modifiedby',
         'meetingid',
         'userid',
+        'plugin',
     );
 
     /**

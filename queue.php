@@ -177,6 +177,44 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Creates helper for queue using passed userid
+     * @param int $userid user.id
+     * @return boolean success
+     */
+    public function add_helper($userid) {
+        if (isset($this->helper[$userid])) {
+            return false;   # already a helper
+        }
+        # double check they can be assigned
+        $context = get_context_instance_by_id($this->contextid);
+        $cap = ($context->contextlevel == CONTEXT_SYSTEM) ? HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER : HELPMENOW_CAP_COURSE_QUEUE_ANSWER;
+        if (!has_capability($cap, $context, $userid)) {
+            return false;
+        }
+
+        $helper = helpmenow_helper::new_instance($this->plugin);
+        $helper->queueid = $this->id;
+        $helper->userid = $userid;
+        $rval = $helper->insert();
+        $this->helper[$userid] = $helper;
+        return $rval;
+    }
+
+    /**
+     * Deletes helper
+     * @param int $userid user.id
+     * @return boolean success
+     */
+    public function remove_helper($userid) {
+        if (!isset($queue->helper[$userid])) {
+            return false;
+        }
+        $rval = $this->helper[$userid]->delete();
+        unset($this->helper[$userid]);
+        return $rval;
+    }
+
+    /**
      * Overridding load_relation to make sure requests are ordered by
      * timecreated ascending
      */
@@ -192,7 +230,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @param array $contexts array of contexts.id
      * @return array of queues
      */
-    public static function get_queues_by_context($contexts) {
+    public static final function get_queues_by_context($contexts) {
         global $CFG, $USER, $COURSE;
         $contexts = implode(',', $contexts);
 
@@ -205,7 +243,7 @@ class helpmenow_queue extends helpmenow_db_object {
         ";
 
         $records = get_records_sql($sql);
-        return helpmenow_queue::queues_from_records($records);
+        return helpmenow_queue::objects_from_records($records);
     }
 
     /**
@@ -213,7 +251,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @param int $userid optional user.id, otherwise uses $USER
      * @return array of queues
      */
-    public static function get_queues_by_user($userid = null) {
+    public static final function get_queues_by_user($userid = null) {
         if (!isset($userid)) {
             global $USER;
             $userid = $USER->id;
@@ -228,20 +266,7 @@ class helpmenow_queue extends helpmenow_db_object {
         ";
 
         $records = get_records_sql($sql);
-        return helpmenow_queue::queues_from_records($records);
-    }
-
-    /**
-     * Turns an array of db records into an array of queues
-     * @param array $records
-     * @return array of queues
-     */
-    protected static function queues_from_records($records) {
-        $queues = array();
-        foreach ($records as $r) {
-            $queues[$r->id] = helpmenow_queue::get_instance(null, $r);
-        }
-        return $queues;
+        return helpmenow_queue::objects_from_records($records);
     }
 }
 

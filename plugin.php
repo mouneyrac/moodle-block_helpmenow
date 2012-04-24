@@ -23,6 +23,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+# todo: handle plugin "install"
+# todo: handle cron using new cron fields for variable cron intervals
+
 require_once(dirname(__FILE__) . '/db_object.php');
 
 abstract class helpmenow_plugin extends helpmenow_db_object {

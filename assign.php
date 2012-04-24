@@ -25,8 +25,6 @@
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
@@ -58,36 +56,14 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 
-$queue = new helpmenow_queue($queueid);
-$context = get_context_instance_by_id($queue->contextid);
-$cap = ($context->contextlevel == CONTEXT_SYSTEM) ? HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER : HELPMENOW_CAP_COURSE_QUEUE_ANSWER;
+$queue = helpmenow_queue::get_instance($queueid);
 
+# todo: check returned values for success
 if ($userid) {      # assigning/unassigning users
     if ($assign) {  # assigning
-        if (isset($queue->helper[$userid])) {
-            # todo: error, already assigned
-        } else {
-            # double check they can be assigned
-            if (has_capability($cap, $context)) {
-                $helper = (object) array(
-                    'queueid' => $queue->id,
-                    'userid' => $userid,
-                    'isloggedin' => 0,
-                );
-                $helper = new helpmenow_helper(null, $helper);
-                $helper->insert();
-                $queue->helper[$userid] = $helper;
-            } else {
-                # todo: error, can't be assigned
-            }
-        }
+        $queue->add_helper($userid);
     } else {        # unassigning
-        if (isset($queue->helper[$userid])) {
-            $queue->helper[$userid]->delete();
-            unset($queue->helper[$userid]);
-        } else {
-            # todo: error, can't unassign user who isn't assigned
-        }
+        $queue->remove_helper($userid);
     }
     # redirect back to the list
     redirect($this_url->out());
