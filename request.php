@@ -41,6 +41,7 @@ class helpmenow_request extends helpmenow_db_object {
         'userid',
         'last_refresh',
         'description',
+        'queueid',
     );
 
     /**
@@ -48,8 +49,6 @@ class helpmenow_request extends helpmenow_db_object {
      * @var array $optional_fields
      */
     protected $optional_fields = array(
-        'queueid',
-        'requested_userid',
         'meetingid',
     );
 
@@ -72,12 +71,6 @@ class helpmenow_request extends helpmenow_db_object {
     public $queueid;
 
     /**
-     * The user.id of the target of the request, if any
-     * @var int $requested_userid
-     */
-    public $requested_userid;
-
-    /**
      * The meeting that is created for this request
      * @var int $meetingid
      */
@@ -88,20 +81,6 @@ class helpmenow_request extends helpmenow_db_object {
      * @var in $last_refresh
      */
     public $last_refresh;
-
-    /**
-     * Overloeading db_object->check_required_fields() to handle that one of
-     * queueid or requested_userid needs to be set.
-     * @return boolean success
-     */
-    protected function check_required_fields() {
-        $success = parent::check_required_fields();
-        if (!(isset($this->queueid) xor isset($this->requested_userid))) {
-            debugging("One and only one of queueid or requested_userid needs to be set");
-            $success = false;
-        }
-        return $success;
-    }
 
     /**
      * Returns moodle form to create new request
