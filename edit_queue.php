@@ -54,9 +54,9 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 
 # queue class
 if ($queueid) {
-    $plugin = get_field('block_helpmenow_queue', 'plugin', 'queueid', $queueid);
+    $plugin = get_field('block_helpmenow_queue', 'plugin', 'id', $queueid);
 }
-$class = get_class($plugin);
+$class = helpmenow_queue::get_class($plugin);
 
 # form stuff
 $form = $class::get_form();

@@ -87,6 +87,7 @@ class helpmenow_request extends helpmenow_db_object {
      * @return object moodle form
      */
     public static function get_form() {
+        global $CFG;
         require_once(dirname(__FILE__) . '/form.php');
         return new helpmenow_request_form();
     }
@@ -94,7 +95,7 @@ class helpmenow_request extends helpmenow_db_object {
     /**
      * Process form data
      * @param object $formdata
-     * @return boolean success
+     * @return mixed false if failed, request object if successful
      */
     public static function process_form($formdata) {
         global $USER;
@@ -104,7 +105,10 @@ class helpmenow_request extends helpmenow_db_object {
         $request->description = $formdata->description;
         $request->userid = $USER->id;
         $request->last_refresh = time();
-        return $request->insert();
+        if (!$request->insert()) {
+            return false;
+        }
+        return $request;
     }
 
     /**

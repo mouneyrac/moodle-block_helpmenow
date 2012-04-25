@@ -50,18 +50,24 @@ $admin_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
 $admin_url->param('courseid', $courseid);
 $admin_url = $admin_url->out();
 
-# context and cap check
+# sitecontext and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect($course_url);
 }
 
 $queue = helpmenow_queue::get_instance($queueid);
+$context = get_context_instance_by_id($queue->contextid);
+$cap = ($context->contextlevel == CONTEXT_SYSTEM) ? HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER : HELPMENOW_CAP_COURSE_QUEUE_ANSWER;
 
 # todo: check returned values for success
 if ($userid) {      # assigning/unassigning users
     if ($assign) {  # assigning
-        $queue->add_helper($userid);
+        if (has_capability($cap, $context, $userid)) {
+            $queue->add_helper($userid);
+        } else {
+            # todo: error: doesn't have cap to be a helper
+        }
     } else {        # unassigning
         $queue->remove_helper($userid);
     }

@@ -37,21 +37,21 @@ require_login(0, false);
 $queueid = optional_param('queueid', 0, PARAM_INT);
 
 # check privileges/availability
-$queue = helpmenow_queue::get_instance($params->queueid);
+$queue = helpmenow_queue::get_instance($queueid);
 if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
     # todo: print a permission failure message and close the window
 }
 if (!$queue->check_available()) {
     # todo: print a queue not available message and close
 }
-$class = get_class($queue->plugin);
+$class = helpmenow_request::get_class($queue->plugin);
     
 # form
-$form = helpmenow_request::get_form();
+$form = $class::get_form();
 if ($form->is_cancelled()) {                # cancelled
     # todo: close the window
 } else if ($formdata = $form->get_data()) {     # submitted
-    $class::process_form($formdata);
+    $request = $class::process_form($formdata);
     # redirect to connect.php
     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     $connect->param('requestid', $request->id);

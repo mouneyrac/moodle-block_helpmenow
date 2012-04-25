@@ -165,15 +165,15 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return boolean success
      */
     public function set_login($userid, $state = 0) {
-        if (!isset($this->helper[$USER->id])) {
+        if (!isset($this->helper[$userid])) {
             $this->load_relation('helper');
-            if (!isset($this->helper[$USER->id])) {
-                debugging("User with userid {$USER->id} is not a queue helper");
+            if (!isset($this->helper[$userid])) {
+                debugging("User with userid $userid is not a queue helper");
                 return false;
             }
         }
-        $this->helper[$USER->id]->isloggedin = $state;
-        return $this->helper[$USER->id]->update();
+        $this->helper[$userid]->isloggedin = $state;
+        return $this->helper[$userid]->update();
     }
 
     /**
@@ -185,16 +185,10 @@ class helpmenow_queue extends helpmenow_db_object {
         if (isset($this->helper[$userid])) {
             return false;   # already a helper
         }
-        # double check they can be assigned
-        $context = get_context_instance_by_id($this->contextid);
-        $cap = ($context->contextlevel == CONTEXT_SYSTEM) ? HELPMENOW_CAP_GLOBAL_QUEUE_ANSWER : HELPMENOW_CAP_COURSE_QUEUE_ANSWER;
-        if (!has_capability($cap, $context, $userid)) {
-            return false;
-        }
-
         $helper = helpmenow_helper::new_instance($this->plugin);
         $helper->queueid = $this->id;
         $helper->userid = $userid;
+        $helper->isloggedin = 0;
         $rval = $helper->insert();
         $this->helper[$userid] = $helper;
         return $rval;
@@ -230,6 +224,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return object moodle form
      */
     public static function get_form() {
+        global $CFG;
         require_once(dirname(__FILE__) . '/form.php');
         return new helpmenow_queue_form();
     }
@@ -237,7 +232,7 @@ class helpmenow_queue extends helpmenow_db_object {
     /**
      * Process form data
      * @param object $formdata
-     * @return boolean success
+     * @return mixed false if failed, queue object if successfull
      */
     public static function process_form($formdata) {
         if ($formdata->queueid) {
@@ -257,9 +252,15 @@ class helpmenow_queue extends helpmenow_db_object {
         $queue->weight = $formdata->weight;
 
         if ($formdata->queueid) {
-            return $queue->update();
+            if (!$queue->update()) {
+                return false;
+            }
+        } else {
+            if (!$queue->insert()) {
+                return false;
+            }
         }
-        return $queue->insert();
+        return $queue;
     }
 
     /**
@@ -298,7 +299,6 @@ class helpmenow_queue extends helpmenow_db_object {
         $sql = "
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
-            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
             WHERE q.contextid IN ($contexts)
             ORDER BY q.weight
         ";

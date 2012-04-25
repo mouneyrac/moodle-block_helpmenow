@@ -62,7 +62,7 @@ class block_helpmenow extends block_base {
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
 
-        $queues = helpmenow_queue::get_queue_by_context(array($sitecontext->id, $context->id));
+        $queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
             switch ($q->get_privilege()) {
             case HELPMENOW_QUEUE_HELPER:
