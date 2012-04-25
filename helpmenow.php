@@ -49,10 +49,7 @@ foreach ($queues as $q) {
     print_box_start('generalbox');
     print_heading($q->name);
     $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-    $login->params(array(
-        'courseid' => $COURSE->id,
-        'queueid' => $q->id,
-    ));
+    $login->param('queueid', $q->id);
     if ($q->helper[$USER->id]->isloggedin) {
         $login->param('login', 0);
         $login_status = get_string('loggedin', 'block_helpmenow');
@@ -71,7 +68,8 @@ foreach ($queues as $q) {
         $connect->param('requestid', $r->id);
         $connect->param('connect', 1);
         $name = fullname(get_record('user', 'id', $r->userid));
-        echo "<li>" .link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . "<br />";
+        echo "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
+            userdate($r->timecreated) . ":<br />";
         echo $r->description . "</li>";
     }
     echo "</ul>";

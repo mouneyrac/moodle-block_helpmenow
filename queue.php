@@ -293,7 +293,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return array of queues
      */
     public static final function get_queues_by_context($contexts) {
-        global $CFG, $USER, $COURSE;
+        global $CFG;
         $contexts = implode(',', $contexts);
 
         $sql = "
@@ -313,6 +313,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return array of queues
      */
     public static final function get_queues_by_user($userid = null) {
+        global $CFG;
         if (!isset($userid)) {
             global $USER;
             $userid = $USER->id;

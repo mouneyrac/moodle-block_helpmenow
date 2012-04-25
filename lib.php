@@ -46,6 +46,7 @@ define('HELPMENOW_DEFAULT_WEIGHT', 50);
  * Checks if we want to auto create course level queues. If we do, check if we
  * need to create a queue for this course and do so if necessary. Also adds
  * helpers if configured to do so.
+ * todo: fix this to work with our polymorphism
  * @param int $contextid contextid; if none specified, gets the current course
  *      context
  */

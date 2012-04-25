@@ -25,8 +25,6 @@
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
@@ -47,7 +45,7 @@ if ($login) {
 }
 
 # we're done, now redirect
-$helpmenow_url = new moodle_url("$CFG->wwwroot/course/view.php");
+$helpmenow_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
 $helpmenow_url = $helpmenow_url->out();
 redirect($helpmenow_url);
 

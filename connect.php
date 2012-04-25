@@ -54,6 +54,7 @@ if ($connect) {
     $meeting->owner_userid = $USER->id;
     $meeting->description = $request->description;  # get the description from the request
     $meeting->create();
+    $meeting->insert();
 
     # add both users to the meeting
     $meeting->add_user();
@@ -61,7 +62,7 @@ if ($connect) {
 
     # connect user to the meeting
     $url = $meeting->connect();
-    $meeting->insert();
+    $meeting->update();
 
     # update the request with the meetingid so we know its been accepted
     $request->meetingid = $meeting->id;
