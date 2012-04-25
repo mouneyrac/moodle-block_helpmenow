@@ -64,6 +64,10 @@ foreach ($queues as $q) {
     echo "<ul>";
     # requests, these are in ascending order thanks to the queue object
     foreach ($q->request as $r) {
+        # if a request has a meetingid, another helper has already answered
+        if (isset($r->meetingid)) {
+            continue;
+        }
         $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
         $connect->param('requestid', $r->id);
         $connect->param('connect', 1);
@@ -74,7 +78,6 @@ foreach ($queues as $q) {
     }
     echo "</ul>";
     print_box_end();
-    break;
 }
 
 print_box_end();
