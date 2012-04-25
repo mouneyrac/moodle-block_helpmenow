@@ -27,8 +27,6 @@
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once($CFG->libdir . '/moodlelib.php');
-require_once($CFG->libdir . '/weblib.php');
 
 # helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
@@ -41,55 +39,38 @@ $requestid = required_param('requestid', PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
 
 # get the request
-$request = new helpmenow_request($requestid);
+$request = helpmenow_request::get_instance($requestid);
 
-if ($connect) {     # for the helper/requested_user
-    if (isset($request->queueid)) {     # queue request
-        # check privileges
-        $queue = helpmenow_queue::get_instance($request->queueid);
-        if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
-            # todo: print a permission failure message and exit
-        }
-
-        # new meeting
-        $meeting = helpmenow_meeting::new_instance($queue->plugin);
-
-        # queue meetings are owned by the helper
-        $meeting->owner_userid = $USER->id;
-    } else if (isset($request->requested_userid)) {     # direct request
-        # check privileges
-        if ($USER->id !== $request->requested_userid) {
-            # todo: print a wrong user permission failure message and exit
-        }
-
-        # new meeting
-        $meeting = helpmenow_meeting::new_instance();
-
-        # direct requests are owned by the user who sent it
-        $meeting->owner_userid = $request->userid;
-    } else {
-        # todo: "what the heck are you doing?" failure message and close
+# for the helper
+if ($connect) {
+    # check privileges
+    $queue = helpmenow_queue::get_instance($request->queueid);
+    if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
+        # todo: print a permission failure message and exit
     }
-    # update the request with the meetingid so we know its been accepted
-    $request->meetingid = $meeting->id;
-    $request->update();
 
-    # get the description from the request and create the meeting
-    $meeting->description = $request->description;
+    # new meeting
+    $meeting = helpmenow_meeting::new_instance($queue->plugin);
+    $meeting->owner_userid = $USER->id;
+    $meeting->description = $request->description;  # get the description from the request
     $meeting->create();
 
-    # add the both users to the meeting
+    # add both users to the meeting
     $meeting->add_user();
     $meeting->add_user($request->userid);
 
     # connect user to the meeting
     $url = $meeting->connect();
-    $meeting->update(); # new meeting
+    $meeting->insert();
+
+    # update the request with the meetingid so we know its been accepted
+    $request->meetingid = $meeting->id;
+    $request->update();
+
     redirect($url);
 }
 
 # for the helpee/requester
-
 if ($USER->id !== $request->userid) {
     # todo: print a wrong user permission failure message and close
 }

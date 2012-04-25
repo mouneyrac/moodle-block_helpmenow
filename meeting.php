@@ -39,6 +39,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
         'timemodified',
         'modifiedby',
         'plugin',
+        'owner_userid',
     );
 
     /**
@@ -46,7 +47,6 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @var array $optional_fields
      */
     protected $optional_fields = array(
-        'owner_userid',
         'description',
     );
 
