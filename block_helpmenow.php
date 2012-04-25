@@ -136,6 +136,13 @@ class block_helpmenow extends block_base {
 
         return $success;
     }
+
+    /**
+     * Overriden block_base method that is called when block is installed
+     */
+    function after_install() {
+        helpmenow_plugin::install_all();
+    }
 }
 
 ?>

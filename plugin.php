@@ -23,9 +23,6 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-# todo: handle plugin "install"
-# todo: handle cron using new cron fields for variable cron intervals
-
 require_once(dirname(__FILE__) . '/db_object.php');
 
 abstract class helpmenow_plugin extends helpmenow_db_object {
@@ -52,10 +49,47 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
     public $plugin;
 
     /**
+     * Cron delay in seconds; 0 represents no cron
+     * @var int $cron_interval
+     */
+    public $cron_interval = 0;
+
+    /**
+     * Last cron timestamp
+     * @var int $last_cron
+     */
+    public $last_cron;
+
+    /**
+     * "Installs" the plugin
+     * @return boolean success
+     */
+    public static function install() {
+        $plugin = new static();
+        $last_cron = 0;
+        $plugin->insert();
+    }
+
+    /**
      * Cron that will run everytime block cron is run.
      * @return boolean
      */
-    abstract static function cron();
+    public static function cron() {
+        return true;
+    }
+
+    /**
+     * Calls install for all plugins
+     * @return boolean success
+     */
+    public final static function install_all() {
+        $success = true;
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            $class = self::get_class($plugin);
+            $success = $success and $class::install();
+        }
+        return $success;
+    }
 
     /**
      * Calls any existing cron functions of plugins
@@ -63,10 +97,15 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
      */
     public final static function cron_all() {
         $success = true;
-        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
-            require_once(dirname(__FILE__) . "/plugins/$plugin/plugin_$plugin.php");
-            $class = "helpmenow_plugin_$plugin";
-            $success = $success and $class::cron();
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
+            $plugin = self::get_instance(null, $record);
+            if ($time >= $last_cron + $cron_interval) {
+                $class = "helpmenow_plugin_$pluginname";    # we don't need a require here
+                $success = $success and $class::cron();
+                $plugin->last_cron = time();
+                $plugin->insert();
+            }
         }
         return $success;
     }
