@@ -41,26 +41,34 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
      * @param string $uri
      * @param string $verb POST, PUT, DELETE, GET
      * @param array $params
+     * @param int $user user.id
      * @return mixed
      */
-    public static function api($uri, $verb, $params = array()) {
-        global $CFG;
+    public static function api($uri, $verb, $params = array(), $userid = null) {
+        global $CFG, $USER;
+        if (!isset($userid)) {
+            $userid = $USER->id;
+        }
 
         $uri = HELPMENOW_G2M_REST_BASE_URI . $uri;
+        if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', 'gotomeeting')) {
+            return false;
+        }
+        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+
         $headers = array(
             "Accept: application/json",
             "Content-Type: application/json",
-            "Authorization: OAuth oauth_token={$CFG->helpmenow_g2m_token}"
+            "Authorization: OAuth oauth_token={$user2plugin->access_token}"
         );
 
         $ch = curl_init();
         switch ($verb) {
         case 'POST':
-            # $headers[] = json_encode($params);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            break;
         case 'PUT':
             # todo: we might not need this
-            # todo: if we do, figure out how to do it
             # fall through here
         case 'DELETE':
             # todo: we might not need this either
@@ -88,6 +96,14 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
 
         # todo: handle error codes
         $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($responsecode === 403) {
+            if (($USER->id !== $userid) or ($USER->id === get_admin()->id)) {   # call for different user or cron
+                # todo: we need a way to handle getting a new oauth token for cron
+                return false;
+            }
+            redirect($CFG->wwwroot . '/blocks/helpmenow/plugins/gotomeeting/token.php');
+        }
 
         return json_decode($data);
     }

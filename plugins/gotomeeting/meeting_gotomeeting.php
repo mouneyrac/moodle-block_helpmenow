@@ -81,13 +81,12 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
             'timezonekey' => '',
             'meetingtype' => 'Immediate',
         );
-        $data = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params);
-        $data = reset($data);
-        print_object($data);
-        $this->join_url = $data->joinURL;
-        $this->max_participants = $data->maxParticipants;
-        $this->unique_meetingid = $data->uniqueMeetingId;
-        $this->meetingid = $data->meetingid;
+        $meetingdata = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params, $this->owner_userid);
+        $meetingdata = reset($meetingdata);
+        $this->join_url = $meetingdata->joinURL;
+        $this->max_participants = $meetingdata->maxParticipants;
+        $this->unique_meetingid = $meetingdata->uniqueMeetingId;
+        $this->meetingid = $meetingdata->meetingid;
         return true;
     }
 

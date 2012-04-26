@@ -25,6 +25,8 @@
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/queue.php');
 
+require_once(dirname(__FILE__) . '/user2plugin_gotomeeting.php');
+
 class helpmenow_queue_gotomeeting extends helpmenow_queue {
     /**
      * plugin queue's meetings use
@@ -36,10 +38,22 @@ class helpmenow_queue_gotomeeting extends helpmenow_queue {
      * Overriding login to handle user accounts and tokens
      */
     public function login() {
-        $rval = parent::login();
-        # todo: check to make sure we have a gotomeeting account for the user
-        # todo: check to make sure we have a valid OAuth token for the user
-        return $rval;
+        global $USER, $CFG;
+
+        $token_url = $CFG->wwwroot . '/blocks/helpmenow/plugins/gotomeeting/token.php';
+        # check if we have a user2plugin record
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+        } else {
+            $user2plugin = new helpmenow_user2plugin_gotomeeting();
+            $user2plugin->insert();
+            redirect($token_url);
+        }
+        # check to see if the oauth token has expired
+        if ($user2plugin->token_expiration < time()) {
+            redirect($token_url);
+        }
+        return parent::login();
     }
 }
 

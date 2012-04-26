@@ -27,6 +27,9 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.ph
 
 require_once(dirname(__FILE__) . '/meeting_gotomeeting.php');
 
+define('HELPMENOW_G2M_API_KEY', '256d73eed85dc0b50f33562e654f6f02');    # todo: config option
+define('HELPMENOW_G2M_OAUTH_URI', 'https://api.citrixonline.com/oauth/access_token');    # todo: config option
+
 # require login
 
 require_login(0, false);
@@ -38,10 +41,10 @@ $code = optional_param('code', 0, PARAM_TEXT);
 $nav = array(array('name' => 'Token'));
 print_header($title, $title, build_navigation($nav));
 
-$api_key = '256d73eed85dc0b50f33562e654f6f02';
+$api_key = HELPMENOW_G2M_API_KEY;
 
 if ($code) {
-    $citrix_url = 'https://api.citrixonline.com/oauth/access_token';
+    $citrix_url = HELPMENOW_G2M_OAUTH_URI;
     $params = array(
         'grant_type' => 'authorization_code',
         'code' => $code,
