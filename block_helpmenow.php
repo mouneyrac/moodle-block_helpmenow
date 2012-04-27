@@ -48,6 +48,8 @@ class block_helpmenow extends block_base {
      * @return stdObject
      */
     function get_content() {
+        if (isset($this->content)) { return $this->content; }
+
         global $CFG, $COURSE, $USER;
 
         $this->content = (object) array(
@@ -69,7 +71,6 @@ class block_helpmenow extends block_base {
         default:
             return $this->content;
         }
-        if (isset($this->content)) { return $this->content; }
 
         // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
@@ -97,7 +98,7 @@ class block_helpmenow extends block_base {
                 # to create one
                 if (isset($q->request[$USER->id])) {
                     $this->content->text .= get_string('pending', 'block_helpmenow') . "<br />";
-                    $this->content->text .= $q->request[$USER->id]->description;
+                    $this->content->text .= $q->request[$USER->id]->description . "<br />";
                 } else {
                     if ($q->check_available()) {
                         $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
@@ -120,7 +121,7 @@ class block_helpmenow extends block_base {
         if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
-            $this->content->text .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+            $this->content->text .= "<hr />" . link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
         }
 
         # admin link
@@ -129,7 +130,7 @@ class block_helpmenow extends block_base {
             $admin->param('courseid', $COURSE->id);
             $admin = $admin->out();
             $admin_text = get_string('admin_link', 'block_helpmenow');
-            $this->content->text .= "<a href='$admin'>$admin_text</a><br />";
+            $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
         }
 
         return $this->content;

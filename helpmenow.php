@@ -45,6 +45,7 @@ $refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_helper_refre
 print_header($title, $title, build_navigation($nav), '', $refresh);
 print_box_start('generalbox');
 
+$pending_request = false;
 $queues = helpmenow_queue::get_queues_by_user();
 foreach ($queues as $q) {
     print_box_start('generalbox');
@@ -69,6 +70,7 @@ foreach ($queues as $q) {
         if (isset($r->meetingid)) {
             continue;
         }
+        $pending_request = true;
         $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
         $connect->param('requestid', $r->id);
         $connect->param('connect', 1);
@@ -82,6 +84,16 @@ foreach ($queues as $q) {
 }
 
 print_box_end();
+
+if ($pending_request) {
+    $soundfile = $CFG->wwwroot . '/blocks/helpmenow/cowbell.wav';
+    echo <<<EOF
+<script type='text/javascript'>
+    window.focus();
+</script>
+<embed src="$soundfile" autostart="true" width="0" height="0" id="chime" enablejavascript="true" />
+EOF;
+}
 
 # footer
 print_footer();

@@ -74,11 +74,11 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     public function create() {
         $params = array(
             # TODO: does the subject show up anywhere in the meeting?
-            'subject' => 'foo',
+            'subject' => $this->description,
             'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (5*60)), # The starttime must be in the future, but it actually doesn't matter anyway...
             'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (60*60)),    # endtime of 1 hour from now, maybe a configuration option? (it might not matter)
             'passwordrequired' => 'false',
-            'conferencecallinfo' => '',
+            'conferencecallinfo' => 'Hybrid',
             'timezonekey' => '',
             'meetingtype' => 'Immediate',
         );
