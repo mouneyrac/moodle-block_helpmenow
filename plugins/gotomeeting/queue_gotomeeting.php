@@ -46,6 +46,7 @@ class helpmenow_queue_gotomeeting extends helpmenow_queue {
             $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
         } else {
             $user2plugin = new helpmenow_user2plugin_gotomeeting();
+            $user2plugin->userid = $USER->id;
             $user2plugin->insert();
             redirect($token_url);
         }

@@ -33,6 +33,7 @@ $string['new_request'] = 'Request Meeting';
 $string['pending'] = 'Your pending request:';
 $string['login'] = 'Log In';
 $string['logout'] = 'Log Out';
+$string['helper_link'] = 'My Queues';
 $string['admin_link'] = 'Manage Queues';
 $string['queue_na_short'] = 'Sorry, this queue is not available.';
 
@@ -63,6 +64,10 @@ $string['assigned_link'] = 'Update';
 $string['assign'] = 'Assign as helper';
 $string['unassign'] = 'Remove as helper';
 $string['back'] = 'Back to queue management';
+
+# helper interface
+$string['loggedout'] = 'You are currently logged out.';
+$string['loggedin'] = 'You are currently logged in.';
 
 $string['auto_queue_desc'] = 'Course Queue';
 

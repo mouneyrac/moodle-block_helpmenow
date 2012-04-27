@@ -56,10 +56,11 @@ abstract class helpmenow_db_object {
     /**
      * Data simulates database fields in child classes by serializing data.
      * This is only used if extra_fields is used, and does not need to be
-     * in the database if it's not being used.
+     * in the database if it's not being used. Needs to be public for
+     * addslashes_recursive.
      * @var string $data
      */
-    protected $data;
+    public $data;
 
     /**
      * Array of relations, such as meeting2user.
@@ -314,6 +315,7 @@ abstract class helpmenow_db_object {
      */
     protected function load($record) {
         $fields = array_merge($this->required_fields, $this->optional_fields);
+        $fields[] = 'data';
         foreach ($fields as $f) {
             if (isset($record->$f)) {
                 $this->$f = $record->$f;
@@ -352,7 +354,6 @@ abstract class helpmenow_db_object {
     protected final function serialize_extras() {
         # bail immediately if we don't have any extra fields
         if (!count($this->extra_fields)) { return; }
-
         $extras = array();
         foreach ($this->extra_fields as $field) {
             $extras[$field] = $this->$field;

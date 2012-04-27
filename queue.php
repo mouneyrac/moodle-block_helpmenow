@@ -183,7 +183,10 @@ class helpmenow_queue extends helpmenow_db_object {
      */
     public function add_helper($userid) {
         if (isset($this->helper[$userid])) {
-            return false;   # already a helper
+            $this->load_relation('helper');
+            if (!isset($this->helper[$userid])) {
+                return false;   # already a helper
+            }
         }
         $helper = helpmenow_helper::new_instance($this->plugin);
         $helper->queueid = $this->id;
@@ -201,7 +204,10 @@ class helpmenow_queue extends helpmenow_db_object {
      */
     public function remove_helper($userid) {
         if (!isset($queue->helper[$userid])) {
-            return false;
+            $this->load_relation('helper');
+            if (!isset($this->helper[$userid])) {
+                return false;
+            }
         }
         $rval = $this->helper[$userid]->delete();
         unset($this->helper[$userid]);

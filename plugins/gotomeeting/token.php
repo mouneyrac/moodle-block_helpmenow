@@ -26,9 +26,11 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 
 require_once(dirname(__FILE__) . '/meeting_gotomeeting.php');
+require_once(dirname(__FILE__) . '/user2plugin_gotomeeting.php');
 
 define('HELPMENOW_G2M_API_KEY', '256d73eed85dc0b50f33562e654f6f02');    # todo: config option
-define('HELPMENOW_G2M_OAUTH_URI', 'https://api.citrixonline.com/oauth/access_token');    # todo: config option
+define('HELPMENOW_G2M_OAUTH_EXCHANGE_URI', 'https://api.citrixonline.com/oauth/access_token');
+define('HELPMENOW_G2M_OAUTH_AUTH_URI', 'https://api.citrixonline.com/oauth/authorize');
 
 # require login
 
@@ -38,13 +40,15 @@ require_login(0, false);
 
 $code = optional_param('code', 0, PARAM_TEXT);
 
-$nav = array(array('name' => 'Token'));
+$title = 'Token';   # todo: language string
+$nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 
 $api_key = HELPMENOW_G2M_API_KEY;
 
 if ($code) {
-    $citrix_url = HELPMENOW_G2M_OAUTH_URI;
+    # set up exchanging our response key for an access token
+    $citrix_url = HELPMENOW_G2M_OAUTH_EXCHANGE_URI;
     $params = array(
         'grant_type' => 'authorization_code',
         'code' => $code,
@@ -57,16 +61,23 @@ if ($code) {
     $fields = implode('&', $fields);
     $citrix_url .= "?$fields";
 
+    # do the exchange
     $ch = curl_init($citrix_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     $oauth = json_decode(curl_exec($ch));
     $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    print_object($oauth);
-    print_object($responsecode);
+
+    # save the reponse to user2plugin record
+    $record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting');
+    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+    $user2plugin->access_token = $oauth->access_token;
+    $user2plugin->token_expiration = $oauth->expires_in + time();
+    $user2plugin->refresh_token = $oauth->refresh_token;
+    $user2plugin->update();
 } else {
     $this_url = new moodle_url();
-    $this_url = urlencode($this_url->out());
-    $citrix_url = 'https://api.citrixonline.com/oauth/authorize';
+    $this_url = $this_url->out();
+    $citrix_url = HELPMENOW_G2M_OAUTH_AUTH_URI;
     $params = array(
         'client_id' => $api_key,
         'redirect_uri' => $this_url,
@@ -77,7 +88,7 @@ if ($code) {
     }
     $fields = implode('&', $fields);
     $citrix_url .= "?$fields";
-    echo "<p><a href='$citrix_url'>Get an OAuth token</a></p>";
+    echo "<p><a href='$citrix_url'>Get an OAuth token</a></p>";     # todo: language string
 }
 
 print_footer();
