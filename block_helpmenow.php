@@ -66,6 +66,8 @@ class block_helpmenow extends block_base {
         case 57885:
         case 52650:
         case 37479:
+        case 56385:
+        case 56528:
         case 5:
             break;
         default:
