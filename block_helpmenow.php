@@ -36,6 +36,7 @@ class block_helpmenow extends block_base {
     function init() {
         global $CFG;
         $this->title = get_string('helpmenow', 'block_helpmenow'); 
+        # TODO: use version.php, same as vlareporting?
         $this->version = 2012040600;
         $this->cron = 60;
     }
@@ -47,14 +48,28 @@ class block_helpmenow extends block_base {
      * @return stdObject
      */
     function get_content() {
-        if (isset($this->content)) { return $this->content; }
-
         global $CFG, $COURSE, $USER;
 
         $this->content = (object) array(
             'text' => '',
             'footer' => '',
         );
+
+        # For now, restrict to tech dept for testing.
+        switch ($USER->id) {
+        case 8712:
+        case 58470:
+        case 930:
+        case 919:
+        case 57885:
+        case 52650:
+        case 37479:
+        case 5:
+            break;
+        default:
+            return $this->content;
+        }
+        if (isset($this->content)) { return $this->content; }
 
         // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
@@ -99,7 +114,7 @@ class block_helpmenow extends block_base {
             }
         }
 
-        # todo: user to user chat?
+        # todo: user to user chat? not for VLACS for now.
 
         # helper link
         if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
