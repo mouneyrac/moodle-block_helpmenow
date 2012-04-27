@@ -24,7 +24,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
-require_once(dirname(__FILE__) . '/plugin_gotomeeting.php');
+require_once(dirname(__FILE__) . '/plugin.php');
 
 class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     /**

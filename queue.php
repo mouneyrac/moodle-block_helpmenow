@@ -242,7 +242,7 @@ class helpmenow_queue extends helpmenow_db_object {
      */
     public static function process_form($formdata) {
         if ($formdata->queueid) {
-            $queue = helpmenow_queue::get_instance($queueid);
+            $queue = helpmenow_queue::get_instance($formdata->queueid);
         } else {
             $queue = helpmenow_queue::new_instance($formdata->plugin);
             if ($formdata->courseid == SITEID) {

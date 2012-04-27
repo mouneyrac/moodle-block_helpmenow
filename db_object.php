@@ -299,7 +299,7 @@ abstract class helpmenow_db_object {
     public final static function get_class($plugin) {
         global $CFG;
 
-        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . "_$plugin.php";
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . ".php";
         if (!file_exists($classpath)) {
             return "helpmenow_" . static::table;
         }

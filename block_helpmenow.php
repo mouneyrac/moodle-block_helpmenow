@@ -36,9 +36,11 @@ class block_helpmenow extends block_base {
     function init() {
         global $CFG;
         $this->title = get_string('helpmenow', 'block_helpmenow'); 
-        # TODO: use version.php, same as vlareporting?
-        $this->version = 2012040600;
-        $this->cron = 60;
+
+        $plugin = new object;
+        require(dirname(__FILE__) . "/version.php");
+        $this->version = $plugin->version;
+        $this->cron = $plugin->cron;
     }
 
     /**

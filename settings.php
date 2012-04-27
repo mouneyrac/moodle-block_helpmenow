@@ -30,8 +30,9 @@ defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed
 #                                          get_string('settings_heading_desc', 'block_helpmenow')));
 
 $choices = array();
-foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $plugin) {
-    $choices[$plugin] = $plugin;
+$plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));
+foreach ($plugins as $pluginname) {
+    $choices[$pluginname] = $pluginname;
 }
 $settings->add(new admin_setting_configselect('helpmenow_default_plugin',
                                               get_string('settings_plugin', 'block_helpmenow'),
@@ -74,4 +75,12 @@ $settings->add(new admin_setting_configtime('helpmenow_meeting_timeout',
                                             get_string('settings_meeting_timeout', 'block_helpmenow'),
                                             get_string('settings_meeting_timeout_desc', 'block_helpmenow'),
                                             array('h' => 2, 'm' => 0)));
+
+foreach ($plugins as $pluginname) {
+    $path = "$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/settings.php";
+    if (file_exists($path)) {
+        require($path);
+    }
+}
+
 ?>
