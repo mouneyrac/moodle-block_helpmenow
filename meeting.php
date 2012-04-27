@@ -127,6 +127,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     public function check_completion() {
         global $CFG;
         # todo: right now assuming the setting will be in number of hours
+        # change to minutes?
         return time() > ($this->timecreated + ((($CFG->helpmenow_meeting_timeout * 60) + $CFG->helpmenow_meeting_timeout) * 60));
     }
 

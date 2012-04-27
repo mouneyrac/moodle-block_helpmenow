@@ -28,7 +28,7 @@ abstract class helpmenow_db_object {
 
     /**
      * Array of required db fields. This must be overridden by the child. The
-     * required values for all children are below.
+     * required fields for all children are below.
      * @var array $required_fields
      */
     protected $required_fields = array(
