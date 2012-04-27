@@ -29,6 +29,12 @@ define('HELPMENOW_G2M_REST_BASE_URI', 'https://api.citrixonline.com/G2M/rest/');
 
 class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     /**
+     * Plugin name
+     * @var string $plugin
+     */
+    public $plugin = 'gotomeeting';
+
+    /**
      * Cron
      * @return boolean
      */

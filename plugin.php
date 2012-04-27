@@ -66,7 +66,7 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
      */
     public static function install() {
         $plugin = new static();
-        $last_cron = 0;
+        $plugin->last_cron = 0;
         $plugin->insert();
     }
 
@@ -85,7 +85,7 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
     public final static function install_all() {
         $success = true;
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
-            $class = self::get_class($plugin);
+            $class = self::get_class($pluginname);
             $success = $success and $class::install();
         }
         return $success;
