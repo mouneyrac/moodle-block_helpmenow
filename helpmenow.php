@@ -41,7 +41,8 @@ if (!record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
 # title, navbar, and a nice box
 $title = get_string('helpmenow', 'block_helpmenow');
 $nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
+$refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_helper_refresh_rate}\" />";
+print_header($title, $title, build_navigation($nav), '', $refresh);
 print_box_start('generalbox');
 
 $queues = helpmenow_queue::get_queues_by_user();

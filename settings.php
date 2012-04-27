@@ -52,6 +52,13 @@ $settings->add(new admin_setting_configtext('helpmenow_refresh_rate',
                                             PARAM_INT,
                                             4));
 
+$settings->add(new admin_setting_configtext('helpmenow_helper_refresh_rate',
+                                            get_string('settings_helper_refresh_rate', 'block_helpmenow'),
+                                            get_string('settings_helper_refresh_rate_desc', 'block_helpmenow'),
+                                            30,
+                                            PARAM_INT,
+                                            4));
+
 $settings->add(new admin_setting_configcheckbox('helpmenow_autocreate_course_queue',
                                                 get_string('settings_autocreate_queue', 'block_helpmenow'),
                                                 get_string('settings_autocreate_queue_desc', 'block_helpmenow'),

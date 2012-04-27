@@ -62,6 +62,7 @@ class block_helpmenow extends block_base {
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
 
+        $first = true;
         $queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
             switch ($q->get_privilege()) {
@@ -69,6 +70,11 @@ class block_helpmenow extends block_base {
                 # todo: interface for helpers moved to window, but do we want anything here?
                 break;
             case HELPMENOW_QUEUE_HELPEE:
+                if ($first) {
+                    $first = false;
+                } else {
+                    $this->content->text .= '<hr />';
+                }
                 # queue name
                 $this->content->text .= "<b>" . $q->name . "</b><br />";
 
@@ -88,7 +94,6 @@ class block_helpmenow extends block_base {
                         $this->content->text .= get_string('queue_na_short', 'block_helpmenow') . "<br />";
                     }
                 }
-                $this->content->text .= '<hr />';
                 break;
             default:
             }

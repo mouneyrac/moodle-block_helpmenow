@@ -93,17 +93,16 @@ if (isset($request->meetingid)) {
 # title, navbar, and a nice box
 $title = get_string('connect', 'block_helpmenow');
 $nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
+$refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_refresh_rate}\" />";
+print_header($title, $title, build_navigation($nav), '', $refresh);
 
 # set the last refresh so cron doesn't clean this up
 $request->last_refresh = time();
 $request->update();
 # todo: display some sort of cancel link
 
-# refresh after some configurable number of seconds
-$refresh_url = new moodle_url();
-$refresh_url->param('requestid', $request->id);
-redirect($refresh_url->out(), get_string('please_wait', 'block_helpmenow'), $CFG->helpmenow_refresh_rate);
+$please_wait = get_string('please_wait', 'block_helpmenow');
+print_box("<p align='center'>$please_wait</p>");
 
 # footer
 print_footer();

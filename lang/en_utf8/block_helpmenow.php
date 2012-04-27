@@ -73,7 +73,7 @@ $string['auto_queue_desc'] = 'Course Queue';
 
 # settings
 # $string['settings_heading'] = 'Help Me Now Settings';
-# $string['settings_heading_desc'] = '';  # todo
+# $string['settings_heading_desc'] = '';
 $string['settings_plugin'] = 'Default plugin';
 $string['settings_plugin_desc'] = 'Default plugin queues should use';
 $string['settings_meeting_timeout'] = 'Meeting timeout';
@@ -82,6 +82,8 @@ $string['settings_request_timeout'] = 'Request timeout';
 $string['settings_request_timeout_desc'] = 'Time before request is deemed abandoned';
 $string['settings_refresh_rate'] = 'Request refresh rate';
 $string['settings_refresh_rate_desc'] = 'Time in seconds between refreshes when waiting for a meeting';
+$string['settings_helper_refresh_rate'] = 'Helper refresh rate';
+$string['settings_helper_refresh_rate_desc'] = 'Time in seconds between refreshes on helper interface';
 $string['settings_autocreate_queue'] = 'Autocreate course queues';
 $string['settings_autocreate_queue_desc'] = 'Automatically creates one course queue with the shortname of the course in each course';
 $string['settings_autoadd_helpers'] = 'Autoadd course queue helpers';
