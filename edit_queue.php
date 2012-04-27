@@ -63,6 +63,7 @@ $form = $class::get_form();
 if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
 } else if ($formdata = $form->get_data()) {     # submitted
+    $formdata = stripslashes_recursive($formdata);  # stupid forms addslashes when we are already doing it
     # todo: check returned value for success
     $class::process_form($formdata);
     redirect($admin_url);   # redirect back to admin.php

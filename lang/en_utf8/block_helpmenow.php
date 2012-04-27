@@ -35,7 +35,7 @@ $string['login'] = 'Log In';
 $string['logout'] = 'Log Out';
 $string['helper_link'] = 'My Queues';
 $string['admin_link'] = 'Manage Queues';
-$string['queue_na_short'] = 'Sorry, this queue is not available.';
+$string['queue_na_short'] = 'Sorry, this queue is not currently available.';
 
 # new_request.php
 $string['new_request_heading'] = 'New Request';
