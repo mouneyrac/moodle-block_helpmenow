@@ -38,11 +38,11 @@ foreach ($plugins as $pluginname) {
 }
 
 # block
-$string['new_request'] = 'Request Meeting';
+$string['new_request'] = 'Get Help';
 $string['pending'] = 'Your pending request:';
 $string['login'] = 'Log In';
 $string['logout'] = 'Log Out';
-$string['helper_link'] = 'My Queues';
+$string['helper_link'] = 'Open My Queues';
 $string['admin_link'] = 'Manage Queues';
 $string['queue_na_short'] = 'Sorry, this queue is not currently available.';
 
