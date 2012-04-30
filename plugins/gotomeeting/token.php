@@ -28,7 +28,6 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.ph
 require_once(dirname(__FILE__) . '/meeting.php');
 require_once(dirname(__FILE__) . '/user2plugin.php');
 
-define('HELPMENOW_G2M_API_KEY', '256d73eed85dc0b50f33562e654f6f02');    # todo: config option
 define('HELPMENOW_G2M_OAUTH_EXCHANGE_URI', 'https://api.citrixonline.com/oauth/access_token');
 define('HELPMENOW_G2M_OAUTH_AUTH_URI', 'https://api.citrixonline.com/oauth/authorize');
 
