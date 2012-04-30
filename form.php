@@ -45,7 +45,7 @@ class helpmenow_request_form extends moodleform {
         $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 140, 'client');
 
         $buttonarray = array();
-        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
+        $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('submitrequest', 'block_helpmenow'));
         $buttonarray[] = &$mform->createElement('reset', 'resetbutton', get_string('revert'));
         $buttonarray[] = &$mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);

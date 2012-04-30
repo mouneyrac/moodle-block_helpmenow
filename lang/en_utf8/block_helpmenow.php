@@ -49,6 +49,7 @@ $string['queue_na_short'] = 'Sorry, this queue is not currently available.';
 # new_request.php
 $string['new_request_heading'] = 'New Request';
 $string['description'] = 'Description (140 characters or less)';
+$string['submitrequest'] = 'Submit request';
 
 # connect.php
 $string['connect'] = 'Connecting';
