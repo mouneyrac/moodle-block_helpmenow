@@ -40,7 +40,10 @@ class helpmenow_queue_gotomeeting extends helpmenow_queue {
     public function login() {
         global $USER, $CFG;
 
-        $token_url = $CFG->wwwroot . '/blocks/helpmenow/plugins/gotomeeting/token.php';
+        $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
+        $token_url->param('redirect', qualified_me());
+        $token_url = $token_url->out();
+
         # check if we have a user2plugin record
         if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
             $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);

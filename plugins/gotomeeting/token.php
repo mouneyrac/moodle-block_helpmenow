@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Hacked together script to get our oauth token
+ * Handles getting OAuth tokens
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -25,8 +25,8 @@
 
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 
-require_once(dirname(__FILE__) . '/meeting_gotomeeting.php');
-require_once(dirname(__FILE__) . '/user2plugin_gotomeeting.php');
+require_once(dirname(__FILE__) . '/meeting.php');
+require_once(dirname(__FILE__) . '/user2plugin.php');
 
 define('HELPMENOW_G2M_API_KEY', '256d73eed85dc0b50f33562e654f6f02');    # todo: config option
 define('HELPMENOW_G2M_OAUTH_EXCHANGE_URI', 'https://api.citrixonline.com/oauth/access_token');
@@ -39,10 +39,7 @@ require_login(0, false);
 # get our parameters
 
 $code = optional_param('code', 0, PARAM_TEXT);
-
-$title = 'Token';   # todo: language string
-$nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
+$redirect = optional_param('redirect', '', PARAM_TEXT);
 
 $api_key = HELPMENOW_G2M_API_KEY;
 
@@ -74,22 +71,28 @@ if ($code) {
     $user2plugin->token_expiration = $oauth->expires_in + time();
     $user2plugin->refresh_token = $oauth->refresh_token;
     $user2plugin->update();
-} else {
-    $this_url = new moodle_url();
-    $this_url = $this_url->out();
-    $citrix_url = HELPMENOW_G2M_OAUTH_AUTH_URI;
-    $params = array(
-        'client_id' => $api_key,
-        'redirect_uri' => $this_url,
-    );
-    $fields = array();
-    foreach ($params as $f => $v) {
-        $fields[] = urlencode($f) . '=' . urlencode($v);
-    }
-    $fields = implode('&', $fields);
-    $citrix_url .= "?$fields";
-    echo "<p><a href='$citrix_url'>Get an OAuth token</a></p>";     # todo: language string
+    redirect($redirect);
 }
+
+$title = 'Token';   # todo: language string
+$nav = array(array('name' => $title));
+print_header($title, $title, build_navigation($nav));
+
+$this_url = new moodle_url();
+$this_url->param('redirect', $redirect);
+$this_url = $this_url->out();
+$citrix_url = HELPMENOW_G2M_OAUTH_AUTH_URI;
+$params = array(
+    'client_id' => $api_key,
+    'redirect_uri' => $this_url,
+);
+$fields = array();
+foreach ($params as $f => $v) {
+    $fields[] = urlencode($f) . '=' . urlencode($v);
+}
+$fields = implode('&', $fields);
+$citrix_url .= "?$fields";
+echo "<p><a href='$citrix_url'>Get an OAuth token</a></p>";     # todo: language string
 
 print_footer();
 

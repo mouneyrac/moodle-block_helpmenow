@@ -108,7 +108,10 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
                 # todo: we need a way to handle getting a new oauth token for cron
                 return false;
             }
-            redirect($CFG->wwwroot . '/blocks/helpmenow/plugins/gotomeeting/token.php');
+            $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
+            $token_url->param('redirect', qualified_me());
+            $token_url = $token_url->out();
+            redirect($token_url);
         }
 
         return json_decode($data);
