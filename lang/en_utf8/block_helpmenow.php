@@ -33,7 +33,6 @@ $plugins = get_list_of_plugins('plugins', '', dirname(dirname(dirname(__FILE__))
 foreach ($plugins as $pluginname) {
     $path = dirname(dirname(dirname(__FILE__))) . "/plugins/$pluginname/lang/en_utf8.php";
     if (file_exists($path)) {
-        echo "$path";
         require($path);
     }
 }
