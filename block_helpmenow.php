@@ -61,6 +61,10 @@ class block_helpmenow extends block_base {
 
         # For now, restrict to tech dept for testing.
         switch ($USER->id) {
+            # test accounts:
+        case 57219:
+        case 56956:
+            # tech staff
         case 8712:
         case 58470:
         case 930:
