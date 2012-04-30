@@ -40,11 +40,12 @@ $settings->add(new admin_setting_configselect('helpmenow_default_plugin',
                                               'native',
                                               $choices));
 
-$settings->add(new admin_setting_configtime('helpmenow_request_timeout',
-                                            'helpmenow_request_timeout2',
+$settings->add(new admin_setting_configtext('helpmenow_request_timeout',
                                             get_string('settings_request_timeout', 'block_helpmenow'),
                                             get_string('settings_request_timeout_desc', 'block_helpmenow'),
-                                            array('h' => 0, 'm' => 5)));
+                                            5,
+                                            PARAM_INT,
+                                            4));
 
 $settings->add(new admin_setting_configtext('helpmenow_refresh_rate',
                                             get_string('settings_refresh_rate', 'block_helpmenow'),
@@ -70,11 +71,12 @@ $settings->add(new admin_setting_configcheckbox('helpmenow_autoadd_queue_helpers
                                                 get_string('settings_autoadd_helpers_desc', 'block_helpmenow'),
                                                 0));
 
-$settings->add(new admin_setting_configtime('helpmenow_meeting_timeout',
-                                            'helpmenow_meeting_timeout2',
+$settings->add(new admin_setting_configtext('helpmenow_meeting_timeout',
                                             get_string('settings_meeting_timeout', 'block_helpmenow'),
                                             get_string('settings_meeting_timeout_desc', 'block_helpmenow'),
-                                            array('h' => 2, 'm' => 0)));
+                                            30,
+                                            PARAM_INT,
+                                            4));
 
 foreach ($plugins as $pluginname) {
     $path = "$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/settings.php";

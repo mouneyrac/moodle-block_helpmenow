@@ -125,7 +125,10 @@ class block_helpmenow extends block_base {
         if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
-            $this->content->text .= "<hr />" . link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+            if (!$first) {
+                $this->content->text .= "<hr />";
+            }
+            $this->content->text .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
         }
 
         # admin link

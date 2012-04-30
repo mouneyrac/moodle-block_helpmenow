@@ -117,7 +117,7 @@ class helpmenow_request extends helpmenow_db_object {
      */
     public final static function clean_requests() {
         global $CFG;
-        $cutoff = time() - ((($CFG->helpmenow_request_timeout['h'] * 60) + $CFG->helpmenow_request_timeout['m']) * 60);
+        $cutoff = time() - ($CFG->helpmenow_request_timeout * 60);
         return delete_records_select('block_helpmenow_request', "last_refresh < $cutoff");
     }
 

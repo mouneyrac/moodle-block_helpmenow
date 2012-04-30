@@ -28,6 +28,16 @@ $string['pluginname'] = 'Help Me Now Block';
 $string['blockname'] = 'Help Me Now';
 $string['helpmenow'] = 'Help Me Now';
 
+# plugin strings
+$plugins = get_list_of_plugins('plugins', '', dirname(dirname(dirname(__FILE__))));
+foreach ($plugins as $pluginname) {
+    $path = dirname(dirname(dirname(__FILE__))) . "/plugins/$pluginname/lang/en_utf8.php";
+    if (file_exists($path)) {
+        echo "$path";
+        require($path);
+    }
+}
+
 # block
 $string['new_request'] = 'Request Meeting';
 $string['pending'] = 'Your pending request:';

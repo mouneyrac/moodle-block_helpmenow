@@ -41,7 +41,7 @@ require_login(0, false);
 $code = optional_param('code', 0, PARAM_TEXT);
 $redirect = optional_param('redirect', '', PARAM_TEXT);
 
-$api_key = HELPMENOW_G2M_API_KEY;
+$api_key = $CFG->helpmenow_g2m_key;
 
 if ($code) {
     # set up exchanging our response key for an access token
