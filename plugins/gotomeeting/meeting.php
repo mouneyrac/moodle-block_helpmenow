@@ -97,7 +97,9 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return $string url
      */
     public function connect() {
-        return $this->join_url;
+        $connect_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/connect.php");
+        $connect_url->param('meetingid', $this->id);
+        return $connect_url->out();
     }
 
     /**

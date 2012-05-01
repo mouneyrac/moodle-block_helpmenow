@@ -23,7 +23,11 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+# settings
 $string['g2m_settings_key'] = 'GoToMeeting API Key';
 $string['g2m_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
+
+# connect.php
+$string['g2m_connecting'] = "You are being connected to GoToMeeting. Once it opens you may close this window.";
 
 ?>
