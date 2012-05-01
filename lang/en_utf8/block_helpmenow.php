@@ -53,6 +53,7 @@ $string['submitrequest'] = 'Submit request';
 
 # connect.php
 $string['connect'] = 'Connecting';
+$string['missing_helper'] = 'We\'re sorry, there are no available helpers at this time. Please try again later.';
 $string['please_wait'] = 'Please wait while we connect you...';
 
 # admin.php / edit.php

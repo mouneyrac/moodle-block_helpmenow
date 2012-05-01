@@ -108,7 +108,7 @@ abstract class helpmenow_db_object {
         if (isset($id)) {
             $this->id = $id;
             $this->load_from_db();
-        } else if (!empty($record)) {
+        } else if (isset($record)) {
             $this->load($record);
         }
         if (isset($id) or isset($record)) {

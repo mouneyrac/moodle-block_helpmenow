@@ -49,6 +49,10 @@ if ($connect) {
         # todo: print a permission failure message and exit
     }
 
+    if (isset($request->meetingid)) {
+        # todo: print an other helper beat you to the punch message and close
+    }
+
     # new meeting
     $meeting = helpmenow_meeting::new_instance($queue->plugin);
     $meeting->owner_userid = $USER->id;
@@ -72,6 +76,7 @@ if ($connect) {
 }
 
 # for the helpee/requester
+
 if ($USER->id !== $request->userid) {
     # todo: print a wrong user permission failure message and close
 }
@@ -90,19 +95,35 @@ if (isset($request->meetingid)) {
     redirect($url);
 }
 
+# check to make sure we still have a helper
+$queue = helpmenow_queue::get_instance($request->queueid);
+
 # title, navbar, and a nice box
 $title = get_string('connect', 'block_helpmenow');
 $nav = array(array('name' => $title));
-$refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_refresh_rate}\" />";
+$refresh = '';
+if ($queue->check_available()) {
+    $refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_refresh_rate}\" />";
+}
 print_header($title, $title, build_navigation($nav), '', $refresh);
 
-# set the last refresh so cron doesn't clean this up
-$request->last_refresh = time();
-$request->update();
-# todo: display some sort of cancel link
+if ($queue->check_available()) {
+    # set the last refresh so cron doesn't clean this up
+    $request->last_refresh = time();
+    $request->update();
+    # todo: display some sort of cancel link
 
-$please_wait = get_string('please_wait', 'block_helpmenow');
-print_box("<p align='center'>$please_wait</p>");
+    $message = get_string('please_wait', 'block_helpmenow');
+} else {
+    $request->delete();
+
+    if (strlen($CFG->helpmenow_missing_helper)) {
+        $message = $CFG->helpmenow_missing_helper;
+    } else {
+        $message = get_string('missing_helper', 'block_helpmenow');
+    }
+}
+print_box("<p align='center'>$message</p>");
 
 # footer
 print_footer();
