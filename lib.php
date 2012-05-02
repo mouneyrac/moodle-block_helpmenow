@@ -98,4 +98,17 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     }
 }
 
+function helpmenow_fatal_error($message, $print_header = true) {
+    $title = get_string('helpmenow', 'block_helpmenow');
+    $nav = array(array('name' => $title));
+    if ($print_header) {
+        print_header($title, $title, build_navigation($nav));
+        print_box($message);
+        print_footer();
+    } else {
+        echo $message;
+    }
+    die;
+}
+
 ?>

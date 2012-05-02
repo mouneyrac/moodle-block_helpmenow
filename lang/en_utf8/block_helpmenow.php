@@ -55,6 +55,8 @@ $string['submitrequest'] = 'Submit request';
 $string['connect'] = 'Connecting';
 $string['missing_helper'] = 'We\'re sorry, there are no available helpers at this time. Please try again later.';
 $string['please_wait'] = 'Please wait while we connect you...';
+$string['missing_request'] = 'Error: request does not exist.';
+$string['too_slow'] = 'Another helper has already answered this request.';
 
 # admin.php / edit.php
 $string['global_admin'] = 'Global Queues';
@@ -105,5 +107,7 @@ $string['helpmenow:course_queue_answer'] = 'Answer requests in course queues';
 $string['helpmenow:global_queue_answer'] = 'Answer requests in global queues';
 $string['helpmenow:manage_queues'] = 'Manage queue creation and helper assigning';
 $string['helpmenow:queue_ask'] = 'Ask for meetings in queues';
+
+$string['permission_error'] = 'You do not have permission to view this page. You may have been linked to it in error';
 
 ?>

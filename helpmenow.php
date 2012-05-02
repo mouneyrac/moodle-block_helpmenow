@@ -34,8 +34,7 @@ require_login(0, false);
 
 # check for helper
 if (!record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-    # todo: close
-    redirect();
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
 # title, navbar, and a nice box

@@ -39,10 +39,10 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 # check privileges/availability
 $queue = helpmenow_queue::get_instance($queueid);
 if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
-    # todo: print a permission failure message and close the window
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 if (!$queue->check_available()) {
-    # todo: print a queue not available message and close
+    helpmenow_fatal_error(get_string('missing_helper', 'block_helpmenow'));
 }
 $class = helpmenow_request::get_class($queue->plugin);
     
@@ -50,6 +50,7 @@ $class = helpmenow_request::get_class($queue->plugin);
 $form = $class::get_form();
 if ($form->is_cancelled()) {                # cancelled
     # todo: close the window
+    helpmenow_fatal_error('You may now close this window.');
 } else if ($formdata = $form->get_data()) {     # submitted
     $formdata = stripslashes_recursive($formdata);  # stupid forms addslashes when we are already doing it
     $request = $class::process_form($formdata);

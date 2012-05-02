@@ -39,18 +39,20 @@ $requestid = required_param('requestid', PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
 
 # get the request
-$request = helpmenow_request::get_instance($requestid);
+if (!$request = helpmenow_request::get_instance($requestid)) {
+    helpmenow_fatal_error(get_string('missing_request', 'block_helpmenow'));
+}
 
 # for the helper
 if ($connect) {
     # check privileges
     $queue = helpmenow_queue::get_instance($request->queueid);
     if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
-        # todo: print a permission failure message and exit
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
 
     if (isset($request->meetingid)) {
-        # todo: print an other helper beat you to the punch message and close
+        helpmenow_fatal_error(get_string('too_slow', 'block_helpmenow'));
     }
 
     # new meeting
@@ -78,7 +80,7 @@ if ($connect) {
 # for the helpee/requester
 
 if ($USER->id !== $request->userid) {
-    # todo: print a wrong user permission failure message and close
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
 # if we have a meeting

@@ -253,7 +253,8 @@ abstract class helpmenow_db_object {
         # we have to get the record instead of passing the id to the
         # constructor as we have no idea what class the record belongs to
         if (isset($id)) {
-            $record = get_record("block_helpmenow_" . static::table, 'id', $id);
+            if (!$record = get_record("block_helpmenow_" . static::table, 'id', $id));
+            return false;
         }
 
         $class = static::get_class($record->plugin);
