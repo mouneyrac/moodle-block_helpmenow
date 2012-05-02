@@ -100,7 +100,7 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
             $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
             $plugin = self::get_instance(null, $record);
-            if (time() >= $plugin->last_cron + $plugin->cron_interval) {
+            if (($plugin->cron_interval != 0) and (time() >= $plugin->last_cron + $plugin->cron_interval)) {
                 $class = "helpmenow_plugin_$pluginname";    # we don't need a require here
                 $success = $success and $class::cron();
                 $plugin->last_cron = time();
