@@ -128,6 +128,6 @@ if ($queue->check_available()) {
 print_box("<p align='center'>$message</p>");
 
 # footer
-print_footer();
+//print_footer();
 
 ?>

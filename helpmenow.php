@@ -95,6 +95,6 @@ EOF;
 }
 
 # footer
-print_footer();
+//print_footer();
 
 ?>
