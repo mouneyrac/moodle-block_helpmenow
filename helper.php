@@ -43,6 +43,8 @@ class helpmenow_helper extends helpmenow_db_object {
         'queueid',
         'userid',
         'isloggedin',
+        'last_action',
+        'last_refresh',
     );
 
     /**
@@ -62,6 +64,18 @@ class helpmenow_helper extends helpmenow_db_object {
      * @var int $isloggedin
      */
     public $isloggedin;
+
+    /**
+     * Timestamp of last action performed by the user.
+     * @var int $last_action
+     */
+    public $last_action;
+
+    /**
+     * Timestamp of last refresh of the the helper interface by user.
+     * @var int $last_refresh
+     */
+    public $last_refresh;
 }
 
 ?>
