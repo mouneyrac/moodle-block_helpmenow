@@ -78,6 +78,27 @@ $settings->add(new admin_setting_configtext('helpmenow_meeting_timeout',
                                             PARAM_INT,
                                             4));
 
+$settings->add(new admin_setting_configtext('helpmenow_helper_refresh_timeout',
+                                            get_string('settings_helper_refresh_timeout', 'block_helpmenow'),
+                                            get_string('settings_helper_refresh_timeout_desc', 'block_helpmenow'),
+                                            5,
+                                            PARAM_INT,
+                                            4));
+
+$settings->add(new admin_setting_configtext('helpmenow_helper_activity_timeout',
+                                            get_string('settings_helper_activity_timeout', 'block_helpmenow'),
+                                            get_string('settings_helper_activity_timeout_desc', 'block_helpmenow'),
+                                            10,
+                                            PARAM_INT,
+                                            4));
+
+$settings->add(new admin_setting_configtext('helpmenow_helper_activity_warning',
+                                            get_string('settings_helper_activity_warning', 'block_helpmenow'),
+                                            get_string('settings_helper_activity_warning_desc', 'block_helpmenow'),
+                                            5,
+                                            PARAM_INT,
+                                            4));
+
 foreach ($plugins as $pluginname) {
     $path = "$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/settings.php";
     if (file_exists($path)) {

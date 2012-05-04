@@ -54,7 +54,7 @@ $string['submitrequest'] = 'Submit request';
 # connect.php
 $string['connect'] = 'Connecting';
 $string['missing_helper'] = 'We\'re sorry, there are no available helpers at this time. Please try again later.';
-$string['please_wait'] = 'Please wait while we connect you...';
+$string['please_wait'] = 'Helpers may currently be helping other users. Please wait while we attempt connect you.';
 $string['missing_request'] = 'Error: request does not exist.';
 $string['too_slow'] = 'Another helper has already answered this request.';
 
@@ -80,7 +80,9 @@ $string['back'] = 'Back to queue management';
 
 # helper interface
 $string['loggedout'] = 'You are currently logged out.';
-$string['loggedin'] = 'You are currently logged in.';
+$string['loggedin'] = '';
+$string['inactive_message'] = 'Due to inactivity you will soon be logged out of the following queues:';
+$string['inactive_link'] = 'Click here to remain logged in';
 
 $string['auto_queue_desc'] = 'Course Queue';
 
@@ -101,6 +103,12 @@ $string['settings_autocreate_queue'] = 'Autocreate course queues';
 $string['settings_autocreate_queue_desc'] = 'Automatically creates one course queue with the shortname of the course in each course';
 $string['settings_autoadd_helpers'] = 'Autoadd course queue helpers';
 $string['settings_autoadd_helpers_desc'] = 'When autocreating course queues, also add helpers to the queue who have the queue answer capability in the course';
+$string['settings_helper_refresh_timeout'] = 'Helper refresh timeout';
+$string['settings_helper_refresh_timeout_desc'] = 'Time delay in minutes before logging out a helper who has not refreshed the helper interace page';
+$string['settings_helper_activity_timeout'] = 'Helper activity timeout';
+$string['settings_helper_activity_timeout_desc'] = 'Time delay in minutes before logging out a helper who has not answered pending requests';
+$string['settings_helper_activity_warning'] = 'Helper activity warning';
+$string['settings_helper_activity_warning_desc'] = 'Time delay in minutes before warning a helper they will be logged out';
 
 # caps
 $string['helpmenow:course_queue_answer'] = 'Answer requests in course queues';

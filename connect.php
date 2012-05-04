@@ -74,6 +74,25 @@ if ($connect) {
     $request->meetingid = $meeting->id;
     $request->update();
 
+    $only_request = true;
+    foreach ($queue->request as $r) {
+        if ($r->id == $requestid) {
+            continue;
+        }
+        $only_request = false;
+        break;
+    }
+
+    if ($only_request) {
+        foreach ($queue->helper as $h) {
+            $h->last_activity = 0;
+            $h->update();
+        }
+    } else {
+        $queue->helper[$USER->id]->last_activity = 0;
+        $queue->helper[$USER->id]->update();
+    }
+
     redirect($url);
 }
 

@@ -25,11 +25,9 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
-/**
- * TODO:
- *
- * g2m api key
- */
+$settings->add(new admin_setting_heading('heading',
+                                         get_string('g2m_settings_heading', 'block_helpmenow'),
+                                         get_string('g2m_settings_heading_desc', 'block_helpmenow')));
 
 $settings->add(new admin_setting_configtext('helpmenow_g2m_key',
                                             get_string('g2m_settings_key', 'block_helpmenow'),
@@ -37,5 +35,4 @@ $settings->add(new admin_setting_configtext('helpmenow_g2m_key',
                                             '',
                                             PARAM_TEXT,
                                             50));
-
 ?>

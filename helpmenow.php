@@ -32,23 +32,51 @@ require_once(dirname(__FILE__) . '/lib.php');
 # require login
 require_login(0, false);
 
+# get paramters
+$active = optional_param('active', 0, PARAM_INT);
+
 # check for helper
 if (!record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
+$this_url = new moodle_url();
+$refresh_url = $this_url->out();
+
 # title, navbar, and a nice box
 $title = get_string('helpmenow', 'block_helpmenow');
 $nav = array(array('name' => $title));
-$refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_helper_refresh_rate}\" />";
+$refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_helper_refresh_rate}; url=$refresh_url\" />";
 print_header($title, $title, build_navigation($nav), '', $refresh);
 print_box_start('generalbox');
 
 $pending_request = false;
+$warning = array();
+$output = '';
 $queues = helpmenow_queue::get_queues_by_user();
 foreach ($queues as $q) {
-    print_box_start('generalbox');
-    print_heading($q->name);
+    $output .= print_box_start('generalbox', '', true);
+    $output .= print_heading($q->name, '', 2, 'main', true);
+
+    foreach ($q->request as $r) {
+        if (isset($r->meetingid)) {
+            continue;
+        }
+        $pending_request = true;
+
+        # keeping track of activity/logging out helpers who are afk
+        if ($q->helper[$USER->id]->isloggedin === 1) {
+            if (($q->helper[$USER->id]->last_activity == 0) or $q->helper[$USER->id]->is_busy() or $active) {
+                $q->helper[$USER->id]->last_activity == time();
+            } else if ($q->helper[$USER->id]->last_activity < (time() - ($CFG->helpmenow_helper_activity_timout* 60))) {
+                $q->logout();
+            } else if ($q->helper[$USER->id]->last_activity < (time() - ($CFG->helpmenow_helper_activity_warning * 60))) {
+                $warning[] = $q->name;
+            }
+        }
+        break;
+    }
+
     $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
     $login->param('queueid', $q->id);
     if ($q->helper[$USER->id]->isloggedin) {
@@ -61,38 +89,56 @@ foreach ($queues as $q) {
         $login_text = get_string('login', 'block_helpmenow');
     }
     $login = $login->out();
-    echo "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
-    echo "<ul>";
-    # requests, these are in ascending order thanks to the queue object
+    $output .= "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
+    $output .= "<ul>";
+
+    # requests; these are in ascending order already
     foreach ($q->request as $r) {
         # if a request has a meetingid, another helper has already answered
         if (isset($r->meetingid)) {
             continue;
         }
-        $pending_request = true;
+
         $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
         $connect->param('requestid', $r->id);
         $connect->param('connect', 1);
         $name = fullname(get_record('user', 'id', $r->userid));
-        echo "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
+        $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
             userdate($r->timecreated) . ":<br />";
-        echo $r->description . "</li>";
+        $output .= $r->description . "</li>";
     }
-    echo "</ul>";
-    print_box_end();
+    $output .= "</ul>";
+    $output .= print_box_end($true);
+
+    $q->helper[$USER->id]->last_refresh = time();
+    $q->helper[$USER->id]->update();
 }
 
-print_box_end();
-
+# play a sound and try to get focus
 if ($pending_request) {
     $soundfile = $CFG->wwwroot . '/blocks/helpmenow/cowbell.wav';
-    echo <<<EOF
+    $output .= <<<EOF
 <script type='text/javascript'>
     window.focus();
 </script>
 <embed src="$soundfile" autostart="true" width="0" height="0" id="chime" enablejavascript="true" />
 EOF;
 }
+
+# print the log out warning if necessary
+if (count($warning) !== 0) {
+    $this_url->param('active', 1);
+    $this_url = $this_url->out();
+    $inactive_link = get_string('inactive_link', 'block_helpmenow');
+    $warning_message = print_box_start('generalbox', '', true) .
+        get_string('inactive_message', 'block_helpmenow') . "<br />" .
+        implode(', ', $warning) . "<br /><a href='$this_url'>$inactive_link</a>";
+    $output = $warning_message . $output;
+}
+
+echo $output;
+
+print_box_end();
 
 # footer
 //print_footer();

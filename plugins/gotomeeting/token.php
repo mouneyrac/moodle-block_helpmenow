@@ -91,7 +91,8 @@ foreach ($params as $f => $v) {
 }
 $fields = implode('&', $fields);
 $citrix_url .= "?$fields";
-echo "<p><a href='$citrix_url'>Get an OAuth token</a></p>";     # todo: language string
+echo "<p>" . get_string('g2m_token_desc', 'block_helpmenow') . "</p>";
+echo "<p><a href='$citrix_url'>" . get_string('g2m_token_link', 'block_helpmenow') . "</a></p>";
 
 print_footer();
 

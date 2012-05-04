@@ -25,8 +25,6 @@
 
 require_once(dirname(__FILE__) . '/db_object.php');
 
-# TODO: do we want to track logged in via unixtime or boolean?
-
 class helpmenow_helper extends helpmenow_db_object {
     const table = 'helper';
 
@@ -76,6 +74,28 @@ class helpmenow_helper extends helpmenow_db_object {
      * @var int $last_refresh
      */
     public $last_refresh;
+
+    /**
+     * Plugins can override this method to provide status information of helpers
+     * @return boolean
+     */
+    public function is_busy() {
+        return false;
+    }
+
+    public final static function auto_logout() {
+        global $CFG;
+        $cutoff = time() - ($CFG->helpmenow_helper_refresh_timeout * 60);
+        $records = get_records_select('block_helpmenow_helper', "last_refresh < $cutoff");
+        $helpers = helpmenow_helper::objects_from_records($records);
+        foreach ($helpers as $h) {
+            if ($helper->isloggedin === 0) {
+                continue;
+            }
+            $h->isloggedin = 0;
+            $h->update();
+        }
+    }
 }
 
 ?>

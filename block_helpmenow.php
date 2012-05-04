@@ -155,7 +155,8 @@ class block_helpmenow extends block_base {
     function cron() {
         $success = true;
 
-        # todo: log out helpers who are no longer logged into moodle
+        # clean up helpers
+        $success = $success and helpmenow_helper::auto_logout();
 
         # clean up old meetings
         $success = $success and helpmenow_meeting::clean_meetings();
