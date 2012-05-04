@@ -65,12 +65,12 @@ foreach ($queues as $q) {
         $pending_request = true;
 
         # keeping track of activity/logging out helpers who are afk
-        if ($q->helper[$USER->id]->isloggedin === 1) {
-            if (($q->helper[$USER->id]->last_activity == 0) or $q->helper[$USER->id]->is_busy() or $active) {
-                $q->helper[$USER->id]->last_activity == time();
-            } else if ($q->helper[$USER->id]->last_activity < (time() - ($CFG->helpmenow_helper_activity_timout* 60))) {
+        if ($q->helper[$USER->id]->isloggedin == 1) {
+            if (($q->helper[$USER->id]->last_action == 0) or $q->helper[$USER->id]->is_busy() or $active) {
+                $q->helper[$USER->id]->last_action = time();
+            } else if ($q->helper[$USER->id]->last_action < (time() - ($CFG->helpmenow_helper_activity_timeout * 60))) {
                 $q->logout();
-            } else if ($q->helper[$USER->id]->last_activity < (time() - ($CFG->helpmenow_helper_activity_warning * 60))) {
+            } else if ($q->helper[$USER->id]->last_action < (time() - ($CFG->helpmenow_helper_activity_warning * 60))) {
                 $warning[] = $q->name;
             }
         }
@@ -108,7 +108,7 @@ foreach ($queues as $q) {
         $output .= $r->description . "</li>";
     }
     $output .= "</ul>";
-    $output .= print_box_end($true);
+    $output .= print_box_end(true);
 
     $q->helper[$USER->id]->last_refresh = time();
     $q->helper[$USER->id]->update();
@@ -130,9 +130,10 @@ if (count($warning) !== 0) {
     $this_url->param('active', 1);
     $this_url = $this_url->out();
     $inactive_link = get_string('inactive_link', 'block_helpmenow');
-    $warning_message = print_box_start('generalbox', '', true) .
-        get_string('inactive_message', 'block_helpmenow') . "<br />" .
-        implode(', ', $warning) . "<br /><a href='$this_url'>$inactive_link</a>";
+    $warning_message = print_box_start('generalbox', '', true) . "<p align='center'>" .
+        get_string('inactive_message', 'block_helpmenow') . "</p><p align='center'>" .
+        implode(', ', $warning) . "</p><p align='center'><a href='$this_url'>$inactive_link</a></p>" .
+        print_box_end(true);
     $output = $warning_message . $output;
 }
 

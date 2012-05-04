@@ -97,6 +97,7 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return $string url
      */
     public function connect() {
+        global $CFG;
         $connect_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/connect.php");
         $connect_url->param('meetingid', $this->id);
         return $connect_url->out();
@@ -107,6 +108,10 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      * @return boolean
      */
     public function check_completion() {
+        global $CFG;
+        return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60));
+
+        # todo: get below working:
         $attendees = helpmenow_plugin_gotomeeting::api("$this->meetingid/attendees", 'GET');
         foreach ($attendees as $a) {
             if (!isset($a->endTime)) {

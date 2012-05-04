@@ -85,11 +85,11 @@ if ($connect) {
 
     if ($only_request) {
         foreach ($queue->helper as $h) {
-            $h->last_activity = 0;
+            $h->last_action = 0;
             $h->update();
         }
     } else {
-        $queue->helper[$USER->id]->last_activity = 0;
+        $queue->helper[$USER->id]->last_action = 0;
         $queue->helper[$USER->id]->update();
     }
 

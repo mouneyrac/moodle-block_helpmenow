@@ -61,19 +61,19 @@ class helpmenow_helper extends helpmenow_db_object {
      * Integer boolean, login status of helper
      * @var int $isloggedin
      */
-    public $isloggedin;
+    public $isloggedin = 0;
 
     /**
      * Timestamp of last action performed by the user.
      * @var int $last_action
      */
-    public $last_action;
+    public $last_action = 0;
 
     /**
      * Timestamp of last refresh of the the helper interface by user.
      * @var int $last_refresh
      */
-    public $last_refresh;
+    public $last_refresh = 0;
 
     /**
      * Plugins can override this method to provide status information of helpers
@@ -86,14 +86,16 @@ class helpmenow_helper extends helpmenow_db_object {
     public final static function auto_logout() {
         global $CFG;
         $cutoff = time() - ($CFG->helpmenow_helper_refresh_timeout * 60);
-        $records = get_records_select('block_helpmenow_helper', "last_refresh < $cutoff");
-        $helpers = helpmenow_helper::objects_from_records($records);
-        foreach ($helpers as $h) {
-            if ($helper->isloggedin === 0) {
-                continue;
+        if ($records = get_records_select('block_helpmenow_helper', "last_refresh < $cutoff")) {
+            $helpers = helpmenow_helper::objects_from_records($records);
+            foreach ($helpers as $h) {
+                if ($h->isloggedin == 0) {
+                    continue;
+                }
+                $h->isloggedin = 0;
+                $h->last_action = 0;
+                $h->update();
             }
-            $h->isloggedin = 0;
-            $h->update();
         }
     }
 }

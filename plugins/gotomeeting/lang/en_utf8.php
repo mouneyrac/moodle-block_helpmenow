@@ -33,7 +33,11 @@ $string['g2m_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
 $string['g2m_connecting'] = "You are being connected to GoToMeeting. Once it opens you may close this window.";
 
 # token.php
-$string['g2m_token_desc'] = "To continue we need to be authorized to create GoToMeeting sessions on your behalf. After clicking the link below you will be asked to log in to GoToMeeting. Once you log in, please click \"Allow\".";
+$string['g2m_token_desc'] = "
+    To continue we need to be authorized to create GoToMeeting sessions on your behalf.
+    <ol><li>Click the link below.</li>
+    <li>Log in to GoToMeeting.</li>
+    <li>Click &quot;Allow&quot;.</li></ol>";
 $string['g2m_token_link'] = "Allow Access";
 
 ?>

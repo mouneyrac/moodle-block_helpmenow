@@ -143,11 +143,12 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      */
     public final static function clean_meetings() {
         $success = true;
-        $meetings = get_records('block_helpmenow_meeting');
-        foreach ($meetings as $k => $m) {
-            $meetings[$k] = helpmenow_meeting::get_instance(null, $m);
-            if ($meetings[$k]->check_completion) {
-                $success = $success and $meetings[$k]->delete();
+        if ($meetings = get_records('block_helpmenow_meeting')) {
+            foreach ($meetings as $k => $m) {
+                $meetings[$k] = helpmenow_meeting::get_instance(null, $m);
+                if ($meetings[$k]->check_completion()) {
+                    $success = $success and $meetings[$k]->delete();
+                }
             }
         }
         return $success;

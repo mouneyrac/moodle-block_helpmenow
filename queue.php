@@ -155,6 +155,7 @@ class helpmenow_queue extends helpmenow_db_object {
      */
     public function logout() {
         global $USER;
+        $this->helper[$USER->id]->last_action = 0;
         return $this->set_login($USER->id, 0);
     }
 
@@ -191,7 +192,6 @@ class helpmenow_queue extends helpmenow_db_object {
         $helper = helpmenow_helper::new_instance($this->plugin);
         $helper->queueid = $this->id;
         $helper->userid = $userid;
-        $helper->isloggedin = 0;
         $rval = $helper->insert();
         $this->helper[$userid] = $helper;
         return $rval;
@@ -309,7 +309,9 @@ class helpmenow_queue extends helpmenow_db_object {
             ORDER BY q.weight
         ";
 
-        $records = get_records_sql($sql);
+        if (!$records = get_records_sql($sql)) {
+            return false;
+        }
         return helpmenow_queue::objects_from_records($records);
     }
 
@@ -333,7 +335,9 @@ class helpmenow_queue extends helpmenow_db_object {
             ORDER BY q.weight
         ";
 
-        $records = get_records_sql($sql);
+        if (!$records = get_records_sql($sql)) {
+            return false;
+        }
         return helpmenow_queue::objects_from_records($records);
     }
 }
