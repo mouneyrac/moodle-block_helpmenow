@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/helpmenow/db" VERSION="20120503" COMMENT="XMLDB file for Moodle blocks/helpmenow"
+<XMLDB PATH="blocks/helpmenow/db" VERSION="20120507" COMMENT="XMLDB file for Moodle blocks/helpmenow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -18,7 +18,8 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_queue_p_fk"/>
+        <KEY NAME="block_helpmenow_queue_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_helpmenow_helper" COMMENT="help me now queue helper" PREVIOUS="block_helpmenow_queue" NEXT="block_helpmenow_meeting">
@@ -36,8 +37,13 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_helper_q_fk"/>
+        <KEY NAME="block_helpmenow_helper_q_fk" TYPE="foreign" FIELDS="queueid" REFTABLE="block_helpmenow_queue" REFFIELDS="id" PREVIOUS="primary" NEXT="block_helpmenow_queue_p_fk"/>
+        <KEY NAME="block_helpmenow_queue_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="block_helpmenow_helper_q_fk"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="block_helpmenow_helper_uq_ux" UNIQUE="true" FIELDS="userid, queueid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="block_helpmenow_meeting" COMMENT="help me now queue meetings" PREVIOUS="block_helpmenow_helper" NEXT="block_helpmenow_meeting2user">
       <FIELDS>
@@ -51,7 +57,8 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_meeting_p_fk"/>
+        <KEY NAME="block_helpmenow_meeting_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_helpmenow_meeting2user" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting" NEXT="block_helpmenow_request">
@@ -66,8 +73,13 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_meeting2user_m_fk"/>
+        <KEY NAME="block_helpmenow_meeting2user_m_fk" TYPE="foreign" FIELDS="meetingid" REFTABLE="block_helpmenow_meeting" REFFIELDS="id" PREVIOUS="primary" NEXT="block_helpmenow_meeting2user_p_fk"/>
+        <KEY NAME="block_helpmenow_meeting2user_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="block_helpmenow_meeting2user_m_fk"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="block_helpmenow_meeting2user_mu_nx" UNIQUE="false" FIELDS="meetingid, userid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="block_helpmenow_request" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting2user" NEXT="block_helpmenow_user2plugin">
       <FIELDS>
@@ -84,7 +96,9 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_request_q_fk"/>
+        <KEY NAME="block_helpmenow_request_q_fk" TYPE="foreign" FIELDS="queueid" REFTABLE="block_helpmenow_queue" REFFIELDS="id" PREVIOUS="primary" NEXT="block_helpmenow_request_p_fk"/>
+        <KEY NAME="block_helpmenow_request_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="block_helpmenow_request_q_fk"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_helpmenow_user2plugin" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_request" NEXT="block_helpmenow_plugin">
@@ -98,10 +112,14 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_user2plugin_p_fk"/>
+        <KEY NAME="block_helpmenow_user2plugin_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="primary"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="block_helpmenow_user2plugin_up_ux" UNIQUE="true" FIELDS="userid, plugin"/>
+      </INDEXES>
     </TABLE>
-    <TABLE NAME="block_helpmenow_plugin" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_user2plugin">
+    <TABLE NAME="block_helpmenow_plugin" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_user2plugin" NEXT="block_helpmenow_log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="cron_interval"/>
         <FIELD NAME="cron_interval" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="last_cron"/>
@@ -113,8 +131,24 @@
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="plugin"/>
       </FIELDS>
       <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_plugin_p_uk"/>
+        <KEY NAME="block_helpmenow_plugin_p_uk" TYPE="unique" FIELDS="plugin" PREVIOUS="primary"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_helpmenow_log" COMMENT="Log HelpMeNow usage" PREVIOUS="block_helpmenow_plugin">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="action"/>
+        <FIELD NAME="action" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="details"/>
+        <FIELD NAME="details" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="action" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="details"/>
+      </FIELDS>
+      <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="block_helpmenow_log_uat_ux" UNIQUE="true" FIELDS="userid, action, timecreated"/>
+      </INDEXES>
     </TABLE>
   </TABLES>
 </XMLDB>
