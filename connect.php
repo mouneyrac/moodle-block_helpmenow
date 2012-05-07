@@ -93,6 +93,9 @@ if ($connect) {
         $queue->helper[$USER->id]->update();
     }
 
+    # log
+    helpmenow_log($USER->id, 'answered_request', "requestid: {$requestid}; meetingid: {$meeting->id}");
+
     redirect($url);
 }
 
@@ -106,6 +109,9 @@ if ($USER->id !== $request->userid) {
 if (isset($request->meetingid)) {
     # get the meeting
     $meeting = helpmenow_meeting::get_instance($request->meetingid);
+
+    # log
+    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$meeting->id}");
 
     # delete the request
     $request->delete();

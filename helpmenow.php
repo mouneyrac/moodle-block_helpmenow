@@ -69,6 +69,9 @@ foreach ($queues as $q) {
             if (($q->helper[$USER->id]->last_action == 0) or $q->helper[$USER->id]->is_busy() or $active) {
                 $q->helper[$USER->id]->last_action = time();
             } else if ($q->helper[$USER->id]->last_action < (time() - ($CFG->helpmenow_helper_activity_timeout * 60))) {
+                # log
+                helpmenow_log($USER->id, 'auto_logged_out', "queueid: {$q->id}");
+
                 $q->logout();
             } else if ($q->helper[$USER->id]->last_action < (time() - ($CFG->helpmenow_helper_activity_warning * 60))) {
                 $warning[] = $q->name;

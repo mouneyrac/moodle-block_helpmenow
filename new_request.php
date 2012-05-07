@@ -54,6 +54,10 @@ if ($form->is_cancelled()) {                # cancelled
 } else if ($formdata = $form->get_data()) {     # submitted
     $formdata = stripslashes_recursive($formdata);  # stupid forms addslashes when we are already doing it
     $request = $class::process_form($formdata);
+
+    # log
+    helpmenow_log($USER->id, 'new_request', "requestid: {$request->id}");
+
     # redirect to connect.php
     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     $connect->param('requestid', $request->id);

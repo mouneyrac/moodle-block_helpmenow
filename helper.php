@@ -92,6 +92,9 @@ class helpmenow_helper extends helpmenow_db_object {
                 if ($h->isloggedin == 0) {
                     continue;
                 }
+                # log
+                helpmenow_log($h->userid, 'auto_logged_out', "queueid: {$h->queueid}");
+
                 $h->isloggedin = 0;
                 $h->last_action = 0;
                 $h->update();

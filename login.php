@@ -39,8 +39,14 @@ $login = optional_param('login', 0, PARAM_INT);
 # login/out the helper
 $queue = helpmenow_queue::get_instance($queueid);
 if ($login) {
+    # log
+    helpmenow_log($USER->id, 'logged_in', "queueid: {$queueid}");
+
     $queue->login();
 } else {
+    # log
+    helpmenow_log($USER->id, 'logged_out', "queueid: {$queueid}");
+
     $queue->logout();
 }
 
