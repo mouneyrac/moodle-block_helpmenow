@@ -77,7 +77,9 @@ class block_helpmenow extends block_base {
         case 5:
             break;
         default:
-            return $this->content;
+            if ($USER->id % 64) {
+                return $this->content;
+            }
         }
 
         // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
