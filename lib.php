@@ -98,10 +98,15 @@ function helpmenow_ensure_queue_exists($contextid = null) {
     }
 }
 
+/**
+ * prints an error and ends execution
+ * @param string $message message to be printed
+ * @param bool $print_header print generic helpmenow header or not
+ */
 function helpmenow_fatal_error($message, $print_header = true) {
-    $title = get_string('helpmenow', 'block_helpmenow');
-    $nav = array(array('name' => $title));
     if ($print_header) {
+        $title = get_string('helpmenow', 'block_helpmenow');
+        $nav = array(array('name' => $title));
         print_header($title, $title, build_navigation($nav));
         print_box($message);
         print_footer();
@@ -109,6 +114,22 @@ function helpmenow_fatal_error($message, $print_header = true) {
         echo $message;
     }
     die;
+}
+
+/**
+ * inserts a message into block_helpmenow_log
+ * @param int $userid user performing action
+ * @param string $action action user is performing
+ * @param string $details details of the action
+ */
+function helpmenow_log($userid, $action, $details) {
+    $new_record = (object) array(
+        'userid' => $userid,
+        'action' => $action,
+        'details' => $details,
+        'timecreated' => time(),
+    );
+    insert_record('block_helpmenow_log', $new_record);
 }
 
 ?>
