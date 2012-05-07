@@ -46,16 +46,17 @@ if (!isset($meeting->meeting2user[$USER->id])) {
 # title, navbar
 $title = get_string('connect', 'block_helpmenow');
 $nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
+#print_header($title, $title, build_navigation($nav));
 
 print_box_start();
 
-echo "<p>" . get_string('g2m_connecting', 'block_helpmenow') . "</p>" .
-    "<iframe width='100%' height='400px' src='$meeting->join_url'></iframe>";
+echo "<h2>" . get_string('g2m_connecting', 'block_helpmenow') . "</h2>" .
+    "<div style=\"float:left; margin: 3em 0 0 0\"><img src=\"http://vlacs.org/~moquist/g2m-mic-spkrs-20120507.png\" /></div>" .
+    "<div style=\"float:right; margin: 3em 0 0 0\"><iframe width='100%' height='400px' src='$meeting->join_url'></iframe></div>";
 
 print_box_end();
 
 # footer
-print_footer();
+#print_footer();
 
 ?>
