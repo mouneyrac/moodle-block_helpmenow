@@ -77,7 +77,7 @@ class block_helpmenow extends block_base {
         case 5:
             break;
         default:
-            if ($USER->id % 64) {
+            if ($USER->id % 16) {
                 return $this->content;
             }
         }
