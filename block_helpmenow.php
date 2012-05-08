@@ -161,7 +161,8 @@ class block_helpmenow extends block_base {
         $success = $success and helpmenow_helper::auto_logout();
 
         # clean up old meetings
-        $success = $success and helpmenow_meeting::clean_meetings();
+        # DON'T DO IT FOR NOW
+        # $success = $success and helpmenow_meeting::clean_meetings();
 
         # clean up abandoned requests
         $success = $success and helpmenow_request::clean_requests();
