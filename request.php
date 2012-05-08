@@ -117,8 +117,18 @@ class helpmenow_request extends helpmenow_db_object {
      */
     public final static function clean_requests() {
         global $CFG;
+        $success = true;
         $cutoff = time() - ($CFG->helpmenow_request_timeout * 60);
-        return delete_records_select('block_helpmenow_request', "last_refresh < $cutoff");
+        if ($records = get_records_select('block_helpmenow_request', "last_refresh < $cutoff")) {
+            $requests = helpmenow_request::objects_from_records($records);
+            foreach ($requests as $r) {
+                # log
+                helpmenow_log($r->userid, 'request_abandoned', "requestid: {$r->id}");
+
+                $success = $success and $r->delete();
+            }
+        }
+        return $success;
     }
 
     /**
