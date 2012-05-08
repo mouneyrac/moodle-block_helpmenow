@@ -36,6 +36,8 @@ require_login(0, false);
 # get our parameters
 $queueid = optional_param('queueid', 0, PARAM_INT);
 
+$connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+
 # check privileges/availability
 $queue = helpmenow_queue::get_instance($queueid);
 if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
@@ -43,6 +45,10 @@ if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
 }
 if (!$queue->check_available()) {
     helpmenow_fatal_error(get_string('missing_helper', 'block_helpmenow'));
+}
+if ($existing_request = get_record('block_helpmenow_request', 'userid', $USER->id, 'queueid', $queueid)) {
+    $connect->param('requestid', $existing_request->id);
+    redirect($connect->out());
 }
 $class = helpmenow_request::get_class($queue->plugin);
     
@@ -59,7 +65,6 @@ if ($form->is_cancelled()) {                # cancelled
     helpmenow_log($USER->id, 'new_request', "requestid: {$request->id}");
 
     # redirect to connect.php
-    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     $connect->param('requestid', $request->id);
     redirect($connect->out());
 }

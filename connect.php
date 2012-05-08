@@ -134,14 +134,7 @@ if ($queue->check_available()) {
 }
 print_header($title, $title, build_navigation($nav), '', $refresh);
 
-if ($queue->check_available()) {
-    # set the last refresh so cron doesn't clean this up
-    $request->last_refresh = time();
-    $request->update();
-    # todo: display some sort of cancel link
-
-    $message = get_string('please_wait', 'block_helpmenow');
-} else {
+if (!$queue->check_available()) {
     $request->delete();
 
     if (strlen($CFG->helpmenow_missing_helper)) {
@@ -149,8 +142,18 @@ if ($queue->check_available()) {
     } else {
         $message = get_string('missing_helper', 'block_helpmenow');
     }
+    helpmenow_fatal_error($message, false);
 }
-print_box("<p align='center'>$message</p>");
+
+# set the last refresh so cron doesn't clean this up
+$request->last_refresh = time();
+$request->update();
+# todo: display some sort of cancel link
+
+print_box_start('generalbox');
+echo "<p align='center'>" . get_string('please_wait', 'block_helpmenow') . "</p>" .
+    "<p align='center'>" . get_string('pending', 'block_helpmenow') . "<br />&quot;" .
+    $request->description . "&quot;</p>";
 
 # footer
 //print_footer();
