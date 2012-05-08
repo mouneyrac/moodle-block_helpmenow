@@ -83,8 +83,13 @@ class helpmenow_helper extends helpmenow_db_object {
         return false;
     }
 
+    /**
+     * cleans up afk helpers
+     * @return boolean
+     */
     public final static function auto_logout() {
         global $CFG;
+        $success = true;
         $cutoff = time() - ($CFG->helpmenow_helper_refresh_timeout * 60);
         if ($records = get_records_select('block_helpmenow_helper', "last_refresh < $cutoff")) {
             $helpers = helpmenow_helper::objects_from_records($records);
@@ -97,9 +102,10 @@ class helpmenow_helper extends helpmenow_db_object {
 
                 $h->isloggedin = 0;
                 $h->last_action = 0;
-                $h->update();
+                $success = $success and $h->update();
             }
         }
+        return $success;
     }
 }
 

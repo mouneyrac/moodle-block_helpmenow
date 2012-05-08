@@ -199,7 +199,6 @@ abstract class helpmenow_db_object {
                     if (!$r->delete()) {
                         $success = false;
                     }
-                    unset($this->$rel[$key]);
                 }
             }
         }
