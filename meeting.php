@@ -48,6 +48,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      */
     protected $optional_fields = array(
         'description',
+        'queueid',
     );
 
     /**
@@ -70,6 +71,12 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
      * @var string $description
      */
     public $description;
+
+    /**
+     * Queue the meeting belongs to, if any.
+     * @var int $queueid
+     */
+    public $queueid;
 
     /**
      * Array of meeting2user objects

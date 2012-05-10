@@ -52,6 +52,7 @@ class helpmenow_queue extends helpmenow_db_object {
     protected $relations = array(
         'helper' => 'userid',
         'request' => 'userid',
+        'meeting' => 'id',
     );
 
     /**
@@ -95,6 +96,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var array $request
      */
     public $request = array();
+
+    /**
+     * Array of meetings
+     * @var array $meeting
+     */
+    public $meeting = array();
 
     /**
      * Returns user's privilege given optional userid
