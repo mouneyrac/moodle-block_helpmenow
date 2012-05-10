@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/helpmenow/db" VERSION="20120507" COMMENT="XMLDB file for Moodle blocks/helpmenow"
+<XMLDB PATH="blocks/helpmenow/db" VERSION="20120510" COMMENT="XMLDB file for Moodle blocks/helpmenow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -49,8 +49,9 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="owner_userid"/>
         <FIELD NAME="owner_userid" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="description"/>
-        <FIELD NAME="description" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="owner_userid" NEXT="timecreated"/>
-        <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="timemodified"/>
+        <FIELD NAME="description" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="owner_userid" NEXT="queueid"/>
+        <FIELD NAME="queueid" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="description" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="queueid" NEXT="timemodified"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timecreated" NEXT="modifiedby"/>
         <FIELD NAME="modifiedby" TYPE="int" LENGTH="20" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="timemodified" NEXT="plugin"/>
         <FIELD NAME="plugin" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" ENUM="false" PREVIOUS="modifiedby" NEXT="data"/>
@@ -58,7 +59,8 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="block_helpmenow_meeting_p_fk"/>
-        <KEY NAME="block_helpmenow_meeting_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="primary"/>
+        <KEY NAME="block_helpmenow_meeting_p_fk" TYPE="foreign" FIELDS="plugin" REFTABLE="block_helpmenow_plugin" REFFIELDS="plugin" PREVIOUS="primary" NEXT="block_helpmenow_meeting_q_fk"/>
+        <KEY NAME="block_helpmenow_meeting_q_fk" TYPE="foreign" FIELDS="queueid" REFTABLE="block_helpmenow_queue" REFFIELDS="id" PREVIOUS="block_helpmenow_meeting_p_fk"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_helpmenow_meeting2user" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_meeting" NEXT="block_helpmenow_request">
