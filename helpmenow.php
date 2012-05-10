@@ -108,7 +108,7 @@ foreach ($queues as $q) {
         $name = fullname(get_record('user', 'id', $r->userid));
         $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
             userdate($r->timecreated) . ":<br />";
-        $output .= $r->description . "</li>";
+        $output .= "<b>" . $r->description . "</b></li>";
     }
     $output .= "</ul>";
     $output .= print_box_end(true);

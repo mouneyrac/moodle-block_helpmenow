@@ -107,8 +107,11 @@ class block_helpmenow extends block_base {
                 # if the user has a request, display it, otherwise give a link
                 # to create one
                 if (isset($q->request[$USER->id])) {
+                    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+                    $connect->param('requestid', $q->request[$USER->id]->id);
+
                     $this->content->text .= get_string('pending', 'block_helpmenow') . "<br />";
-                    $this->content->text .= $q->request[$USER->id]->description . "<br />";
+                    $this->content->text .= link_to_popup_window($connect->out(), null, $q->request[$USER->id]->description, 400, 700, null, null, true) . "<br />";
                 } else {
                     if ($q->check_available()) {
                         $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
