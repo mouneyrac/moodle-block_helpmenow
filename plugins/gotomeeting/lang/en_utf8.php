@@ -30,7 +30,10 @@ $string['g2m_settings_key'] = 'GoToMeeting API Key';
 $string['g2m_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
 
 # connect.php
-$string['g2m_connecting'] = "You are being connected to GoToMeeting. Once it opens you may close this window.";
+$string['g2m_connecting'] = "You are being connected to GoToMeeting. Once it opens you may ";
+$string['g2m_close'] = "close both windows.";
+$string['g2m_nopopup'] = "If the GoToMeeting window does not appear, please enable popups or ";
+$string['g2m_click_here'] = "click here.";
 
 # token.php
 $string['g2m_token_desc'] = "

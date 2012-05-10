@@ -27,6 +27,7 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 
 # g2m meeting
+require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
 require_once(dirname(__FILE__) . '/meeting.php');
 
 # require login
@@ -40,19 +41,24 @@ $meeting = new helpmenow_meeting_gotomeeting($meetingid);
 
 # check to make sure this user belongs in this meeting
 if (!isset($meeting->meeting2user[$USER->id])) {
-    # todo: print a wrong user message and close
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
 # title, navbar
-$title = get_string('connect', 'block_helpmenow');
-$nav = array(array('name' => $title));
-#print_header($title, $title, build_navigation($nav));
+# $title = get_string('connect', 'block_helpmenow');
+# $nav = array(array('name' => $title));
+# print_header($title, $title, build_navigation($nav));
+# $meta = '<script type="text/javascript"  src="'.$CFG->wwwroot.'/blocks/helpmenow/plugins/gotomeeting/lib.js"></script>';
+$body = "onload=\"g2m = window.open('$meeting->join_url', 'g2m', 'menubar=0,location=0,scrollbars,resizable,height=400,width=700');\" onunload=\"g2m.close();\"";
+print_header('', '', '', '', '', true, '&nbsp;', '', false, $body);
 
 print_box_start();
 
-echo "<h2>" . get_string('g2m_connecting', 'block_helpmenow') . "</h2>" .
-    "<div style=\"float:left; margin: 3em 0 0 0\"><img src=\"http://vlacs.org/~moquist/g2m-mic-spkrs-20120507.png\" /></div>" .
-    "<div style=\"float:right; margin: 3em 0 0 0\"><iframe width='100%' height='400px' src='$meeting->join_url'></iframe></div>";
+echo "<h2>" . get_string('g2m_connecting', 'block_helpmenow') .
+    "<a href='javascript;' onclick='window.close();'>" . get_string('g2m_close', 'block_helpmenow') .
+    "</a></h2><p align='center'>" . get_string('g2m_nopopup', 'block_helpmenow') .
+    "<a href='$meeting->join_url'>" . get_string('g2m_click_here', 'block_helpmenow') . "</a></p>" .
+    "<img src=\"http://vlacs.org/~moquist/g2m-mic-spkrs-20120507.png\" />";
 
 print_box_end();
 
