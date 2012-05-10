@@ -83,6 +83,8 @@ $string['loggedout'] = 'You are currently logged out.';
 $string['loggedin'] = '';
 $string['inactive_message'] = 'Due to inactivity you will soon be logged out of the following queues:';
 $string['inactive_link'] = 'Remain Logged In';
+$string['logged_in_helpers'] = 'Logged In Helpers: ';
+$string['none'] = 'None';
 
 $string['auto_queue_desc'] = 'Course Queue';
 

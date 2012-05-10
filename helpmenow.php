@@ -119,6 +119,21 @@ foreach ($queues as $q) {
         $output .= "</ul>";
     }
 
+    # helpers
+    $logged_in_helpers = array();
+    foreach ($q->helper as $h) {
+        if ($h->isloggedin) {
+            $logged_in_helpers[] = fullname(get_record('user', 'id', $h->userid));
+        }
+    }
+    $helpers_message = get_string('logged_in_helpers', 'block_helpmenow');
+    if (count($logged_in_helpers)) {
+        $helpers_message .= implode(', ', $logged_in_helpers);
+    } else {
+        $helpers_message .= get_string('none', 'block_helpmenow');
+    }
+    $output .= print_box($helpers_message, 'generalbox', '', true);
+
     $output .= print_box_end(true);
 
     # record that the helper has loaded the page
