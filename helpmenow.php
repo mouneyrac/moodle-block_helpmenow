@@ -50,19 +50,22 @@ $refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_helper_refre
 print_header($title, $title, build_navigation($nav), '', $refresh);
 print_box_start('generalbox');
 
-$pending_request = false;
 $warning = array();
+$grab_attention = false;
 $output = '';
 $queues = helpmenow_queue::get_queues_by_user();
 foreach ($queues as $q) {
+    $pending_request = false;
     $output .= print_box_start('generalbox', '', true);
     $output .= print_heading($q->name, '', 2, 'main', true);
 
+    # see if we have any pending requests and handle afk helpers
     foreach ($q->request as $r) {
         if (isset($r->meetingid)) {
             continue;
         }
         $pending_request = true;
+        $grab_attention = true;
 
         # keeping track of activity/logging out helpers who are afk
         if ($q->helper[$USER->id]->isloggedin == 1) {
@@ -80,6 +83,7 @@ foreach ($queues as $q) {
         break;
     }
 
+    # log in/out dialogs
     $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
     $login->param('queueid', $q->id);
     if ($q->helper[$USER->id]->isloggedin) {
@@ -93,32 +97,37 @@ foreach ($queues as $q) {
     }
     $login = $login->out();
     $output .= "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
-    $output .= "<ul>";
 
-    # requests; these are in ascending order already
-    foreach ($q->request as $r) {
-        # if a request has a meetingid, another helper has already answered
-        if (isset($r->meetingid)) {
-            continue;
+    # display requests, if any
+    if ($pending_request) {
+        $output .= "<ul>";
+        # requests; these are in ascending order already
+        foreach ($q->request as $r) {
+            # if a request has a meetingid, another helper has already answered
+            if (isset($r->meetingid)) {
+                continue;
+            }
+
+            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+            $connect->param('requestid', $r->id);
+            $connect->param('connect', 1);
+            $name = fullname(get_record('user', 'id', $r->userid));
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
+                userdate($r->timecreated) . ":<br />";
+            $output .= "<b>" . $r->description . "</b></li>";
         }
-
-        $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-        $connect->param('requestid', $r->id);
-        $connect->param('connect', 1);
-        $name = fullname(get_record('user', 'id', $r->userid));
-        $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
-            userdate($r->timecreated) . ":<br />";
-        $output .= "<b>" . $r->description . "</b></li>";
+        $output .= "</ul>";
     }
-    $output .= "</ul>";
+
     $output .= print_box_end(true);
 
+    # record that the helper has loaded the page
     $q->helper[$USER->id]->last_refresh = time();
     $q->helper[$USER->id]->update();
 }
 
 # play a sound and try to get focus
-if ($pending_request) {
+if ($grab_attention) {
     $soundfile = $CFG->wwwroot . '/blocks/helpmenow/cowbell.wav';
     $output .= <<<EOF
 <script type='text/javascript'>
