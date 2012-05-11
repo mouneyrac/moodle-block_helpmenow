@@ -58,7 +58,7 @@ echo "<h2>" . get_string('g2m_connecting', 'block_helpmenow') .
     "<a href='javascript;' onclick='window.close();'>" . get_string('g2m_close', 'block_helpmenow') .
     "</a></h2><p align='center'>" . get_string('g2m_nopopup', 'block_helpmenow') .
     "<a href='$meeting->join_url'>" . get_string('g2m_click_here', 'block_helpmenow') . "</a></p>" .
-    "<img src=\"http://vlacs.org/~moquist/g2m-mic-spkrs-20120507.png\" />";
+    isset($CFG->helpmenow_g2m_connect_message) ? $CFG->helpmenow_g2m_connect_message : "";
 
 print_box_end();
 
