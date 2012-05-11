@@ -102,7 +102,7 @@ class block_helpmenow extends block_base {
                     $this->content->text .= '<hr />';
                 }
                 # queue name
-                $this->content->text .= "<b>" . $q->name . "</b><br />";
+                $this->content->text .= "<b>$q->name</b><br />$q->description<br />";
 
                 # if the user has a request, display it, otherwise give a link
                 # to create one

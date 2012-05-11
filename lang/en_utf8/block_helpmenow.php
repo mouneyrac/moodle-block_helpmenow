@@ -58,7 +58,7 @@ $string['please_wait'] = 'Helpers may currently be helping other users. Please w
 $string['missing_request'] = 'Error: request does not exist.';
 $string['too_slow'] = 'Another helper has already answered this request.';
 
-# admin.php / edit.php
+# admin.php / edit.php / delete.php
 $string['global_admin'] = 'Global Queues';
 $string['course_admin'] = 'Queues: ';
 $string['admin'] = 'Manage Queues';
@@ -68,6 +68,7 @@ $string['plugin'] = 'Plugin';
 $string['helpers'] = 'Helpers';
 $string['queue_edit'] = 'Edit Queue';
 $string['global_link'] = 'Manage Global Queues';
+$string['confirm_delete'] = 'Confirm you wish to delete queue ';
 
 # assign.php
 $string['assign_title'] = 'Assign Helpers';

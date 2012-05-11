@@ -43,6 +43,8 @@ $assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign_helper.php");
 $assign->param('courseid', $courseid);
 $edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/edit_queue.php");
 $edit->param('courseid', $courseid);
+$delete = new moodle_url("$CFG->wwwroot/blocks/helpmenow/delete_queue.php");
+$delete->param('courseid', $courseid);
 
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
@@ -80,16 +82,19 @@ $table = (object) array(
         get_string('weight', 'block_helpmenow'),
         get_string('plugin', 'block_helpmenow'),
         get_string('helpers', 'block_helpmenow'),
+        get_string('delete'),
     ),
     'data' => array(),
 );
-    
+
 foreach ($queues as $q) {
     $assign->param('queueid', $q->id);
     $assign_url = $assign->out();
     $helper_count = count($q->helper);
     $edit->param('queueid', $q->id);
     $edit_url = $edit->out();
+    $delete->param('queueid', $q->id);
+    $delete_url = $delete->out();
 
     $table->data[] = array(
         "<a href='$edit_url'>$q->name</a>",
@@ -97,6 +102,7 @@ foreach ($queues as $q) {
         $q->weight,
         $q->plugin,
         "<a href='$assign_url'>$helper_count</a>",
+        "<a href='$delete_url'>".get_string('delete')."</a>",
     );
 }
 
