@@ -35,4 +35,9 @@ $settings->add(new admin_setting_configtext('helpmenow_g2m_key',
                                             '',
                                             PARAM_TEXT,
                                             50));
+
+$settings->add(new admin_setting_confightmltextarea('helpmenow_g2m_connect_message',
+                                                    get_string('g2m_settings_connect_message', 'block_helpmenow'),
+                                                    get_string('g2m_settings_connect_message_desc', 'block_helpmenow'),
+                                                    ''));
 ?>
