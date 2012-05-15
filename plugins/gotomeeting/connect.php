@@ -36,12 +36,18 @@ require_login(0, false);
 # get our parameters
 $meetingid = required_param('meetingid', PARAM_INT);
 
-# get the meeting
-$meeting = new helpmenow_meeting_gotomeeting($meetingid);
+if ($meeting != 0) {
+    # get the meeting
+    $meeting = new helpmenow_meeting_gotomeeting($meetingid);
 
-# check to make sure this user belongs in this meeting
-if (!isset($meeting->meeting2user[$USER->id])) {
-    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+    # check to make sure this user belongs in this meeting
+    if (!isset($meeting->meeting2user[$USER->id])) {
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+    }
+} else {
+    $meeting = (object) array(
+        'join_url' => 'javascript;',
+    );
 }
 
 # title, navbar
@@ -49,7 +55,7 @@ if (!isset($meeting->meeting2user[$USER->id])) {
 # $nav = array(array('name' => $title));
 # print_header($title, $title, build_navigation($nav));
 # $meta = '<script type="text/javascript"  src="'.$CFG->wwwroot.'/blocks/helpmenow/plugins/gotomeeting/lib.js"></script>';
-$body = "onload=\"g2m = window.open('$meeting->join_url', 'g2m', 'menubar=0,location=0,scrollbars,resizable,height=400,width=700');\" onunload=\"g2m.close();\"";
+$body = ($meetingid != 0) ? "onload=\"g2m = window.open('$meeting->join_url', 'g2m', 'menubar=0,location=0,scrollbars,resizable,height=400,width=700');\" onunload=\"g2m.close();\"" : "";
 print_header('', '', '', '', '', true, '&nbsp;', '', false, $body);
 
 print_box_start();
