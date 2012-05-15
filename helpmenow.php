@@ -121,12 +121,14 @@ foreach ($queues as $q) {
 
     # current meetings
     if (count($q->meeting)) {
-        $output .= print_box_start('generalbox', '', true) . "<ul>";
+        $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('meetings', 'block_helpmenow') . "</p><ul>";
         foreach ($q->meeting as $m) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('meetingid', $m->id);
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', 'something', 400, 700, null, null, true) . ", " .
+            $name = fullname(get_record('user', 'id', $m->owner_userid));
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
                 userdate($m->timecreated) . ":<br />";
+            $output .= "<b>" . $m->description . "</b></li>";
         }
         $output .= "</ul>" . print_box_end(true);
     }
