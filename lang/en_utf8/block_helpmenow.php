@@ -86,6 +86,8 @@ $string['inactive_message'] = 'Due to inactivity you will soon be logged out of 
 $string['inactive_link'] = 'Remain Logged In';
 $string['logged_in_helpers'] = 'Logged In Helpers: ';
 $string['none'] = 'None';
+$string['meetings'] = 'Meetings';
+$string['helper'] = 'helper';
 
 $string['auto_queue_desc'] = 'Course Queue';
 

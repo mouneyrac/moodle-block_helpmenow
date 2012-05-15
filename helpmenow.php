@@ -107,14 +107,13 @@ foreach ($queues as $q) {
             if (isset($r->meetingid)) {
                 continue;
             }
+            $name = fullname(get_record('user', 'id', $r->userid));
 
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('requestid', $r->id);
             $connect->param('connect', 1);
-            $name = fullname(get_record('user', 'id', $r->userid));
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
-                userdate($r->timecreated) . ":<br />";
-            $output .= "<b>" . $r->description . "</b></li>";
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $r->description, 400, 700, null, null, true) .
+                "<br />" . userdate($r->timecreated) . "<ul><li>$name</li></ul>";
         }
         $output .= "</ul>";
     }
@@ -125,10 +124,17 @@ foreach ($queues as $q) {
         foreach ($q->meeting as $m) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('meetingid', $m->id);
-            $name = fullname(get_record('user', 'id', $m->owner_userid));
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $name, 400, 700, null, null, true) . ", " .
-                userdate($m->timecreated) . ":<br />";
-            $output .= "<b>" . $m->description . "</b></li>";
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $m->description, 400, 700, null, null, true) .
+                "<br />" . userdate($m->timecreated) . "<ul>";
+            foreach ($m->meeting2user as $m2u) {
+                $role = "";
+                if ($m2u->userid == $m->owner_userid) {
+                    $role = " (" . get_string('helper', 'block_helpmenow') . ")";
+                }
+                $name = fullname(get_record('user', 'id', $m2u->userid));
+                $output .= "<li>$name$role</li>";
+            }
+            $output .= "</ul></li>";
         }
         $output .= "</ul>" . print_box_end(true);
     }
