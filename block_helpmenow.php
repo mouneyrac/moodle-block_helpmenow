@@ -60,6 +60,7 @@ class block_helpmenow extends block_base {
         );
 
         # For now, restrict to tech dept for testing.
+        /*
         switch ($USER->id) {
             # test accounts:
         case 57219:
@@ -81,6 +82,7 @@ class block_helpmenow extends block_base {
                 return $this->content;
             }
         }
+         */
 
         // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
