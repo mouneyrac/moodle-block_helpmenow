@@ -36,7 +36,7 @@ require_login(0, false);
 # get our parameters
 $meetingid = required_param('meetingid', PARAM_INT);
 
-if ($meeting != 0) {
+if ($meetingid != 0) {
     # get the meeting
     $meeting = new helpmenow_meeting_gotomeeting($meetingid);
 
