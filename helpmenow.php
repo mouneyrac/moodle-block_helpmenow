@@ -119,6 +119,18 @@ foreach ($queues as $q) {
         $output .= "</ul>";
     }
 
+    # current meetings
+    if (count($q->meeting)) {
+        $output .= print_box_start('generalbox', '', true) . "<ul>";
+        foreach ($q->meeting as $m) {
+            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+            $connect->param('meetingid', $m->id);
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', 'something', 400, 700, null, null, true) . ", " .
+                userdate($m->timecreated) . ":<br />";
+        }
+        $output .= "</ul>" . print_box_end(true);
+    }
+
     # helpers
     $logged_in_helpers = array();
     foreach ($q->helper as $h) {

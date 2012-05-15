@@ -35,8 +35,22 @@ require_once(dirname(__FILE__) . '/lib.php');
 require_login(0, false);
 
 # get our parameters
-$requestid = required_param('requestid', PARAM_INT);
+$requestid = optional_param('requestid', 0, PARAM_INT);
+$meetingid = optional_param('meetingid', 0, PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
+
+if ($meetingid) {
+    if (!$meeting = helpmenow_meeting::get_instance($meetingid)) {
+        helpmenow_fatal_error(get_string('missing_meeting', 'block_helpmenow'));
+    }
+    $meeting->add_user();
+    $url = $meeting->connect();
+
+    # log
+    helpmenow_log($USER->id, 'joined_meeting', "meetingid: {$meetingid}");
+
+    redirect($url);
+}
 
 # get the request
 if (!$request = helpmenow_request::get_instance($requestid)) {
@@ -59,6 +73,7 @@ if ($connect) {
     $meeting = helpmenow_meeting::new_instance($queue->plugin);
     $meeting->owner_userid = $USER->id;
     $meeting->description = $request->description;  # get the description from the request
+    $meeting->queueid = $request->queueid;
     $meeting->create();
     $meeting->insert();
 
