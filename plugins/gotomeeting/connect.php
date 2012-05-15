@@ -46,7 +46,7 @@ if ($meetingid != 0) {
     }
 } else {
     $meeting = (object) array(
-        'join_url' => 'javascript;',
+        'join_url' => '/',
     );
 }
 
@@ -61,7 +61,7 @@ print_header('', '', '', '', '', true, '&nbsp;', '', false, $body);
 print_box_start();
 
 echo "<h2>" . get_string('g2m_connecting', 'block_helpmenow') .
-    "<a href='javascript;' onclick='window.close();'>" . get_string('g2m_close', 'block_helpmenow') .
+    "<a href='/' onclick='window.close();'>" . get_string('g2m_close', 'block_helpmenow') .
     "</a></h2><p align='center'>" . get_string('g2m_nopopup', 'block_helpmenow') .
     "<a href='$meeting->join_url'>" . get_string('g2m_click_here', 'block_helpmenow') . "</a></p>";
 if (isset($CFG->helpmenow_g2m_connect_message)) {
