@@ -32,10 +32,11 @@ $token_url = $token_url->out();
 
 $settings->add(new admin_setting_heading('heading',
                                          get_string('g2m_settings_heading', 'block_helpmenow'),
-                                         get_string('g2m_settings_heading_desc', 'block_helpmenow') .
-                                         "<a href='$token_url'>" .
-                                         get_string('g2m_settings_admin_key', 'block_helpmenow') .
-                                         "</a>"));
+                                         get_string('g2m_settings_heading_desc', 'block_helpmenow') //.
+                                         //"<a href='$token_url'>" .
+                                         //get_string('g2m_settings_admin_key', 'block_helpmenow') .
+                                         //"</a>"
+                                     ));
 
 $settings->add(new admin_setting_configtext('helpmenow_g2m_key',
                                             get_string('g2m_settings_key', 'block_helpmenow'),
