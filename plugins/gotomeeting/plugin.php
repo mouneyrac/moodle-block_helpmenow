@@ -24,6 +24,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/plugin.php');
+require_once(dirname(__FILE__) . '/user2plugin.php');
 
 define('HELPMENOW_G2M_REST_BASE_URI', 'https://api.citrixonline.com/G2M/rest/');
 

@@ -25,7 +25,8 @@
 
 # settings
 $string['g2m_settings_heading'] = 'GoToMeeting';
-$string['g2m_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin';
+$string['g2m_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin. ';
+$string['g2m_settings_admin_key'] = 'Setup admin key.';
 $string['g2m_settings_key'] = 'GoToMeeting API Key';
 $string['g2m_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
 $string['g2m_settings_connect_message'] = 'Connect Message';

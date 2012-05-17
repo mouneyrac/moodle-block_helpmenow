@@ -69,6 +69,11 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     public $meetingid;
 
     /**
+     * GoToMeeting meetings
+     */
+    public static $organizer_meetings = null;
+
+    /**
      * Create the meeting. Caller will insert record.
      */
     public function create() {
@@ -109,16 +114,38 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      */
     public function check_completion() {
         global $CFG;
-        return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60));
+        # return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60));
 
-        # todo: get below working:
-        $attendees = helpmenow_plugin_gotomeeting::api("$this->meetingid/attendees", 'GET');
+        if (!isset(self::$organizer_meetings[$this->owner_userid])) {
+            $min_time = get_field_sql("
+                SELECT min(timecreated)
+                FROM {$CFG->prefix}block_helpmenow_meeting
+                WHERE plugin = 'gotomeeting'
+            ");
+            $params = array(
+                'history' => 'true',
+                'startDate' => gmdate('Y-m-d\TH:i:s\Z', $min_time),
+                'endDate' => gmdate('Y-m-d\TH:i:s\Z', time()),
+            );
+            $meetings = helpmenow_plugin_gotomeeting::api('meetings', 'GET', $params, $this->owner_userid);
+            var_dump($meetings);
+            foreach ($meetings as $m) {
+                self::$organizer_meetings[$this->owner_userid]->meetings[$m->meetingid] = $m;
+            }
+        }
+
+        $meeting_instance = self::$organizer_meetings[$this->owner_userid]->meetings[$this->meetingid]->meetingInstanceKey;
+        $attendees = helpmenow_plugin_gotomeeting::api("meetings/$meeting_instance/attendees", 'GET');
+        var_dump($attendees);
         foreach ($attendees as $a) {
             if (!isset($a->endTime)) {
+                echo "still someone in the meeting";
                 return false;
             }
         }
-        return true;
+        echo "nobody here!";
+        # return true;
+        return false;   # testing
     }
 
     /**

@@ -25,9 +25,17 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
+$token_url = new moodle_url('/blocks/helpmenow/plugins/gotomeeting/token.php');
+$token_url->param('admin', 1);
+$token_url->param('redirect', qualified_me());
+$token_url = $token_url->out();
+
 $settings->add(new admin_setting_heading('heading',
                                          get_string('g2m_settings_heading', 'block_helpmenow'),
-                                         get_string('g2m_settings_heading_desc', 'block_helpmenow')));
+                                         get_string('g2m_settings_heading_desc', 'block_helpmenow') .
+                                         "<a href='$token_url'>" .
+                                         get_string('g2m_settings_admin_key', 'block_helpmenow') .
+                                         "</a>"));
 
 $settings->add(new admin_setting_configtext('helpmenow_g2m_key',
                                             get_string('g2m_settings_key', 'block_helpmenow'),

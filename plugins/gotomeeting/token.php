@@ -39,6 +39,7 @@ require_login(0, false);
 
 $code = optional_param('code', 0, PARAM_TEXT);
 $redirect = optional_param('redirect', '', PARAM_TEXT);
+$admin = optional_param('admin', 0, PARAM_INT);
 
 $api_key = $CFG->helpmenow_g2m_key;
 
@@ -63,9 +64,20 @@ if ($code) {
     $oauth = json_decode(curl_exec($ch));
     $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
+    if ($admin) {
+        $userid = get_admin()->id;
+    } else {
+        $userid = $USER->id;
+    }
+
     # save the reponse to user2plugin record
-    $record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting');
-    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+    if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', 'gotomeeting')) {
+        $user2plugin = new helpmenow_user2plugin_gotomeeting();
+        $user2plugin->userid = $userid;
+        $user2plugin->insert();
+    } else {
+        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+    }
     $user2plugin->access_token = $oauth->access_token;
     $user2plugin->token_expiration = $oauth->expires_in + time();
     $user2plugin->refresh_token = $oauth->refresh_token;
@@ -78,6 +90,9 @@ $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 
 $this_url = new moodle_url();
+if ($admin) {
+    $this_url->param('admin', 1);
+}
 $this_url->param('redirect', $redirect);
 $this_url = $this_url->out();
 $citrix_url = HELPMENOW_G2M_OAUTH_AUTH_URI;
