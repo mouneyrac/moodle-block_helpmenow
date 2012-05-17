@@ -114,7 +114,6 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
      */
     public function check_completion() {
         global $CFG;
-        # return time() > ($this->timecreated + ($CFG->helpmenow_meeting_timeout * 60));
 
         if (!isset(self::$organizer_meetings[$this->owner_userid])) {
             $min_time = get_field_sql("
@@ -128,24 +127,19 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
                 'endDate' => gmdate('Y-m-d\TH:i:s\Z', time()),
             );
             $meetings = helpmenow_plugin_gotomeeting::api('meetings', 'GET', $params, $this->owner_userid);
-            var_dump($meetings);
             foreach ($meetings as $m) {
-                self::$organizer_meetings[$this->owner_userid]->meetings[$m->meetingid] = $m;
+                self::$organizer_meetings[$this->owner_userid]->meetings[$m->meetingId] = $m;
             }
         }
 
         $meeting_instance = self::$organizer_meetings[$this->owner_userid]->meetings[$this->meetingid]->meetingInstanceKey;
-        $attendees = helpmenow_plugin_gotomeeting::api("meetings/$meeting_instance/attendees", 'GET');
-        var_dump($attendees);
+        $attendees = helpmenow_plugin_gotomeeting::api("meetings/$meeting_instance/attendees", 'GET', array(), $this->owner_userid);
         foreach ($attendees as $a) {
             if (!isset($a->endTime)) {
-                echo "still someone in the meeting";
                 return false;
             }
         }
-        echo "nobody here!";
-        # return true;
-        return false;   # testing
+        return parent::check_completion();
     }
 
     /**
