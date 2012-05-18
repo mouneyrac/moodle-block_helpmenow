@@ -143,7 +143,7 @@ foreach ($queues as $q) {
         }
         $output .= "</ul>";
     } else {
-        $output .= "<p align='center style='font-style:italic;'>" . get_string('no_meetings', 'block_helpmenow') . "</p>";
+        $output .= "<p align='center' style='font-style:italic;'>" . get_string('no_meetings', 'block_helpmenow') . "</p>";
     }
     $output .= print_box_end(true);
 
