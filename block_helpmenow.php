@@ -132,16 +132,6 @@ class block_helpmenow extends block_base {
 
         # todo: user to user chat? not for VLACS for now.
 
-        # block message
-        if (strlen($CFG->helpmenow_block_message)) {
-            if ($first) {
-                $first = false;
-            } else {
-                $this->content->text .= '<hr />';
-            }
-            $this->content->text .= $CFG->helpmenow_block_message;
-        }
-
         # helper link
         if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
@@ -152,6 +142,16 @@ class block_helpmenow extends block_base {
                 $this->content->text .= '<hr />';
             }
             $this->content->text .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+        }
+
+        # block message
+        if (strlen($CFG->helpmenow_block_message)) {
+            if ($first) {
+                $first = false;
+            } else {
+                $this->content->text .= '<hr />';
+            }
+            $this->content->text .= $CFG->helpmenow_block_message;
         }
 
         # admin link
