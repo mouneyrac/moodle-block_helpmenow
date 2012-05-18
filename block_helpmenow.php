@@ -103,28 +103,25 @@ class block_helpmenow extends block_base {
                 } else {
                     $this->content->text .= '<hr />';
                 }
-                # queue name
-                $this->content->text .= "<b>$q->name</b><br />$q->description<br />";
-
                 # if the user has a request, display it, otherwise give a link
                 # to create one
                 if (isset($q->request[$USER->id])) {
                     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
                     $connect->param('requestid', $q->request[$USER->id]->id);
-
-                    $this->content->text .= get_string('pending', 'block_helpmenow') . "<br />";
-                    $this->content->text .= link_to_popup_window($connect->out(), null, $q->request[$USER->id]->description, 400, 700, null, null, true) . "<br />";
+                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('pending', 'block_helpmenow') . "</div>";
+                    $this->content->text .= link_to_popup_window($connect->out(), 'request', $linktext, 400, 700, null, null, true);
                 } else {
                     if ($q->check_available()) {
                         $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
                         $request->param('queueid', $q->id);
-                        $request_text = get_string('new_request', 'block_helpmenow');
-                        $this->content->text .= link_to_popup_window($request->out(), null, $request_text, 400, 700, null, null, true) . "<br />";
+                        $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
+                        $this->content->text .= link_to_popup_window($request->out(), 'request', $linktext, 400, 700, null, null, true);
                     } else {
                         # todo: make this smarter (helpers leave message or configurable)
-                        $this->content->text .= get_string('queue_na_short', 'block_helpmenow') . "<br />";
+                        $this->content->text .= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
                     }
                 }
+                $this->content->text .= $q->description . "<br />";
                 break;
             default:
             }

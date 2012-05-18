@@ -38,13 +38,11 @@ foreach ($plugins as $pluginname) {
 }
 
 # block
-$string['new_request'] = 'Get Help';
-$string['pending'] = 'Your pending request:';
-$string['login'] = 'Log In';
-$string['logout'] = 'Log Out';
+$string['new_request'] = '(Click to get help)';
+$string['pending'] = '(Click to view your request)';
+$string['queue_na_short'] = '(Currently Offline)';
 $string['helper_link'] = 'Open My Queues';
 $string['admin_link'] = 'Manage Queues';
-$string['queue_na_short'] = 'Sorry, this queue is not currently available.';
 
 # new_request.php
 $string['new_request_heading'] = 'New Request';
@@ -80,6 +78,8 @@ $string['unassign'] = 'Remove as helper';
 $string['back'] = 'Back to queue management';
 
 # helper interface
+$string['login'] = 'Log In';
+$string['logout'] = 'Log Out';
 $string['loggedout'] = 'You are currently logged out.';
 $string['loggedin'] = '';
 $string['inactive_message'] = 'Due to inactivity you will soon be logged out of the following queues:';
