@@ -40,6 +40,11 @@ $settings->add(new admin_setting_configselect('helpmenow_default_plugin',
                                               'native',
                                               $choices));
 
+$settings->add(new admin_setting_configtextarea('helpmenow_block_message',
+                                                get_string('settings_block_message', 'block_helpmenow'),
+                                                get_string('settings_block_message_desc', 'block_helpmenow'),
+                                                ''));
+
 $settings->add(new admin_setting_configtext('helpmenow_request_timeout',
                                             get_string('settings_request_timeout', 'block_helpmenow'),
                                             get_string('settings_request_timeout_desc', 'block_helpmenow'),
