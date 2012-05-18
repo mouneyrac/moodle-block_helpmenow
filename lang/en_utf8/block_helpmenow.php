@@ -86,8 +86,11 @@ $string['inactive_message'] = 'Due to inactivity you will soon be logged out of 
 $string['inactive_link'] = 'Remain Logged In';
 $string['logged_in_helpers'] = 'Logged In Helpers: ';
 $string['none'] = 'None';
-$string['meetings'] = 'Meetings';
+$string['meetings'] = 'Current Meetings';
 $string['helper'] = 'helper';
+$string['requests'] = 'Requests';
+$string['no_requests'] = 'There are currently no requests in queue.';
+$string['no_meetings'] = 'There are currently no meetings.';
 
 $string['auto_queue_desc'] = 'Course Queue';
 

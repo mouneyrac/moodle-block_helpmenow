@@ -99,6 +99,7 @@ foreach ($queues as $q) {
     $output .= "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
 
     # display requests, if any
+    $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('requests', 'block_helpmenow') . "</p>";
     if ($pending_request) {
         $output .= "<ul>";
         # requests; these are in ascending order already
@@ -116,11 +117,15 @@ foreach ($queues as $q) {
                 "<br />" . userdate($r->timecreated) . "<ul><li>$name</li></ul>";
         }
         $output .= "</ul>";
+    } else {
+        $output .= "<p align='center' style='font-style:italic;'>" . get_string('no_requests', 'block_helpmenow') . "</p>";
     }
+    $output .= print_box_end(true);
 
     # current meetings
+    $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('meetings', 'block_helpmenow') . "</p>";
     if (count($q->meeting)) {
-        $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('meetings', 'block_helpmenow') . "</p><ul>";
+        $output .= "<ul>";
         foreach ($q->meeting as $m) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('meetingid', $m->id);
@@ -136,8 +141,11 @@ foreach ($queues as $q) {
             }
             $output .= "</ul></li>";
         }
-        $output .= "</ul>" . print_box_end(true);
+        $output .= "</ul>";
+    } else {
+        $output .= "<p align='center style='font-style:italic;'>" . get_string('no_meetings', 'block_helpmenow') . "</p>";
     }
+    $output .= print_box_end(true);
 
     # helpers
     $logged_in_helpers = array();
