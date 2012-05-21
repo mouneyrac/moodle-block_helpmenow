@@ -51,7 +51,7 @@ $string['submitrequest'] = 'Submit request';
 
 # connect.php
 $string['connect'] = 'Connecting';
-$string['missing_helper'] = 'We&quot;re sorry, there are no available helpers at this time. Please try again later, or contact us by calling 603.778.2500 and selecting option #2, or by <a href="https://courses.vlacs.org/blocks/helpdesk/new.php">submitting a help desk ticket here.</a>';
+$string['missing_helper'] = "We're sorry, there are no available helpers at this time. Please try again later, or contact us by calling 603.778.2500 and selecting option #2, or by <a href='https://courses.vlacs.org/blocks/helpdesk/new.php'>submitting a help desk ticket here.</a>";
 $string['please_wait'] = 'Helpers may currently be helping other users. Please wait while we attempt to connect you.';
 $string['missing_request'] = 'Error: request does not exist.';
 $string['too_slow'] = 'Another helper has already answered this request.';
