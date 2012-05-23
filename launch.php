@@ -80,9 +80,8 @@ $first = true;
 if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
     $first = false;
     echo "<div style=\"width:49%;display:inline-block;padding-right:1%;\">";
-    # todo: add student info for helpers
     if ($helper) {
-        print_box("Student info would go here");
+        # todo: add student info for helpers
     }
     if (isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) {
         print_box($CFG->helpmenow_connect_message);
@@ -90,7 +89,6 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
     echo "</div>";
 }
 $setting = "helpmenow_{$meeting->plugin}_connect_message";
-$CFG->$setting = 'Something';
 if (isset($CFG->$setting) and strlen($CFG->$setting)) {
     $side = 'right';
     if (!$first) {
