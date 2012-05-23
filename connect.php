@@ -117,7 +117,7 @@ if (isset($request->meetingid)) {
     helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$meetingid}");
 
     # connect user to the meeting
-    $launch->param('meetingid', $meeting->id);
+    $launch->param('meetingid', $meetingid);
     redirect($launch->out());
 }
 

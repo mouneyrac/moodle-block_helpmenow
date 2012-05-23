@@ -113,7 +113,7 @@ foreach ($queues as $q) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('requestid', $r->id);
             $connect->param('connect', 1);
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $r->description, 400, 700, null, null, true) .
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'connect', $r->description, 400, 700, null, null, true) .
                 "<br />" . userdate($r->timecreated) . "<ul><li>$name</li></ul>";
         }
         $output .= "</ul>";
@@ -129,7 +129,7 @@ foreach ($queues as $q) {
         foreach ($q->meeting as $m) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('meetingid', $m->id);
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'meeting', $m->description, 400, 700, null, null, true) .
+            $output .= "<li>" . link_to_popup_window($connect->out(), 'connect', $m->description, 400, 700, null, null, true) .
                 "<br />" . userdate($m->timecreated) . "<ul>";
             foreach ($m->meeting2user as $m2u) {
                 $role = "";

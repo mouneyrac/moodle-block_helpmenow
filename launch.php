@@ -60,24 +60,35 @@ print_header('', '', '', '', '', true, '&nbsp;', '', false, $body);
 
 # connect message and nopopup link
 print_box_start();
-echo "<h2>" . $plugin::connect_message() . "</h2>";
+echo "<h2>" . $pluginclass::connect_message() . "</h2>";
 echo "<p align='center'>" . get_string('nopopup', 'block_helpmenow') . "<a href='$connect_url'>" . get_string('click_here', 'block_helpmenow') . "</a></p>";
 print_box_end();
 
 echo "<div>";
 
 # general stuff & configurable message
-if (strlen($CFG->helpmenow_connect_message) or (isset($queue) and $queue->get_privilege() == HELPMENOW_QUEUE_HELPER)) {
-    echo "<div style=\"width:49%;display:inline-block;\">";
+$first = true;
+$helper = (isset($queue) and $queue->get_privilege() == HELPMENOW_QUEUE_HELPER);
+if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
+    $first = false;
+    echo "<div style=\"width:49%;display:inline-block;padding-right:1%;\">";
     # todo: add student info for helpers
-    if (strlen($CFG->helpmenow_connect_message)) {
+    if ($helper) {
+        print_box("Student info would go here");
+    }
+    if (isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) {
         print_box($CFG->helpmenow_connect_message);
     }
     echo "</div>";
 }
 $setting = "helpmenow_{$meeting->plugin}_connect_message";
-if (strlen($CFG->$setting)) {
-    echo "<div style=\"width:49%;display:inline-block;\">";
+$CFG->$setting = 'Something';
+if (isset($CFG->$setting) and strlen($CFG->$setting)) {
+    $side = 'right';
+    if (!$first) {
+        $side = 'left';
+    }
+    echo "<div style=\"width:49%;display:inline-block;padding-$side:1%;\">";
     print_box($CFG->$setting);
     echo "</div>";
 }
