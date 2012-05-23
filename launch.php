@@ -40,16 +40,25 @@ if ($meetingid != 0) {
     # get the meeting
     $meeting = helpmenow_meeting::get_instance($meetingid);
 
+    if (isset($meeting->queueid)) {
+        $queue = helpmenow_queue::get_instance($meeting->queueid);
+    }
+    $helper = (isset($queue) and $queue->get_privilege() == HELPMENOW_QUEUE_HELPER);
+
     # check to make sure this user belongs in this meeting
     if (!isset($meeting->meeting2user[$USER->id])) {
-        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+        # if they're a helper for this queue, add them to it
+        if ($helper) {
+            $meeting->add_user();
+            $meeting->update();
+            helpmenow_log($USER->id, 'joined_meeting', "meetingid: {$meetingid}");
+        } else {
+            helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+        }
     }
     
     $connect_url = $meeting->connect();
     $pluginclass = helpmenow_plugin::get_class($meeting->plugin);
-    if (isset($meeting->queueid)) {
-        $queue = helpmenow_queue::get_instance($meeting->queueid);
-    }
 } else {
     $connect_url = "/";
     $pluginclass = "helpmenow_plugin";
@@ -68,7 +77,6 @@ echo "<div>";
 
 # general stuff & configurable message
 $first = true;
-$helper = (isset($queue) and $queue->get_privilege() == HELPMENOW_QUEUE_HELPER);
 if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
     $first = false;
     echo "<div style=\"width:49%;display:inline-block;padding-right:1%;\">";

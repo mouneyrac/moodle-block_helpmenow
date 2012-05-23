@@ -127,9 +127,9 @@ foreach ($queues as $q) {
     if (count($q->meeting)) {
         $output .= "<ul>";
         foreach ($q->meeting as $m) {
-            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-            $connect->param('meetingid', $m->id);
-            $output .= "<li>" . link_to_popup_window($connect->out(), 'connect', $m->description, 400, 700, null, null, true) .
+            $launch = new moodle_url("$CFG->wwwroot/blocks/helpmenow/launch.php");
+            $launch->param('meetingid', $m->id);
+            $output .= "<li>" . link_to_popup_window($launch->out(), 'connect', $m->description, 400, 700, null, null, true) .
                 "<br />" . userdate($m->timecreated) . "<ul>";
             foreach ($m->meeting2user as $m2u) {
                 $role = "";
