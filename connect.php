@@ -114,10 +114,10 @@ if (isset($request->meetingid)) {
     $request->delete();
 
     # log
-    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$meetingid}");
+    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$request->meetingid}");
 
     # connect user to the meeting
-    $launch->param('meetingid', $meetingid);
+    $launch->param('meetingid', $request->meetingid);
     redirect($launch->out());
 }
 
