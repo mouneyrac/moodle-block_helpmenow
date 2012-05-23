@@ -97,15 +97,18 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     }
 
     /**
-     * Plugin specific function to connect USER to meeting. Caller will insert
-     * into db after this.
+     * Plugin specific function to connect USER to meeting.
      * @return $string url
      */
     public function connect() {
-        global $CFG;
-        $connect_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/connect.php");
-        $connect_url->param('meetingid', $this->id);
-        return $connect_url->out();
+        return $this->join_url;
+
+        /*
+         * global $CFG;
+         * $connect_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/connect.php");
+         * $connect_url->param('meetingid', $this->id);
+         * return $connect_url->out();
+         */
     }
 
     /**

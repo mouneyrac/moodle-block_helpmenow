@@ -31,23 +31,23 @@ $token_url->param('redirect', qualified_me());
 $token_url = $token_url->out();
 
 $settings->add(new admin_setting_heading('heading',
-                                         get_string('g2m_settings_heading', 'block_helpmenow'),
-                                         get_string('g2m_settings_heading_desc', 'block_helpmenow') //.
+                                         get_string('gotomeeting_settings_heading', 'block_helpmenow'),
+                                         get_string('gotomeeting_settings_heading_desc', 'block_helpmenow') //.
                                          //"<a href='$token_url'>" .
-                                         //get_string('g2m_settings_admin_key', 'block_helpmenow') .
+                                         //get_string('gotomeeting_settings_admin_key', 'block_helpmenow') .
                                          //"</a>"
                                      ));
 
-$settings->add(new admin_setting_configtext('helpmenow_g2m_key',
-                                            get_string('g2m_settings_key', 'block_helpmenow'),
-                                            get_string('g2m_settings_key_desc', 'block_helpmenow'),
+$settings->add(new admin_setting_configtext('helpmenow_gotomeeting_key',
+                                            get_string('gotomeeting_settings_key', 'block_helpmenow'),
+                                            get_string('gotomeeting_settings_key_desc', 'block_helpmenow'),
                                             '',
                                             PARAM_TEXT,
                                             50));
 
-//$settings->add(new admin_setting_confightmltextarea('helpmenow_g2m_connect_message',
-$settings->add(new admin_setting_configtextarea('helpmenow_g2m_connect_message',
-                                                    get_string('g2m_settings_connect_message', 'block_helpmenow'),
-                                                    get_string('g2m_settings_connect_message_desc', 'block_helpmenow'),
+//$settings->add(new admin_setting_confightmltextarea('helpmenow_gotomeeting_connect_message',
+$settings->add(new admin_setting_configtextarea('helpmenow_gotomeeting_connect_message',
+                                                    get_string('gotomeeting_settings_connect_message', 'block_helpmenow'),
+                                                    get_string('gotomeeting_settings_connect_message_desc', 'block_helpmenow'),
                                                     ''));
 ?>

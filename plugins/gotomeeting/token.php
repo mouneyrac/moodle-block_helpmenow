@@ -41,7 +41,7 @@ $code = optional_param('code', 0, PARAM_TEXT);
 $redirect = optional_param('redirect', '', PARAM_TEXT);
 $admin = optional_param('admin', 0, PARAM_INT);
 
-$api_key = $CFG->helpmenow_g2m_key;
+$api_key = $CFG->helpmenow_gotomeeting_key;
 
 if ($code) {
     # set up exchanging our response key for an access token
@@ -106,8 +106,8 @@ foreach ($params as $f => $v) {
 }
 $fields = implode('&', $fields);
 $citrix_url .= "?$fields";
-echo "<p>" . get_string('g2m_token_desc', 'block_helpmenow') . "</p>";
-echo "<p><a href='$citrix_url'>" . get_string('g2m_token_link', 'block_helpmenow') . "</a></p>";
+echo "<p>" . get_string('gotomeeting_token_desc', 'block_helpmenow') . "</p>";
+echo "<p><a href='$citrix_url'>" . get_string('gotomeeting_token_link', 'block_helpmenow') . "</a></p>";
 
 print_footer();
 

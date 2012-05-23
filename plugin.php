@@ -79,6 +79,14 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
     }
 
     /**
+     * Connecting message displayed
+     * @return string
+     */
+    public static function connect_message() {
+        return get_string('connecting', 'block_helpmenow');
+    }
+
+    /**
      * Calls install for all plugins
      * @return boolean success
      */

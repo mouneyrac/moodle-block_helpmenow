@@ -23,27 +23,27 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['gotomeeting'] = 'GoToMeeting';
+
 # settings
-$string['g2m_settings_heading'] = 'GoToMeeting';
-$string['g2m_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin. ';
-$string['g2m_settings_admin_key'] = 'Setup admin key.';
-$string['g2m_settings_key'] = 'GoToMeeting API Key';
-$string['g2m_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
-$string['g2m_settings_connect_message'] = 'Connect Message';
-$string['g2m_settings_connect_message_desc'] = 'Message displayed on the GoToMeeting connect window.';
+$string['gotomeeting_settings_heading'] = 'GoToMeeting';
+$string['gotomeeting_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin. ';
+$string['gotomeeting_settings_admin_key'] = 'Setup admin key.';
+$string['gotomeeting_settings_key'] = 'GoToMeeting API Key';
+$string['gotomeeting_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
+$string['gotomeeting_settings_connect_message'] = 'Connect Message';
+$string['gotomeeting_settings_connect_message_desc'] = 'Message displayed on the GoToMeeting connect window.';
 
 # connect.php
-$string['g2m_connecting'] = "You are being connected to GoToMeeting. Once it opens you may ";
-$string['g2m_close'] = "close both windows.";
-$string['g2m_nopopup'] = "If the GoToMeeting window does not appear, please enable popups or ";
-$string['g2m_click_here'] = "click here.";
+$string['gotomeeting_connecting'] = "You are being connected to GoToMeeting. Once it opens you may ";
+$string['gotomeeting_close'] = "close both windows.";
 
 # token.php
-$string['g2m_token_desc'] = "
+$string['gotomeeting_token_desc'] = "
     To continue we need to be authorized to create GoToMeeting sessions on your behalf.
     <ol><li>Click the link below.</li>
     <li>Log in to GoToMeeting.</li>
     <li>Click &quot;Allow&quot;.</li></ol>";
-$string['g2m_token_link'] = "Allow Access";
+$string['gotomeeting_token_link'] = "Allow Access";
 
 ?>

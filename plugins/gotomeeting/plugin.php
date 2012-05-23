@@ -44,6 +44,17 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     /**
+     * Message displayed when connecting to a GTM session
+     * @return string
+     */
+    public static function connect_message() {
+        $message = get_string('gotomeeting_connecting', 'block_helpmenow');
+        $message .= "<a href=\"javascript:void(0)\" onclick=\"meeting.close();window.close()\">";
+        $message .= get_string('gotomeeting_close', 'block_helpmenow') . "</a>";
+        return $message;
+    }
+
+    /**
      * Handles g2m api calls
      * @param string $uri
      * @param string $verb POST, PUT, DELETE, GET

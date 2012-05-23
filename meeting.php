@@ -119,8 +119,7 @@ abstract class helpmenow_meeting extends helpmenow_db_object {
     }
 
     /**
-     * Plugin specific function to connect USER to meeting. Caller will insert
-     * into db after
+     * Plugin specific function to connect USER to meeting.
      * @return mixed false if failed, string url if succeeded
      */
     abstract function connect();

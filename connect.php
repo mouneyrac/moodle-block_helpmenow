@@ -39,23 +39,13 @@ $requestid = optional_param('requestid', 0, PARAM_INT);
 $meetingid = optional_param('meetingid', 0, PARAM_INT);
 $connect = optional_param('connect', 0, PARAM_INT);
 
-if ($meetingid) {
-    if (!$meeting = helpmenow_meeting::get_instance($meetingid)) {
-        helpmenow_fatal_error(get_string('missing_meeting', 'block_helpmenow'));
-    }
-    $meeting->add_user();
-    $url = $meeting->connect();
-
-    # log
-    helpmenow_log($USER->id, 'joined_meeting', "meetingid: {$meetingid}");
-
-    redirect($url);
-}
-
 # get the request
 if (!$request = helpmenow_request::get_instance($requestid)) {
     helpmenow_fatal_error(get_string('missing_request', 'block_helpmenow'));
 }
+
+# launch.php
+$launch = new moodle_url($CFG->wwwroot . '/blocks/helpmenow/launch.php');
 
 # for the helper
 if ($connect) {
@@ -80,9 +70,6 @@ if ($connect) {
     # add both users to the meeting
     $meeting->add_user();
     $meeting->add_user($request->userid);
-
-    # connect user to the meeting
-    $url = $meeting->connect();
     $meeting->update();
 
     # update the request with the meetingid so we know its been accepted
@@ -111,7 +98,8 @@ if ($connect) {
     # log
     helpmenow_log($USER->id, 'answered_request', "requestid: {$requestid}; meetingid: {$meeting->id}");
 
-    redirect($url);
+    $launch->param('meetingid', $meeting->id);
+    redirect($launch->out());
 }
 
 # for the helpee/requester
@@ -122,19 +110,15 @@ if ($USER->id !== $request->userid) {
 
 # if we have a meeting
 if (isset($request->meetingid)) {
-    # get the meeting
-    $meeting = helpmenow_meeting::get_instance($request->meetingid);
-
-    # log
-    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$meeting->id}");
-
     # delete the request
     $request->delete();
 
+    # log
+    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$meetingid}");
+
     # connect user to the meeting
-    $url = $meeting->connect();
-    $meeting->update();
-    redirect($url);
+    $launch->param('meetingid', $meeting->id);
+    redirect($launch->out());
 }
 
 # check to make sure we still have a helper

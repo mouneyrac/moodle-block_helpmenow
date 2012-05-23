@@ -94,6 +94,11 @@ $string['no_meetings'] = 'There are currently no meetings.';
 
 $string['auto_queue_desc'] = 'Course Queue';
 
+# launch.php
+$string['connecting'] = 'You are being connected to the meeting. Once it opens you may close this window.';
+$string['nopopup'] = "If the GoToMeeting window does not appear, please enable popups or ";
+$string['click_here'] = "click here.";
+
 # settings
 # $string['settings_heading'] = 'Help Me Now Settings';
 # $string['settings_heading_desc'] = '';
