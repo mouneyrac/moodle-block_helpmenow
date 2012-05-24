@@ -35,6 +35,7 @@ require_login(0, false);
 
 # get our parameters
 $meetingid = required_param('meetingid', PARAM_INT);
+$plugin = optional_param('plugin', '', PARAM_TEXT);
 
 if ($meetingid != 0) {
     # get the meeting
@@ -61,7 +62,10 @@ if ($meetingid != 0) {
     $pluginclass = helpmenow_plugin::get_class($meeting->plugin);
 } else {
     $connect_url = "/";
-    $pluginclass = "helpmenow_plugin";
+    $pluginclass = helpmenow_plugin::get_class($plugin);
+    $meeting = (object) array(
+        'plugin' => $plugin,
+    );
 }
 
 $body = ($meetingid != 0) ? "meeting onload=\"meeting = window.open('$connect_url', 'meeting', 'menubar=0,location=0,scrollbars,resizable,height=400,width=700');\"" : "";
@@ -76,12 +80,25 @@ print_box_end();
 echo "<div>";
 
 # general stuff & configurable message
-$first = true;
+$firstcol = true;
 if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
-    $first = false;
+    $firstcol = false;
     echo "<div style=\"width:49%;display:inline-block;padding-right:1%;\">";
     if ($helper) {
-        # todo: add student info for helpers
+        print_box_start();
+        echo get_string('participants', 'block_helpmenow') . "<ul>";
+        $userurl = new moodle_url("$CFG->wwwroot/user/view.php");
+        foreach ($meeting->meeting2user as $m2u) {
+            # helper doesn't need their own info...
+            if ($m2u->userid == $USER->id) {
+                continue;
+            }
+            $userurl->param('id', $m2u->userid);
+            $name = fullname(get_record('user', 'id', $m2u->userid));
+            echo "<li>" . link_to_popup_window($userurl->out(), 'user', $name, 400, 700, null, null, true) . "</li>";
+        }
+        echo "</ul>";
+        print_box_end();
     }
     if (isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) {
         print_box($CFG->helpmenow_connect_message);
@@ -91,7 +108,7 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
 $setting = "helpmenow_{$meeting->plugin}_connect_message";
 if (isset($CFG->$setting) and strlen($CFG->$setting)) {
     $side = 'right';
-    if (!$first) {
+    if (!$firstcol) {
         $side = 'left';
     }
     echo "<div style=\"width:49%;display:inline-block;padding-$side:1%;\">";
