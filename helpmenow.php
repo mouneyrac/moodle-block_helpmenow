@@ -99,6 +99,7 @@ foreach ($queues as $q) {
     $output .= "<p align='center'>$login_status <a href='$login'>$login_text</a></p>";
 
     # display requests, if any
+    $output .= "<div><div style=\"width:49%;display:inline-block;padding-right:1%;vertical-align:top;\">";
     $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('requests', 'block_helpmenow') . "</p>";
     if ($pending_request) {
         $output .= "<ul>";
@@ -121,8 +122,10 @@ foreach ($queues as $q) {
         $output .= "<p align='center' style='font-style:italic;'>" . get_string('no_requests', 'block_helpmenow') . "</p>";
     }
     $output .= print_box_end(true);
+    $output .= "</div>";
 
     # current meetings
+    $output .= "<div style=\"width:49%;display:inline-block;padding-left:1%;vertical-align:top;\">";
     $output .= print_box_start('generalbox', '', true) . "<p align='center'>" . get_string('meetings', 'block_helpmenow') . "</p>";
     if (count($q->meeting)) {
         $output .= "<ul>";
@@ -146,6 +149,7 @@ foreach ($queues as $q) {
         $output .= "<p align='center' style='font-style:italic;'>" . get_string('no_meetings', 'block_helpmenow') . "</p>";
     }
     $output .= print_box_end(true);
+    $output .= "</div></div>";
 
     # helpers
     $logged_in_helpers = array();
