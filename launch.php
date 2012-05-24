@@ -94,8 +94,10 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
                 continue;
             }
             $userurl->param('id', $m2u->userid);
-            $name = fullname(get_record('user', 'id', $m2u->userid));
-            echo "<li>" . link_to_popup_window($userurl->out(), 'user', $name, 400, 700, null, null, true) . "</li>";
+            $user = get_record('user', 'id', $m2u->userid)
+            $name = fullname($user);
+            echo "<li>" . link_to_popup_window($userurl->out(), 'user', $name, 400, 700, null, null, true);
+            echo "</li>";
         }
         echo "</ul>";
         print_box_end();
