@@ -30,6 +30,9 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 require_once(dirname(__FILE__) . '/meeting.php');
 
+# VLACS
+require_once($CFG->dirroot . '/blocks/geniusapis/lib.php');
+
 # require login
 require_login(0, false);
 
@@ -83,7 +86,7 @@ echo "<div>";
 $firstcol = true;
 if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
     $firstcol = false;
-    echo "<div style=\"width:49%;display:inline-block;padding-right:1%;\">";
+    echo "<div style=\"width:49%;display:inline-block;padding-right:1%;vertical-align:top;\">";
     if ($helper) {
         print_box_start();
         echo get_string('participants', 'block_helpmenow') . "<ul>";
@@ -94,7 +97,7 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
                 continue;
             }
             $userurl->param('id', $m2u->userid);
-            $user = get_record('user', 'id', $m2u->userid)
+            $user = get_record('user', 'id', $m2u->userid);
             $name = fullname($user);
             echo "<li>" . link_to_popup_window($userurl->out(), 'user', $name, 400, 700, null, null, true);
             echo "</li>";
@@ -113,7 +116,7 @@ if (isset($CFG->$setting) and strlen($CFG->$setting)) {
     if (!$firstcol) {
         $side = 'left';
     }
-    echo "<div style=\"width:49%;display:inline-block;padding-$side:1%;\">";
+    echo "<div style=\"width:49%;display:inline-block;padding-$side:1%;vertical-align:top;\">";
     print_box($CFG->$setting);
     echo "</div>";
 }
