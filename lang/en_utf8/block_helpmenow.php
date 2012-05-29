@@ -55,6 +55,7 @@ $string['missing_helper'] = "We're sorry, there are no available helpers at this
 $string['please_wait'] = 'Helpers may currently be helping other users. Please wait while we attempt to connect you.';
 $string['missing_request'] = 'Error: request does not exist.';
 $string['too_slow'] = 'Another helper has already answered this request.';
+$string['your_request'] = 'Your pending request:';
 
 # admin.php / edit.php / delete.php
 $string['global_admin'] = 'Global Queues';

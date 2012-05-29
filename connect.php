@@ -151,7 +151,7 @@ $request->update();
 
 print_box_start('generalbox');
 echo "<p align='center'>" . get_string('please_wait', 'block_helpmenow') . "</p>" .
-    "<p align='center'>" . get_string('pending', 'block_helpmenow') . "<br />&quot;" .
+    "<p align='center'>" . get_string('your_request', 'block_helpmenow') . "<br />&quot;" .
     $request->description . "&quot;</p>";
 
 # footer
