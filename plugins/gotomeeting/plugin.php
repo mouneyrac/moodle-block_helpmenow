@@ -83,13 +83,14 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
         $ch = curl_init();
         switch ($verb) {
         case 'POST':
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
-            break;
         case 'PUT':
-            # todo: we might not need this
-            # fall through here
+            # both post and put need postfields opt
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($params));
+            if ($verb == 'POST') {
+                break;
+            }
+            # but we only want put to fall through to customrequest opt
         case 'DELETE':
-            # todo: we might not need this either
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $verb);
             break;
         case 'GET':
@@ -115,7 +116,10 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
         # todo: handle error codes
         $responsecode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($responsecode === 403) {
+        switch ($responsecode) {
+        case 204:
+            return true;
+        case 403:
             if (($USER->id !== $userid) or ($USER->id === get_admin()->id)) {   # call for different user or cron
                 # todo: we need a way to handle getting a new oauth token for cron
                 return false;
@@ -124,6 +128,10 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
             $token_url->param('redirect', qualified_me());
             $token_url = $token_url->out();
             redirect($token_url);
+            break;
+        default:
+            # todo: something?
+            break;
         }
 
         return json_decode($data);
