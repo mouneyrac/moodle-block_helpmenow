@@ -100,6 +100,22 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
             $user = get_record('user', 'id', $m2u->userid);
             $name = fullname($user);
             echo "<li>" . link_to_popup_window($userurl->out(), 'user', $name, 400, 700, null, null, true);
+            /**
+             * START VLACS CODE
+             */
+            $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $user->idnumber);
+            if ($privilege == 'STUDENT' or $privilege == 'TEACHER') {
+                $table = 'teachers';
+                if ($privilege == 'STUDENT') {
+                    $table = 'students';
+                }
+                $sql = "SELECT j.* FROM users AS u JOIN $table AS j ON j.UserIndex = u.UserIndex WHERE u.UserIndex = {$user->idnumber}";
+                $userinfo = reset(GeniusAPI::genius_select_sql($sql));
+                echo "<ul><li>Email: $userinfo->Email</li><li>Phone: $userinfo->Phone</li></ul>";
+            }
+            /**
+             * END VLACS CODE
+             */
             echo "</li>";
         }
         echo "</ul>";
