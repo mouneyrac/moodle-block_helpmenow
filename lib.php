@@ -42,6 +42,10 @@ define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 # Default queue weight value, used to determine queue display order
 define('HELPMENOW_DEFAULT_WEIGHT', 50);
 
+# queue types
+define('HELPMENOW_QUEUE_TYPE_INSTRUCTOR', 'instructor');
+define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
+
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
  * need to create a queue for this course and do so if necessary. Also adds

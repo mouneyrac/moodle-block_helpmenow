@@ -42,6 +42,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'name',
         'weight',
         'description',
+        'type',
     );
 
     /**
@@ -84,6 +85,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var string $desription
      */
     public $description = '';
+
+    /**
+     * Type of queue
+     * @var string $type
+     */
+    public $type = HELPMENOW_QUEUE_TYPE_INSTRUCTOR;
 
     /**
      * Array of user ids of helpers
@@ -313,6 +320,7 @@ class helpmenow_queue extends helpmenow_db_object {
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
             WHERE q.contextid IN ($contexts)
+            AND q.type = " . HELPMENOW_QUEUE_TYPE_HELPDESK . "
             ORDER BY q.weight
         ";
 
@@ -339,6 +347,35 @@ class helpmenow_queue extends helpmenow_db_object {
             FROM {$CFG->prefix}block_helpmenow_queue q
             JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
             WHERE h.userid = $userid
+            AND q.type = " . HELPMENOW_QUEUE_TYPE_HELPDESK . "
+            ORDER BY q.weight
+        ";
+
+        if (!$records = get_records_sql($sql)) {
+            return false;
+        }
+        return helpmenow_queue::objects_from_records($records);
+    }
+
+    /**
+     * Gets an array of instructor queues for a student
+     * @param int $userid optional user.id, otherwise uses $USER
+     * @return array of queues
+     */
+    public static final function get_instructor_queues($userid = null) {
+        global $CFG;
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+
+        $sql = "
+            SELECT q.*
+            FROM {$CFG->prefix}block_helpmenow_queue q
+            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
+            JOIN 
+            WHERE h.userid = $userid
+            AND q.type = " . HELPMENOW_QUEUE_TYPE_INSTRUCTOR . "
             ORDER BY q.weight
         ";
 
