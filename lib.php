@@ -120,6 +120,20 @@ function helpmenow_fatal_error($message, $print_header = true) {
     die;
 }
 
+# todo: faking this for now...
+function helpmenow_get_students() {
+    global $CFG;
+    $sql = "
+        SELECT u.*
+        FROM {$CFG->prefix}classroom_enrolment ce
+        JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
+        WHERE ce.classroom_idstr = '289'
+        LIMIT 10
+    ";
+    
+    return get_records_sql($sql);
+}
+
 /**
  * inserts a message into block_helpmenow_log
  * @param int $userid user performing action

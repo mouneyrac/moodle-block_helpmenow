@@ -91,46 +91,83 @@ class block_helpmenow extends block_base {
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
 
         $first = true;
+
+        # queues
         $queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
         foreach ($queues as $q) {
-            switch ($q->get_privilege()) {
-            case HELPMENOW_QUEUE_HELPER:
-                # todo: interface for helpers moved to window, but do we want anything here?
-                break;
-            case HELPMENOW_QUEUE_HELPEE:
-                if ($first) {
-                    $first = false;
+            if ($q->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
+                continue;
+            }
+
+            if ($first) {
+                $first = false;
+            } else {
+                $this->content->text .= '<hr />';
+            }
+            # if the user has a request, display it, otherwise give a link
+            # to create one
+            if (isset($q->request[$USER->id])) {
+                $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+                $connect->param('requestid', $q->request[$USER->id]->id);
+                $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('pending', 'block_helpmenow') . "</div>";
+                $this->content->text .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
+            } else {
+                if ($q->check_available()) {
+                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+                    $request->param('queueid', $q->id);
+                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
+                    $this->content->text .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
                 } else {
-                    $this->content->text .= '<hr />';
+                    # todo: make this smarter (helpers leave message or configurable)
+                    $this->content->text .= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
                 }
-                # if the user has a request, display it, otherwise give a link
-                # to create one
-                if (isset($q->request[$USER->id])) {
-                    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-                    $connect->param('requestid', $q->request[$USER->id]->id);
-                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('pending', 'block_helpmenow') . "</div>";
-                    $this->content->text .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
-                } else {
-                    if ($q->check_available()) {
-                        $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-                        $request->param('queueid', $q->id);
-                        $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
-                        $this->content->text .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
-                    } else {
-                        # todo: make this smarter (helpers leave message or configurable)
-                        $this->content->text .= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
-                    }
-                }
-                $this->content->text .= $q->description . "<br />";
-                break;
-            default:
+            }
+            $this->content->text .= $q->description . "<br />";
+        }
+
+        # instructor
+        $sql = "
+            SELECT q.*
+            FROM {$CFG->prefix}block_helpmenow_queue q
+            WHERE q.userid = $USER->id
+        ";
+        if ($instructor_queue = get_record_sql($sql)) {
+            $instructor_queue = helpmenow_queue::get_instance(null, $instructor_queue);
+            if ($first) {
+                $first = false;
+            } else {
+                $this->content->text .= '<hr />';
+            }
+
+            $this->content->text .= "<b>My Office</b>";
+            $this->content->text .= "
+                <textarea id=\"instructorMOTD\" rows=\"4\" cols=\"20\">$instructor_queue->description</textarea>
+            ";
+            $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+            $login->param('queueid', $q->id);
+            if ($instructor_queue->helper[$USER->id]->isloggedin) {
+                $login->param('login', 0);
+                $login_status = get_string('loggedin', 'block_helpmenow');
+                $login_text = get_string('logout', 'block_helpmenow');
+            } else {
+                $login->param('login', 1);
+                $login_status = get_string('loggedout', 'block_helpmenow');
+                $login_text = get_string('login', 'block_helpmenow');
+            }
+            $login = $login->out();
+            $this->content->text .= "<div style='text-align:center;font-size:small;'><a href='$login'>Update</a> |$login_status <a href='$login'>$login_text</a></div>";
+            $this->content->text .= "Online students:<br />";
+
+            $students = helpmenow_get_students();
+            foreach ($students as $s) {
+                $url = $request->out(); # todo: totally fake
+                $this->content->text .= link_to_popup_window($request->out(), 'connect', fullname($s), 400, 700, null, null, true) . "<br />";
             }
         }
 
-        # todo: user to user chat? not for VLACS for now.
-
         # helper link
-        if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+        if (false) {
+        # if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) { # todo: filter instructor queues
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
             if ($first) {

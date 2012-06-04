@@ -38,11 +38,19 @@ class helpmenow_queue extends helpmenow_db_object {
         'timemodified',
         'modifiedby',
         'plugin',
-        'contextid',
         'name',
         'weight',
         'description',
         'type',
+    );
+
+    /**
+     * Array of optional db fields.
+     * @var array $optional_fields
+     */
+    protected $optional_fields = array(
+        'contextid',
+        'userid'
     );
 
     /**
@@ -57,7 +65,7 @@ class helpmenow_queue extends helpmenow_db_object {
     );
 
     /**
-     * The context the queue belongs to.
+     * The context the queue belongs to, if a helpdesk queue.
      * @var int $contextid
      */
     public $contextid;
@@ -91,6 +99,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var string $type
      */
     public $type = HELPMENOW_QUEUE_TYPE_INSTRUCTOR;
+
+    /**
+     * user.id of instructor in instructor queues
+     * @var integer $userid
+     */
+    public $userid;
 
     /**
      * Array of user ids of helpers
@@ -308,6 +322,24 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
+     * Called only from the block, gets queues relevant to the context as well
+     * as getting instructor queues for students
+     */
+    public static final function get_queues_block() {
+        global $COURSE, $USER, $CFG;
+
+        # contexts
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+
+        $context_queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
+        $instructor_queues = helpmenow_queue::get_instructor_queues();
+
+        $queues = array_merge($context_queues, $instructor_queues);
+        usort($queues, array('helpmenow_queue', 'cmp'));
+    }
+
+    /**
      * Gets an array of queues by contexts
      * @param array $contexts array of contexts.id
      * @return array of queues
@@ -320,7 +352,7 @@ class helpmenow_queue extends helpmenow_db_object {
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
             WHERE q.contextid IN ($contexts)
-            AND q.type = " . HELPMENOW_QUEUE_TYPE_HELPDESK . "
+            AND q.type = '" . HELPMENOW_QUEUE_TYPE_HELPDESK . "'
             ORDER BY q.weight
         ";
 
@@ -347,7 +379,7 @@ class helpmenow_queue extends helpmenow_db_object {
             FROM {$CFG->prefix}block_helpmenow_queue q
             JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
             WHERE h.userid = $userid
-            AND q.type = " . HELPMENOW_QUEUE_TYPE_HELPDESK . "
+            AND q.type = '" . HELPMENOW_QUEUE_TYPE_HELPDESK . "'
             ORDER BY q.weight
         ";
 
@@ -362,27 +394,44 @@ class helpmenow_queue extends helpmenow_db_object {
      * @param int $userid optional user.id, otherwise uses $USER
      * @return array of queues
      */
-    public static final function get_instructor_queues($userid = null) {
-        global $CFG;
-        if (!isset($userid)) {
-            global $USER;
-            $userid = $USER->id;
+    private static final function get_instructor_queues() {
+        global $CFG, $USER;
+
+        $sql = "
+            SELECT DISTINCT(u2.id)
+            FROM {$CFG->prefix}user u
+            JOIN {$CFG->prefix}classroom_enrolment ce ON u.idnumber = ce.sis_user_idstr
+            JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
+            JOIN {$CFG->prefix}user u2 ON c.sis_user_idstr = u2.idnumber
+            WHERE u.id = $USER->id
+            AND ce.iscurrent = 1
+        ";
+
+        $instructor_recs = get_records_sql($sql);
+        $instructors = array();
+        foreach ($instructor_recs as $ir) {
+            $instructors[] = $ir->id;
         }
+        $instructors = implode(',', $instructors);
 
         $sql = "
             SELECT q.*
             FROM {$CFG->prefix}block_helpmenow_queue q
             JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
-            JOIN 
-            WHERE h.userid = $userid
-            AND q.type = " . HELPMENOW_QUEUE_TYPE_INSTRUCTOR . "
-            ORDER BY q.weight
+            WHERE q.userid IN ($instructors)
         ";
 
         if (!$records = get_records_sql($sql)) {
             return false;
         }
         return helpmenow_queue::objects_from_records($records);
+    }
+
+    private static final function cmp($a, $b) {
+        if ($a->weight == $b->weight) {
+            return 0;
+        }
+        return ($a->weight < $b->weight) ? -1 : 1;
     }
 }
 
