@@ -37,9 +37,6 @@ if (!isloggedin()) {
     die;
 }
 
-# errors
-define('HELPMENOW_ERROR_REQUEST', 'error: bad_request');
-define('HELPMENOW_ERROR_SERVER', 'error: server');
 $error = false;
 
 # get the request body

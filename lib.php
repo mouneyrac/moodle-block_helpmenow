@@ -46,6 +46,11 @@ define('HELPMENOW_DEFAULT_WEIGHT', 50);
 define('HELPMENOW_QUEUE_TYPE_INSTRUCTOR', 'instructor');
 define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
 
+# ajax stuff
+define('HELPMENOW_ERROR_REQUEST', 'error: bad_request');
+define('HELPMENOW_ERROR_SERVER', 'error: server');
+define('HELPMENOW_AJAX_REFRESH', 15000);
+
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
  * need to create a queue for this course and do so if necessary. Also adds

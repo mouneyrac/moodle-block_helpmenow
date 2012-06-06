@@ -141,8 +141,11 @@ class block_helpmenow extends block_base {
 
             $url = $CFG->wwwroot . "/blocks/helpmenow/ajax.php";
             $this->content->text .= "
+                <script type=\"text/javascript\">
+                    var helpmenow_url = \"$url\";
+                    var helpmenow_interval = ".HELPMENOW_AJAX_REFRESH.";
+                </script>
                 <script type=\"text/javascript\" src=\"{$CFG->wwwroot}/blocks/helpmenow/lib.js\"></script>
-                <script type=\"text/javascript\">helpmenow_url = \"$url\";</script>
                 <b>My Office</b>
                 <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;\">$instructor_queue->description</div>
                 <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"23\"></textarea>
