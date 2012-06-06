@@ -79,10 +79,6 @@ $string['unassign'] = 'Remove as helper';
 $string['back'] = 'Back to queue management';
 
 # helper interface
-$string['login'] = 'Log In';
-$string['logout'] = 'Log Out';
-$string['loggedout'] = 'You are currently logged out.';
-$string['loggedin'] = '';
 $string['inactive_message'] = 'Due to inactivity you will soon be logged out of the following queues:';
 $string['inactive_link'] = 'Remain Logged In';
 $string['logged_in_helpers'] = 'Logged In Helpers: ';
@@ -94,6 +90,13 @@ $string['no_requests'] = 'There are currently no requests in queue.';
 $string['no_meetings'] = 'There are currently no meetings.';
 
 $string['auto_queue_desc'] = 'Course Queue';
+
+$string['login'] = 'Log In';
+$string['logout'] = 'Log Out';
+$string['loggedout'] = 'You are currently logged out.';
+$string['loggedin'] = '';
+$string['loggedout_short'] = 'You&#39;re logged out.';
+$string['loggedin_short'] = '';
 
 # launch.php
 $string['connecting'] = 'You are being connected to the meeting. Once it opens you may close this window.';

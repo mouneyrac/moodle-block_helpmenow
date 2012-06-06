@@ -139,23 +139,28 @@ class block_helpmenow extends block_base {
                 $this->content->text .= '<hr />';
             }
 
-            $this->content->text .= "<b>My Office</b>";
+            $url = $CFG->wwwroot . "/blocks/helpmenow/ajax.php";
             $this->content->text .= "
-                <textarea id=\"instructorMOTD\" rows=\"4\" cols=\"20\">$instructor_queue->description</textarea>
+                <script type=\"text/javascript\" src=\"{$CFG->wwwroot}/blocks/helpmenow/lib.js\"></script>
+                <script type=\"text/javascript\">helpmenow_url = \"$url\";</script>
+                <b>My Office</b>
+                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;\">$instructor_queue->description</div>
+                <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"23\"></textarea>
             ";
             $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-            $login->param('queueid', $q->id);
+            $login->param('queueid', $instructor_queue->id);
+            $login->param('redirect', qualified_me());
             if ($instructor_queue->helper[$USER->id]->isloggedin) {
                 $login->param('login', 0);
-                $login_status = get_string('loggedin', 'block_helpmenow');
+                $login_status = get_string('loggedin_short', 'block_helpmenow');
                 $login_text = get_string('logout', 'block_helpmenow');
             } else {
                 $login->param('login', 1);
-                $login_status = get_string('loggedout', 'block_helpmenow');
+                $login_status = get_string('loggedout_short', 'block_helpmenow');
                 $login_text = get_string('login', 'block_helpmenow');
             }
             $login = $login->out();
-            $this->content->text .= "<div style='text-align:center;font-size:small;'><a href='$login'>Update</a> |$login_status <a href='$login'>$login_text</a></div>";
+            $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status <a href='$login'>$login_text</a></div>";
             $this->content->text .= "Online students:<br />";
 
             $students = helpmenow_get_students();

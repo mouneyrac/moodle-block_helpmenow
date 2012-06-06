@@ -35,6 +35,7 @@ require_login(0, false);
 # get our parameters
 $queueid = required_param('queueid', PARAM_INT);
 $login = optional_param('login', 0, PARAM_INT);
+$redirect = optional_param('redirect', '', PARAM_TEXT);
 
 # login/out the helper
 $queue = helpmenow_queue::get_instance($queueid);
@@ -51,6 +52,9 @@ if ($login) {
 }
 
 # we're done, now redirect
+if (strlen($redirect)) {
+    redirect($redirect);
+}
 $helpmenow_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
 $helpmenow_url = $helpmenow_url->out();
 redirect($helpmenow_url);
