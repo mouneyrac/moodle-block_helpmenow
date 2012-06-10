@@ -17,7 +17,7 @@ function helpmenow_call(params, callbackFunction) {
     xmlhttp.onreadystatechange = function() {
         callbackFunction(xmlhttp);
     }
-    xmlhttp.open("POST", helpmenow_url, true);
+    xmlhttp.open("POST", helpmenow_url + "ajax.php", true);
     xmlhttp.setRequestHeader("Accept", "application/json");
     xmlhttp.setRequestHeader("Content-type", "application/json");
     xmlhttp.send(params);
@@ -29,8 +29,8 @@ function helpmenow_call(params, callbackFunction) {
  * @param bool edit  true indicates edit mode, false is display mode
  */
 function helpmenow_toggle_motd(edit) {
-    motd_element = document.getElementById("helpmenow_motd");
-    edit_element = document.getElementById("helpmenow_motd_edit");
+    var motd_element = document.getElementById("helpmenow_motd");
+    var edit_element = document.getElementById("helpmenow_motd_edit");
     if (edit) {
         motd_element.style.display = "none";
         edit_element.style.display = "block";
@@ -53,11 +53,11 @@ function helpmenow_toggle_motd(edit) {
  */
 function helpmenow_enter_motd(e) {
     e = e || event;     // IE
-    edit_element = document.getElementById("helpmenow_motd_edit");
+    var edit_element = document.getElementById("helpmenow_motd_edit");
 
     // enter key
     if (e.keyCode === 13 && !e.ctrlKey) {
-        motd_element = document.getElementById("helpmenow_motd");
+        var motd_element = document.getElementById("helpmenow_motd");
         var params = {
             "function" : "motd",
             "motd" : edit_element.value
@@ -85,7 +85,22 @@ function helpmenow_enter_motd(e) {
  * Function that is called periodically to update the list of students
  */
 function helpmenow_refresh() {
+    var params = {
+        "function" : "students",
+    };
+    helpmenow_call(params, function(xmlhttp) {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            var response = JSON.parse(xmlhttp.responseText);
+            console.log(response);
+            var student_list = document.getElementById("helpmenow_students");
+            student_list.innerHTML = "";
+            for (var i = 0; i < response.students.length; i++) {
+                student_list.innerHTML += response.students[i].html;
+            }
+        }
+    });
 }
 
-// call helpmenow_refresh() periodically
+// call helpmenow_refresh() immediately and periodically
+helpmenow_refresh();
 var helpmenow_t = setInterval(helpmenow_refresh, helpmenow_interval);

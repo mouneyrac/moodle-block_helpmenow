@@ -35,6 +35,7 @@ require_login(0, false);
 
 # get our parameters
 $queueid = optional_param('queueid', 0, PARAM_INT);
+$requested_userid = optional_param('userid', 0, PARAM_INT);
 
 $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
 

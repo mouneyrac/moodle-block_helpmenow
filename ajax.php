@@ -25,6 +25,7 @@
 
 # suppress error messages
 error_reporting(0);
+ob_start();
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
@@ -33,58 +34,76 @@ require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
 if (!isloggedin()) {
+    ob_end_clean();
     header('HTTP/1.1 401 Unauthorized');
     die;
 }
 
-$error = false;
+try {
+    # get the request body
+    $request = @json_decode(file_get_contents('php://input'));
 
-# get the request body
-$request = json_decode(@file_get_contents('php://input'));
-
-# process
-$response = new stdClass;
-switch ($request->function) {
-case 'motd':
+    # queue
     if (!$queue = get_record('block_helpmenow_queue', 'userid', $USER->id)) {
-        $error = HELPMENOW_ERROR_REQUEST;
-        $response->error = 'No instructor queue exists for user';
+        throw new Exception('No instructor queue exists for user');
         break;
     }
     $queue = helpmenow_queue::get_instance(null, $queue);
-    $queue->description = $request->motd;
-    if (!$queue->update()) {
-        $error = HELPMENOW_ERROR_SERVER;
-        $response->error = 'Could not update queue';
-        break;
-    }
-    $response->motd = $queue->description;
-    break;
-default:
-    $error = HELPMENOW_ERROR_REQUEST;
-    $response->error = 'Unknown method';
-}
 
-# respond
-if ($error) {
-    switch ($error) {
-    case HELPMENOW_ERROR_REQUEST:
-        header('HTTP/1.1 400 Bad Request');
+    # process
+    $response = new stdClass;
+    switch ($request->function) {
+    case 'motd':
+        $queue->description = $request->motd;
+        if (!$queue->update()) {
+            throw new Exception('Could not update queue');
+            break;
+        }
+        $response->motd = $queue->description;
+        break;
+    case 'students':
+        $student_records = helpmenow_get_students();
+        $response->students = array();
+        foreach($student_records as $s) {
+            $student = (object) array(
+                'userid' => $s->id,
+                'fullname' => fullname($s),
+            );
+            $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+            $request->param('userid', $student->userid);
+            $student->html = link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
+            if (isset($queue->request[$student->userid])) {
+                $student->request = $queue->request[$s->id]->description;
+                $student->html .= "<div style=\"margin-left:1em;\">" . $queue->request[$s->id]->description . "</div>";
+            }
+            $response->students[] = $student;
+        }
+        usort($response->students, function ($a, $b) {
+            if (isset($a->request) === isset($b->request)) {
+                return 0;
+            }
+            return isset($a->request) ? -1 : 1;
+        });
         break;
     default:
-    case HELPMENOW_ERROR_SERVER:
-        header('HTTP/1.1 500 Internal Server Error');
-        break;
+        throw new Exception('Unknown method');
     }
-    if (!$CFG->debugdisplay) {  # don't include error messages in the reponse if Moodle's set to not display error messages
-        unset($response->error);
+} catch (Exception $e) {
+    ob_end_clean();
+    header('HTTP/1.1 400 Bad Request');
+    if ($CFG->debugdisplay) {
+        $response = new stdClass;
+        $response->error = $e->getMessage();
+        echo json_encode($response);
     }
-} else {
-    header('Content-Type: application/json; charset=utf-8');
-    header('Cache-Control: no-cache');
-    header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
-    header('Pragma: no-cache');
+    die;
 }
+
+ob_end_clean();
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-cache');
+header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');
+header('Pragma: no-cache');
 echo json_encode($response);
 
 ?>

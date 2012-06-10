@@ -43,6 +43,10 @@ $string['pending'] = '(Click to view your request)';
 $string['queue_na_short'] = '(Currently Offline)';
 $string['helper_link'] = 'Open My Queues';
 $string['admin_link'] = 'Manage Queues';
+$string['in_office'] = '';
+$string['out_office'] = 'Out of Office |';
+$string['enter_office'] = 'Enter Office';
+$string['leave_office'] = 'Leave Office';
 
 # new_request.php
 $string['new_request_heading'] = 'New Request';
@@ -88,15 +92,12 @@ $string['helper'] = 'helper';
 $string['requests'] = 'Requests';
 $string['no_requests'] = 'There are currently no requests in queue.';
 $string['no_meetings'] = 'There are currently no meetings.';
-
-$string['auto_queue_desc'] = 'Course Queue';
-
 $string['login'] = 'Log In';
 $string['logout'] = 'Log Out';
 $string['loggedout'] = 'You are currently logged out.';
 $string['loggedin'] = '';
-$string['loggedout_short'] = 'You&#39;re logged out.';
-$string['loggedin_short'] = '';
+
+$string['auto_queue_desc'] = 'Course Queue';
 
 # launch.php
 $string['connecting'] = 'You are being connected to the meeting. Once it opens you may close this window.';

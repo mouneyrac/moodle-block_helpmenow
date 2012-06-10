@@ -47,8 +47,6 @@ define('HELPMENOW_QUEUE_TYPE_INSTRUCTOR', 'instructor');
 define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
 
 # ajax stuff
-define('HELPMENOW_ERROR_REQUEST', 'error: bad_request');
-define('HELPMENOW_ERROR_SERVER', 'error: server');
 define('HELPMENOW_AJAX_REFRESH', 15000);
 
 /**
@@ -125,17 +123,21 @@ function helpmenow_fatal_error($message, $print_header = true) {
     die;
 }
 
-# todo: faking this for now...
 function helpmenow_get_students() {
-    global $CFG;
+    global $CFG, $USER;
+
+    $cutoff = time() - 300;     # go with the same cutoff as Moodle
     $sql = "
         SELECT u.*
-        FROM {$CFG->prefix}classroom_enrolment ce
+        FROM {$CFG->prefix}classroom c
+        JOIN {$CFG->prefix}classroom_enrolment ce ON ce.classroom_idstr = c.classroom_idstr
         JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
-        WHERE ce.classroom_idstr = '289'
-        LIMIT 10
+        WHERE c.sis_user_idstr = '$USER->idnumber'
+        AND ce.status_idstr = 'ACTIVE'
+        AND ce.iscurrent = 1
+        AND u.lastaccess > $cutoff
     ";
-    
+
     return get_records_sql($sql);
 }
 

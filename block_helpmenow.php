@@ -93,7 +93,7 @@ class block_helpmenow extends block_base {
         $first = true;
 
         # queues
-        $queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
+        $queues = helpmenow_queue::get_queues_block();
         foreach ($queues as $q) {
             if ($q->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
                 continue;
@@ -122,7 +122,10 @@ class block_helpmenow extends block_base {
                     $this->content->text .= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
                 }
             }
-            $this->content->text .= $q->description . "<br />";
+            if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK or
+                    ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
+                $this->content->text .= $q->description . "<br />";
+            }
         }
 
         # instructor
@@ -139,7 +142,7 @@ class block_helpmenow extends block_base {
                 $this->content->text .= '<hr />';
             }
 
-            $url = $CFG->wwwroot . "/blocks/helpmenow/ajax.php";
+            $url = $CFG->wwwroot . "/blocks/helpmenow/";
             $this->content->text .= "
                 <script type=\"text/javascript\">
                     var helpmenow_url = \"$url\";
@@ -155,22 +158,19 @@ class block_helpmenow extends block_base {
             $login->param('redirect', qualified_me());
             if ($instructor_queue->helper[$USER->id]->isloggedin) {
                 $login->param('login', 0);
-                $login_status = get_string('loggedin_short', 'block_helpmenow');
-                $login_text = get_string('logout', 'block_helpmenow');
+                $login_status = get_string('in_office', 'block_helpmenow');
+                $login_text = get_string('leave_office', 'block_helpmenow');
             } else {
                 $login->param('login', 1);
-                $login_status = get_string('loggedout_short', 'block_helpmenow');
-                $login_text = get_string('login', 'block_helpmenow');
+                $login_status = get_string('out_office', 'block_helpmenow');
+                $login_text = get_string('enter_office', 'block_helpmenow');
             }
             $login = $login->out();
             $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status <a href='$login'>$login_text</a></div>";
             $this->content->text .= "Online students:<br />";
 
-            $students = helpmenow_get_students();
-            foreach ($students as $s) {
-                $url = $request->out(); # todo: totally fake
-                $this->content->text .= link_to_popup_window($request->out(), 'connect', fullname($s), 400, 700, null, null, true) . "<br />";
-            }
+            $this->content->text .= "<div id=\"helpmenow_students\">";
+            $this->content->text .= "</div>";
         }
 
         # helper link

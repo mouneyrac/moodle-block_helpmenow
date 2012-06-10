@@ -130,7 +130,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return string queue privilege
      */
     public function get_privilege() {
-        global $USER;
+        global $USER, $CFG;
 
         # if it's not set, try loading helpers
         if (!isset($this->helper[$USER->id])) {
@@ -143,7 +143,21 @@ class helpmenow_queue extends helpmenow_db_object {
 
         $context = get_context_instance_by_id($this->contextid);
         if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
-            return HELPMENOW_QUEUE_HELPEE;
+            if ($this->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+                $sql = "
+                    SELECT *
+                    FROM {$CFG->prefix}classroom_enrolment ce
+                    JOIN {$CFG->prefix}classroom c ON ce.classroom_idstr = c.classroom_idstr
+                    JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
+                    WHERE ce.sis_user_idstr = '$USER->idnumber'
+                    AND u.id = $this->userid
+                ";
+                if (record_exists_sql($sql)) {
+                    return HELPMENOW_QUEUE_HELPEE;
+                }
+            } else {
+                return HELPMENOW_QUEUE_HELPEE;
+            }
         }
 
         return HELPMENOW_NOT_PRIVILEGED;
@@ -337,6 +351,7 @@ class helpmenow_queue extends helpmenow_db_object {
 
         $queues = array_merge($context_queues, $instructor_queues);
         usort($queues, array('helpmenow_queue', 'cmp'));
+        return $queues;
     }
 
     /**
@@ -397,6 +412,8 @@ class helpmenow_queue extends helpmenow_db_object {
     private static final function get_instructor_queues() {
         global $CFG, $USER;
 
+        $instructors = array();
+
         $sql = "
             SELECT DISTINCT(u2.id)
             FROM {$CFG->prefix}user u
@@ -407,8 +424,9 @@ class helpmenow_queue extends helpmenow_db_object {
             AND ce.iscurrent = 1
         ";
 
-        $instructor_recs = get_records_sql($sql);
-        $instructors = array();
+        if (!$instructor_recs = get_records_sql($sql)) {
+            return $instructors;
+        }
         foreach ($instructor_recs as $ir) {
             $instructors[] = $ir->id;
         }
