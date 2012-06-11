@@ -85,16 +85,20 @@ echo "<div>";
 # general stuff & configurable message
 $firstcol = true;
 if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) or $helper) {
-    $firstcol = false;
-    echo "<div style=\"width:49%;display:inline-block;padding-right:1%;vertical-align:top;\">";
     if ($helper) {
-        print_box_start();
-        echo get_string('participants', 'block_helpmenow') . "<ul>";
+        $first = true;
         $userurl = new moodle_url("$CFG->wwwroot/user/view.php");
         foreach ($meeting->meeting2user as $m2u) {
             # helper doesn't need their own info...
             if ($m2u->userid == $USER->id) {
                 continue;
+            }
+            if ($first) {
+                $firstcol = false;
+                echo "<div style=\"width:49%;display:inline-block;padding-right:1%;vertical-align:top;\">";
+                print_box_start();
+                echo get_string('participants', 'block_helpmenow') . "<ul>";
+                $first = false;
             }
             $userurl->param('id', $m2u->userid);
             $user = get_record('user', 'id', $m2u->userid);
@@ -118,11 +122,17 @@ if ((isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_m
              */
             echo "</li>";
         }
-        echo "</ul>";
-        print_box_end();
+        if (!$first) {
+            echo "</ul>";
+            print_box_end();
+        }
     }
     if (isset($CFG->helpmenow_connect_message) and strlen($CFG->helpmenow_connect_message)) {
-        print_box($CFG->helpmenow_connect_message);
+        if ($firstcol) {
+            $firstcol = false;
+            echo "<div style=\"width:49%;display:inline-block;padding-right:1%;vertical-align:top;\">";
+            print_box($CFG->helpmenow_connect_message);
+        }
     }
     echo "</div>";
 }
