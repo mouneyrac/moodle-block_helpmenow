@@ -39,6 +39,8 @@ if (!isloggedin()) {
     die;
 }
 
+require_login(0, false);
+
 try {
     # get the request body
     $request = @json_decode(file_get_contents('php://input'));
