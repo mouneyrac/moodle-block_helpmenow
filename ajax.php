@@ -44,7 +44,7 @@ try {
     $request = @json_decode(file_get_contents('php://input'));
 
     # get queue for motd and students functions
-    if ($request->function === 'motd' or $request->function === 'students') {
+    if ($request->function === 'motd' or $request->function === 'instructor') {
         if (!$queue = get_record('block_helpmenow_queue', 'userid', $USER->id)) {
             throw new Exception('No instructor queue exists for user');
             break;
@@ -63,8 +63,24 @@ try {
         }
         $response->motd = $queue->description;
         break;
-    case 'students':
+    case 'instructor':
         $student_records = helpmenow_get_students();
+
+        # login state
+        $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+        $login->param('queueid', $queue->id);
+        if ($queue->helper[$USER->id]->isloggedin) {
+            $login->param('login', 0);
+            $login_status = get_string('in_office', 'block_helpmenow');
+            $login_text = get_string('leave_office', 'block_helpmenow');
+        } else {
+            $login->param('login', 1);
+            $login_status = get_string('out_office', 'block_helpmenow');
+            $login_text = get_string('enter_office', 'block_helpmenow');
+        }
+        $response->login_html = "$login_status " . link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true);
+
+        # student list
         $response->students = array();
         foreach($student_records as $s) {
             $student = (object) array(
@@ -119,7 +135,10 @@ try {
                 if ($q->check_available()) {
                     $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
                     $request->param('queueid', $q->id);
-                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
+                    $linktext = "<b>$q->name</b><br />";
+                    if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK) {
+                        $linktext .= "<div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
+                    }
                     $queue->html .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
                 } else {
                     # todo: make this smarter (helpers leave message or configurable)

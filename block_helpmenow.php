@@ -121,19 +121,7 @@ class block_helpmenow extends block_base {
                 <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;\">$instructor_queue->description</div>
                 <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"23\"></textarea>
             ";
-            $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-            $login->param('queueid', $instructor_queue->id);
-            if ($instructor_queue->helper[$USER->id]->isloggedin) {
-                $login->param('login', 0);
-                $login_status = get_string('in_office', 'block_helpmenow');
-                $login_text = get_string('leave_office', 'block_helpmenow');
-            } else {
-                $login->param('login', 1);
-                $login_status = get_string('out_office', 'block_helpmenow');
-                $login_text = get_string('enter_office', 'block_helpmenow');
-            }
-            $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status ";
-            $this->content->text .= link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true) . "</div>";
+            $this->content->text .= "<div id=\"helpmenow_login\" style='text-align:center;font-size:small;'></div>";
             $this->content->text .= "Online students:<br />";
 
             $this->content->text .= "

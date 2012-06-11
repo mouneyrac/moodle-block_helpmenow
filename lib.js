@@ -86,11 +86,15 @@ function helpmenow_enter_motd(e) {
  */
 function helpmenow_instructor_refresh() {
     var params = {
-        "function" : "students",
+        "function" : "instructor",
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {
             var response = JSON.parse(xmlhttp.responseText);
+
+            var login_div = document.getElementById("helpmenow_login");
+            login_div.innerHTML = response.login_html;
+
             var student_list = document.getElementById("helpmenow_students");
             student_list.innerHTML = "";
             for (var i = 0; i < response.students.length; i++) {
