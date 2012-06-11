@@ -84,14 +84,13 @@ function helpmenow_enter_motd(e) {
 /**
  * Function that is called periodically to update the list of students
  */
-function helpmenow_refresh() {
+function helpmenow_instructor_refresh() {
     var params = {
         "function" : "students",
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {
             var response = JSON.parse(xmlhttp.responseText);
-            console.log(response);
             var student_list = document.getElementById("helpmenow_students");
             student_list.innerHTML = "";
             for (var i = 0; i < response.students.length; i++) {
@@ -101,6 +100,24 @@ function helpmenow_refresh() {
     });
 }
 
-// call helpmenow_refresh() immediately and periodically
-helpmenow_refresh();
-var helpmenow_t = setInterval(helpmenow_refresh, helpmenow_interval);
+/**
+ * Function that is called periodically to update the list of queues
+ */
+function helpmenow_queue_refresh() {
+    var params = {
+        "function" : "queues",
+    };
+    helpmenow_call(params, function(xmlhttp) {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+            var response = JSON.parse(xmlhttp.responseText);
+            var queue_list = document.getElementById("helpmenow_queue");
+            queue_list.innerHTML = "";
+            for (var i = 0; i < response.queues.length; i++) {
+                queue_list.innerHTML += response.queues[i].html;
+            }
+        }
+        if (xmlhttp.readyState==4 && xmlhttp.status==400) {
+            console.log(xmlhttp);
+        }
+    });
+}

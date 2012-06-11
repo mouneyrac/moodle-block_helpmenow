@@ -35,19 +35,33 @@ require_login(0, false);
 
 # get our parameters
 $queueid = optional_param('queueid', 0, PARAM_INT);
-$requested_userid = optional_param('userid', 0, PARAM_INT);
+$userid = optional_param('userid', 0, PARAM_INT);
 
 $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
 
-# check privileges/availability
-$queue = helpmenow_queue::get_instance($queueid);
-if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
-    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+if ($userid) {
+    $sql = "
+        SELECT q.*
+        FROM {$CFG->prefix}block_helpmenow_queue q
+        WHERE q.userid = $USER->id
+    ";
+    if (!$queue = get_record_sql($sql)) {
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+    }
+    $queue = helpmenow_queue::get_instance(null, $instructor_queue);
+} else {
+    $userid = $USER->id;
+
+    # check privileges/availability
+    $queue = helpmenow_queue::get_instance($queueid);
+    if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+    }
+    if (!$queue->check_available()) {
+        helpmenow_fatal_error(get_string('missing_helper', 'block_helpmenow'));
+    }
 }
-if (!$queue->check_available()) {
-    helpmenow_fatal_error(get_string('missing_helper', 'block_helpmenow'));
-}
-if ($existing_request = get_record('block_helpmenow_request', 'userid', $USER->id, 'queueid', $queueid)) {
+if ($existing_request = get_record('block_helpmenow_request', 'userid', $userid, 'queueid', $queueid)) {
     $connect->param('requestid', $existing_request->id);
     redirect($connect->out());
 }
@@ -65,6 +79,10 @@ if ($form->is_cancelled()) {                # cancelled
     # log
     helpmenow_log($USER->id, 'new_request', "requestid: {$request->id}");
 
+    if ($USER->id !== $userid) {
+        helpmenow_fatal_error('You may now close this window.');
+    }
+
     # redirect to connect.php
     $connect->param('requestid', $request->id);
     redirect($connect->out());
@@ -80,6 +98,7 @@ print_box_start('generalbox centerpara');
 $toform = array(
     'queueid' => $queueid,
     'plugin' => $queue->plugin,
+    'userid' => $userid
 );
 $form->set_data($toform);
 $form->display();

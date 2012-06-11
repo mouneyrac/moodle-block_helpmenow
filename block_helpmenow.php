@@ -90,43 +90,21 @@ class block_helpmenow extends block_base {
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
 
-        $first = true;
-
         # queues
-        $queues = helpmenow_queue::get_queues_block();
-        foreach ($queues as $q) {
-            if ($q->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
-                continue;
-            }
-
-            if ($first) {
-                $first = false;
-            } else {
-                $this->content->text .= '<hr />';
-            }
-            # if the user has a request, display it, otherwise give a link
-            # to create one
-            if (isset($q->request[$USER->id])) {
-                $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-                $connect->param('requestid', $q->request[$USER->id]->id);
-                $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('pending', 'block_helpmenow') . "</div>";
-                $this->content->text .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
-            } else {
-                if ($q->check_available()) {
-                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-                    $request->param('queueid', $q->id);
-                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
-                    $this->content->text .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
-                } else {
-                    # todo: make this smarter (helpers leave message or configurable)
-                    $this->content->text .= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
-                }
-            }
-            if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK or
-                    ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
-                $this->content->text .= $q->description . "<br />";
-            }
-        }
+        $url = $CFG->wwwroot . "/blocks/helpmenow/";
+        $this->content->text .= "
+            <script type=\"text/javascript\">
+                var helpmenow_url = \"$url\";
+                var helpmenow_interval = ".HELPMENOW_AJAX_REFRESH.";
+            </script>
+            <script type=\"text/javascript\" src=\"{$CFG->wwwroot}/blocks/helpmenow/lib.js\"></script>
+            <div id=\"helpmenow_queue\"></div>
+            <script type=\"text/javascript\">
+                // call helpmenow_refresh() immediately and periodically
+                helpmenow_queue_refresh();
+                var helpmenow_tq = setInterval(helpmenow_queue_refresh, helpmenow_interval);
+            </script>
+        ";
 
         # instructor
         $sql = "
@@ -136,19 +114,9 @@ class block_helpmenow extends block_base {
         ";
         if ($instructor_queue = get_record_sql($sql)) {
             $instructor_queue = helpmenow_queue::get_instance(null, $instructor_queue);
-            if ($first) {
-                $first = false;
-            } else {
-                $this->content->text .= '<hr />';
-            }
 
-            $url = $CFG->wwwroot . "/blocks/helpmenow/";
             $this->content->text .= "
-                <script type=\"text/javascript\">
-                    var helpmenow_url = \"$url\";
-                    var helpmenow_interval = ".HELPMENOW_AJAX_REFRESH.";
-                </script>
-                <script type=\"text/javascript\" src=\"{$CFG->wwwroot}/blocks/helpmenow/lib.js\"></script>
+                <hr />
                 <b>My Office</b>
                 <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;\">$instructor_queue->description</div>
                 <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"23\"></textarea>
@@ -169,8 +137,14 @@ class block_helpmenow extends block_base {
             $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status <a href='$login'>$login_text</a></div>";
             $this->content->text .= "Online students:<br />";
 
-            $this->content->text .= "<div id=\"helpmenow_students\">";
-            $this->content->text .= "</div>";
+            $this->content->text .= "
+                <div id=\"helpmenow_students\"></div>
+                <script type=\"text/javascript\">
+                    // call helpmenow_refresh() immediately and periodically
+                    helpmenow_instructor_refresh();
+                    var helpmenow_t = setInterval(helpmenow_instructor_refresh, helpmenow_interval);
+                </script>
+            ";
         }
 
         # helper link
@@ -178,22 +152,12 @@ class block_helpmenow extends block_base {
         # if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) { # todo: filter instructor queues
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
-            if ($first) {
-                $first = false;
-            } else {
-                $this->content->text .= '<hr />';
-            }
-            $this->content->text .= link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
+            $this->content->text .= '<hr />' . link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
         }
 
         # block message
         if (strlen($CFG->helpmenow_block_message)) {
-            if ($first) {
-                $first = false;
-            } else {
-                $this->content->text .= '<hr />';
-            }
-            $this->content->text .= $CFG->helpmenow_block_message;
+            $this->content->text .= '<hr />' . $CFG->helpmenow_block_message;
         }
 
         # admin link

@@ -43,12 +43,14 @@ try {
     # get the request body
     $request = @json_decode(file_get_contents('php://input'));
 
-    # queue
-    if (!$queue = get_record('block_helpmenow_queue', 'userid', $USER->id)) {
-        throw new Exception('No instructor queue exists for user');
-        break;
+    # get queue for motd and students functions
+    if ($request->function === 'motd' or $request->function === 'students') {
+        if (!$queue = get_record('block_helpmenow_queue', 'userid', $USER->id)) {
+            throw new Exception('No instructor queue exists for user');
+            break;
+        }
+        $queue = helpmenow_queue::get_instance(null, $queue);
     }
-    $queue = helpmenow_queue::get_instance(null, $queue);
 
     # process
     $response = new stdClass;
@@ -68,10 +70,11 @@ try {
             $student = (object) array(
                 'userid' => $s->id,
                 'fullname' => fullname($s),
+                'html' => '',
             );
             $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
             $request->param('userid', $student->userid);
-            $student->html = link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
+            $student->html .= link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
             if (isset($queue->request[$student->userid])) {
                 $student->request = $queue->request[$s->id]->description;
                 $student->html .= "<div style=\"margin-left:1em;\">" . $queue->request[$s->id]->description . "</div>";
@@ -84,6 +87,51 @@ try {
             }
             return isset($a->request) ? -1 : 1;
         });
+        break;
+    case 'queues':
+        $queues = helpmenow_queue::get_queues_block();
+        $response->queues = array();
+        foreach ($queues as $q) {
+            if ($q->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
+                continue;
+            }
+
+            $queue = (object) array(
+                'queueid' => $q->id,
+                'name' => $q->name,
+                'description' => $q->description,
+                'html' => '',
+            );
+
+            # if the user has a request, display it, otherwise give a link
+            # to create one
+            if (isset($q->request[$USER->id])) {
+                $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+                $connect->param('requestid', $q->request[$USER->id]->id);
+                if ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+                    $smalltext = $q->request[$USER->id]->description;
+                } else {
+                    $smalltext = get_string('pending', 'block_helpmenow');
+                }
+                $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>$smalltext</div>";
+                $queue->html .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
+            } else {
+                if ($q->check_available()) {
+                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+                    $request->param('queueid', $q->id);
+                    $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
+                    $queue->html .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
+                } else {
+                    # todo: make this smarter (helpers leave message or configurable)
+                    $queue->html.= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
+                }
+            }
+            if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK or
+                    ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
+                $queue->html .= $q->description . "<br />";
+            }
+            $response->queues[] = $queue;
+        }
         break;
     default:
         throw new Exception('Unknown method');

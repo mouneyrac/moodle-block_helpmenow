@@ -103,7 +103,7 @@ class helpmenow_request extends helpmenow_db_object {
         $request = helpmenow_request::new_instance($formdata->plugin);
         $request->queueid = $formdata->queueid;
         $request->description = $formdata->description;
-        $request->userid = $USER->id;
+        $request->userid = $formdata->userid;
         $request->last_refresh = time();
         if (!$request->insert()) {
             return false;
