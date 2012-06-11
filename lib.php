@@ -47,7 +47,7 @@ define('HELPMENOW_QUEUE_TYPE_INSTRUCTOR', 'instructor');
 define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
 
 # ajax stuff
-define('HELPMENOW_AJAX_REFRESH', 15000);
+define('HELPMENOW_AJAX_REFRESH', 5000);
 
 /**
  * Checks if we want to auto create course level queues. If we do, check if we
@@ -110,7 +110,7 @@ function helpmenow_ensure_queue_exists($contextid = null) {
  * @param string $message message to be printed
  * @param bool $print_header print generic helpmenow header or not
  */
-function helpmenow_fatal_error($message, $print_header = true) {
+function helpmenow_fatal_error($message, $print_header = true, $close = false) {
     if ($print_header) {
         $title = get_string('helpmenow', 'block_helpmenow');
         $nav = array(array('name' => $title));
@@ -119,6 +119,9 @@ function helpmenow_fatal_error($message, $print_header = true) {
         print_footer();
     } else {
         echo $message;
+    }
+    if ($close) {
+        echo "<script type=\"text/javascript\">close();</script>";
     }
     die;
 }

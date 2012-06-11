@@ -62,7 +62,7 @@ if ($userid and ($userid != $USER->id)) {
         $meeting->add_user($existing_request->userid);
         $meeting->update();
 
-        helpmenow_fatal_error('You may now close this window.');
+        helpmenow_fatal_error('You may now close this window.', true, true);
     }
 } else {
     $userid = $USER->id;
@@ -86,7 +86,7 @@ $class = helpmenow_request::get_class($queue->plugin);
 $form = $class::get_form();
 if ($form->is_cancelled()) {                # cancelled
     # todo: close the window
-    helpmenow_fatal_error('You may now close this window.');
+    helpmenow_fatal_error('You may now close this window.', true, true);
 } else if ($formdata = $form->get_data()) {     # submitted
     $formdata = stripslashes_recursive($formdata);  # stupid forms addslashes when we are already doing it
     $request = $class::process_form($formdata);
@@ -97,7 +97,7 @@ if ($form->is_cancelled()) {                # cancelled
     if ($USER->id !== $userid) {
         $request->meetingid = $queue->helper[$USER->id]->meetingid;
         $request->update();
-        helpmenow_fatal_error('You may now close this window.');
+        helpmenow_fatal_error('You may now close this window.', true, true);
     }
 
     # redirect to connect.php

@@ -67,7 +67,7 @@ if ($login) {
     if ($queue->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
         $queue->helper[$USER->id]->meetingid = 0;
         $queue->helper[$USER->id]->update();
-        helpmenow_fatal_error('You may now close this window');
+        helpmenow_fatal_error('You may now close this window', true, true);
     }
 }
 
