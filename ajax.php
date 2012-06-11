@@ -52,6 +52,8 @@ try {
             break;
         }
         $queue = helpmenow_queue::get_instance(null, $queue);
+        $queue->helper[$USER->id]->last_activity = time();
+        $queue->helper[$USER->id]->update();
     }
 
     # process
@@ -90,9 +92,13 @@ try {
                 'fullname' => fullname($s),
                 'html' => '',
             );
-            $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-            $request->param('userid', $student->userid);
-            $student->html .= link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
+            if ($queue->helper[$USER->id]->isloggedin) {
+                $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
+                $request->param('userid', $student->userid);
+                $student->html .= link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
+            } else {
+                $student->html .= $student->fullname;
+            }
             if (isset($queue->request[$student->userid])) {
                 $student->request = $queue->request[$s->id]->description;
                 $student->html .= "<div style=\"margin-left:1em;\">" . $queue->request[$s->id]->description . "</div>";
