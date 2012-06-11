@@ -116,6 +116,7 @@ class helpmenow_helper extends helpmenow_db_object {
 
                 $h->isloggedin = 0;
                 $h->last_action = 0;
+                $h->meetingid = 0;
                 $success = $success and $h->update();
             }
         }
