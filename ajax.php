@@ -128,7 +128,7 @@ try {
             }
             if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK or
                     ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
-                $queue->html .= $q->description . "<br />";
+                $queue->html .= "<div style=\"margin-left:1em;\">" . $q->description . "</div>";
             }
             $response->queues[] = $queue;
         }

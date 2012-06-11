@@ -46,6 +46,14 @@ class helpmenow_helper extends helpmenow_db_object {
     );
 
     /**
+     * Array of optional db fields.
+     * @var array $optional_fields
+     */
+    protected $optional_fields = array(
+        'meetingid',
+    );
+
+    /**
      * The queue the helper belongs to.
      * @var int $queueid
      */
@@ -74,6 +82,12 @@ class helpmenow_helper extends helpmenow_db_object {
      * @var int $last_refresh
      */
     public $last_refresh = 0;
+
+    /**
+     * Meetingid of helper's persistant meeting
+     * @var int $meetingid
+     */
+    public $meetingid;
 
     /**
      * Plugins can override this method to provide status information of helpers

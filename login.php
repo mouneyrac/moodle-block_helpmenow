@@ -35,26 +35,43 @@ require_login(0, false);
 # get our parameters
 $queueid = required_param('queueid', PARAM_INT);
 $login = optional_param('login', 0, PARAM_INT);
-$redirect = optional_param('redirect', '', PARAM_TEXT);
 
 # login/out the helper
 $queue = helpmenow_queue::get_instance($queueid);
 if ($login) {
-    # log
+    $queue->login();
     helpmenow_log($USER->id, 'logged_in', "queueid: {$queueid}");
 
-    $queue->login();
-} else {
-    # log
-    helpmenow_log($USER->id, 'logged_out', "queueid: {$queueid}");
+    if ($queue->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+        $meeting = helpmenow_meeting::new_instance($queue->plugin);
+        $meeting->owner_userid = $USER->id;
+        $meeting->description = $queue->name;  # get the description from the request
+        $meeting->queueid = $queue->id;
+        $meeting->create();
+        $meeting->insert();
 
+        $meeting->add_user();
+        $meeting->update();
+
+        # add meetingid to helper
+        $queue->helper[$USER->id]->meetingid = $meeting->id;
+        $queue->helper[$USER->id]->update();
+
+        $launch = new moodle_url($CFG->wwwroot . '/blocks/helpmenow/launch.php');
+        $launch->param('meetingid', $meeting->id);
+        redirect($launch->out());
+    }
+} else {
     $queue->logout();
+    helpmenow_log($USER->id, 'logged_out', "queueid: {$queueid}");
+    if ($queue->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+        $queue->helper[$USER->id]->meetingid = 0;
+        $queue->helper[$USER->id]->update();
+        helpmenow_fatal_error('You may now close this window');
+    }
 }
 
 # we're done, now redirect
-if (strlen($redirect)) {
-    redirect($redirect);
-}
 $helpmenow_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
 $helpmenow_url = $helpmenow_url->out();
 redirect($helpmenow_url);

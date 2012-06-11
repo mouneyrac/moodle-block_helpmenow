@@ -123,7 +123,6 @@ class block_helpmenow extends block_base {
             ";
             $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
             $login->param('queueid', $instructor_queue->id);
-            $login->param('redirect', qualified_me());
             if ($instructor_queue->helper[$USER->id]->isloggedin) {
                 $login->param('login', 0);
                 $login_status = get_string('in_office', 'block_helpmenow');
@@ -133,8 +132,8 @@ class block_helpmenow extends block_base {
                 $login_status = get_string('out_office', 'block_helpmenow');
                 $login_text = get_string('enter_office', 'block_helpmenow');
             }
-            $login = $login->out();
-            $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status <a href='$login'>$login_text</a></div>";
+            $this->content->text .= "<div style='text-align:center;font-size:small;'>$login_status ";
+            $this->content->text .= link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true) . "</div>";
             $this->content->text .= "Online students:<br />";
 
             $this->content->text .= "

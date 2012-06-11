@@ -39,7 +39,8 @@ $userid = optional_param('userid', 0, PARAM_INT);
 
 $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
 
-if ($userid) {
+# this case is an instructor clicking on a student's name in the block
+if ($userid and ($userid != $USER->id)) {
     $sql = "
         SELECT q.*
         FROM {$CFG->prefix}block_helpmenow_queue q
@@ -48,7 +49,21 @@ if ($userid) {
     if (!$queue = get_record_sql($sql)) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
-    $queue = helpmenow_queue::get_instance(null, $instructor_queue);
+    $queue = helpmenow_queue::get_instance(null, $queue);
+
+    # if there is a request already, add the student to the instructors meeting
+    if ($existing_request = get_record('block_helpmenow_request', 'userid', $userid, 'queueid', $queue->id)) {
+        $existing_request = helpmenow_request::get_instance(null, $existing_request);
+        $meeting = helpmenow_meeting::get_instance($queue->helper[$USER->id]->meetingid);
+
+        $existing_request->meetingid = $meeting->id;
+        $existing_request->update();
+
+        $meeting->add_user($existing_request->userid);
+        $meeting->update();
+
+        helpmenow_fatal_error('You may now close this window.');
+    }
 } else {
     $userid = $USER->id;
 
@@ -60,10 +75,10 @@ if ($userid) {
     if (!$queue->check_available()) {
         helpmenow_fatal_error(get_string('missing_helper', 'block_helpmenow'));
     }
-}
-if ($existing_request = get_record('block_helpmenow_request', 'userid', $userid, 'queueid', $queueid)) {
-    $connect->param('requestid', $existing_request->id);
-    redirect($connect->out());
+    if ($existing_request = get_record('block_helpmenow_request', 'userid', $userid, 'queueid', $queue->id)) {
+        $connect->param('requestid', $existing_request->id);
+        redirect($connect->out());
+    }
 }
 $class = helpmenow_request::get_class($queue->plugin);
     
@@ -80,6 +95,8 @@ if ($form->is_cancelled()) {                # cancelled
     helpmenow_log($USER->id, 'new_request', "requestid: {$request->id}");
 
     if ($USER->id !== $userid) {
+        $request->meetingid = $queue->helper[$USER->id]->meetingid;
+        $request->update();
         helpmenow_fatal_error('You may now close this window.');
     }
 
@@ -96,7 +113,7 @@ print_box_start('generalbox centerpara');
 
 # print form
 $toform = array(
-    'queueid' => $queueid,
+    'queueid' => $queue->id,
     'plugin' => $queue->plugin,
     'userid' => $userid
 );
