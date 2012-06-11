@@ -95,8 +95,12 @@ if ($form->is_cancelled()) {                # cancelled
     helpmenow_log($USER->id, 'new_request', "requestid: {$request->id}");
 
     if ($USER->id !== $userid) {
-        $request->meetingid = $queue->helper[$USER->id]->meetingid;
+        $meeting = helpmenow_meeting::get_instance($queue->helper[$USER->id]->meetingid);
+        $request->meetingid = $meeting->id;
         $request->update();
+
+        $meeting->add_user($request->userid);
+        $meeting->update();
         helpmenow_fatal_error('You may now close this window.', true, true);
     }
 
