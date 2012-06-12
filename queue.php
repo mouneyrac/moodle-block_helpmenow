@@ -38,6 +38,7 @@ class helpmenow_queue extends helpmenow_db_object {
         'timemodified',
         'modifiedby',
         'plugin',
+        'contextid',
         'name',
         'weight',
         'description',
@@ -49,7 +50,6 @@ class helpmenow_queue extends helpmenow_db_object {
      * @var array $optional_fields
      */
     protected $optional_fields = array(
-        'contextid',
         'userid'
     );
 
@@ -98,7 +98,7 @@ class helpmenow_queue extends helpmenow_db_object {
      * Type of queue
      * @var string $type
      */
-    public $type = HELPMENOW_QUEUE_TYPE_INSTRUCTOR;
+    public $type = HELPMENOW_QUEUE_TYPE_HELPDESK;
 
     /**
      * user.id of instructor in instructor queues
