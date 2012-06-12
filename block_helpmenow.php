@@ -162,6 +162,7 @@ class block_helpmenow extends block_base {
             $admin = $admin->out();
             $admin_text = get_string('admin_link', 'block_helpmenow');
             $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
+            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
         }
 
         return $this->content;
