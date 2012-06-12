@@ -50,59 +50,37 @@ define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
 define('HELPMENOW_AJAX_REFRESH', 5000);
 
 /**
- * Checks if we want to auto create course level queues. If we do, check if we
- * need to create a queue for this course and do so if necessary. Also adds
- * helpers if configured to do so.
- * todo: fix this to work with our polymorphism
- * @param int $contextid contextid; if none specified, gets the current course
- *      context
+ * Checks if we want to auto create instructor queues. If we do, check if we
+ * need to create a queue for this user and do so if necessary.
  */
 function helpmenow_ensure_queue_exists($contextid = null) {
-    global $CFG;
+    global $CFG, $USER;
 
-    # bail if we're not autocreating course queues
-    if (!$CFG->helpmenow_autocreate_course_queue) { return; }
+    # bail if we're not autocreating instructor queues
+    if (!$CFG->helpmenow_autocreate_instructor_queue) { return; }
 
-    # get the current contextid if we were'nt given one
-    if (!isset($contextid)) {
-        global $COURSE;
-        # bail if we're one the front page
-        if ($COURSE->id == SITEID) { return; }
+    # check if user is an instructor
+    if (!record_exists('sis_user', 'sis_user_idstr', $USER->idnumber, 'privilege', 'TEACHER')) { return; }
 
-        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-    } else {
-        $context = get_context_instance_by_id($contextid);
-        # bail if the passed contextid isn't course level
-        if ($context->contextlevel !== CONTEXT_COURSE) { return; }
+    # check if we already have a queue
+    if (record_exists('block_helpmenow_queue', 'userid', $USER->id)) { return; }
 
-        $COURSE = get_record('course', 'id', $context->instanceid);
-    }
-
-    # check if we need to make a queue
-    if (record_exists('block_helpmenow_queue', 'contextid', $context->id)) { return; }
+    $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 
     # make a queue
-    $queue = new helpmenow_queue();
-    $queue->contextid = $context->id;
-    $queue->name = $COURSE->shortname;      # todo: maybe this should be configurable?
-    $queue->description = get_string('auto_queue_desc', 'block_helpmenow'); # todo: this too
-    $queue->plugin = $CFG->helpmenow_default_plugin;
+    $queue = helpmenow_queue::new_instance($CFG->helpmenow_default_plugin);
+    $queue->contextid = $sitecontext->id;
+    $queue->name = fullname($USER);
+    $queue->description = '';
+    $queue->userid = $USER->id;
+    $queue->type = HELPMENOW_QUEUE_TYPE_INSTRUCTOR;
     $queue->insert();
 
-    # bail if we're not auto creating helpers
-    if (!$CFG->helpmenow_autoadd_course_helpers) { return; }
-
-    $users = get_users_by_capability($context, HELPMENOW_CAP_COURSE_QUEUE_ANSWER, 'u.id', '', '', '', '', '', false);
-
-    foreach ($users as $u) {
-        # we currently don't need to check if we already have a helper, as
-        # we're only doing this on new queues
-        $helper = new helpmenow_helper();
-        $helper->queueid = $queue->id;
-        $helper->userid = $u->id;
-        $helper->isloggedin = 0;
-        $helper->insert();
-    }
+    $helper = helpmenow_helper::new_instance($CFG->helpmenow_default_plugin);
+    $helper->queueid = $queue->id;
+    $helper->userid = $USER->id;
+    $helper->isloggedin = 0;
+    $helper->insert();
 }
 
 /**

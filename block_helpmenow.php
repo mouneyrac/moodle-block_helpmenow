@@ -84,7 +84,7 @@ class block_helpmenow extends block_base {
         }
          */
 
-        // helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
+        helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
 
         # contexts
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
@@ -119,7 +119,7 @@ class block_helpmenow extends block_base {
                 <hr />
                 <div id=\"helpmenow_instructor\">
                 <b>My Office</b>
-                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;width:12em;\">$instructor_queue->description</div>
+                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;width:12em;min-height:1em;\">$instructor_queue->description</div>
                 <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"22\"></textarea>
             ";
             $this->content->text .= "<div id=\"helpmenow_login\" style='text-align:center;font-size:small;'></div>";

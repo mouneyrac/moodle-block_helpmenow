@@ -66,14 +66,9 @@ $settings->add(new admin_setting_configtext('helpmenow_helper_refresh_rate',
                                             PARAM_INT,
                                             4));
 
-$settings->add(new admin_setting_configcheckbox('helpmenow_autocreate_course_queue',
+$settings->add(new admin_setting_configcheckbox('helpmenow_autocreate_instructor_queue',
                                                 get_string('settings_autocreate_queue', 'block_helpmenow'),
                                                 get_string('settings_autocreate_queue_desc', 'block_helpmenow'),
-                                                0));
-
-$settings->add(new admin_setting_configcheckbox('helpmenow_autoadd_queue_helpers',
-                                                get_string('settings_autoadd_helpers', 'block_helpmenow'),
-                                                get_string('settings_autoadd_helpers_desc', 'block_helpmenow'),
                                                 0));
 
 $settings->add(new admin_setting_configtext('helpmenow_meeting_timeout',
