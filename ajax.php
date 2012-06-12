@@ -84,6 +84,8 @@ try {
         }
         $response->login_html = "$login_status " . link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true);
 
+        $response->border_style = 'none';
+
         # student list
         $response->students = array();
         foreach($student_records as $s) {
@@ -100,6 +102,7 @@ try {
                 $student->html .= $student->fullname;
             }
             if (isset($queue->request[$student->userid])) {
+                $response->border_style = "5px solid #5CB063";
                 $student->request = $queue->request[$s->id]->description;
                 $student->html .= "<div style=\"margin-left:1em;\">" . $queue->request[$s->id]->description . "</div>";
             }
@@ -127,12 +130,19 @@ try {
                 'html' => '',
             );
 
+            if (isset($prev_type) and ($prev_type != $q->type)) {
+                $queue->html .= "<hr />";
+            }
+
             # if the user has a request, display it, otherwise give a link
             # to create one
             if (isset($q->request[$USER->id])) {
+                $queue->html .= "<div style=\"border:5px solid #5CB063;\">";
                 $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
                 $connect->param('requestid', $q->request[$USER->id]->id);
                 if ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+                    $q->request[$USER->id]->last_refresh = time();
+                    $q->request[$USER->id]->update();
                     $smalltext = $q->request[$USER->id]->description;
                 } else {
                     $smalltext = get_string('pending', 'block_helpmenow');
@@ -140,6 +150,7 @@ try {
                 $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>$smalltext</div>";
                 $queue->html .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
             } else {
+                $queue->html .= "<div>";
                 if ($q->check_available()) {
                     $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
                     $request->param('queueid', $q->id);
@@ -157,7 +168,10 @@ try {
                     ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
                 $queue->html .= "<div style=\"margin-left:1em;\">" . $q->description . "</div>";
             }
+            $queue->html .= "</div>";
             $response->queues[] = $queue;
+
+            $prev_type = $q->type;
         }
         break;
     default:

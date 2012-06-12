@@ -92,6 +92,9 @@ function helpmenow_instructor_refresh() {
         if (xmlhttp.readyState==4 && xmlhttp.status==200) {
             var response = JSON.parse(xmlhttp.responseText);
 
+            var instructor_div = document.getElementById("helpmenow_instructor");
+            instructor_div.style.border = response.border_style;
+
             var login_div = document.getElementById("helpmenow_login");
             login_div.innerHTML = response.login_html;
 

@@ -349,9 +349,7 @@ class helpmenow_queue extends helpmenow_db_object {
         $context_queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
         $instructor_queues = helpmenow_queue::get_instructor_queues();
 
-        $queues = array_merge($context_queues, $instructor_queues);
-        usort($queues, array('helpmenow_queue', 'cmp'));
-        return $queues;
+        return array_merge($context_queues, $instructor_queues);
     }
 
     /**

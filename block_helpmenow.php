@@ -117,9 +117,10 @@ class block_helpmenow extends block_base {
 
             $this->content->text .= "
                 <hr />
+                <div id=\"helpmenow_instructor\">
                 <b>My Office</b>
-                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;\">$instructor_queue->description</div>
-                <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"23\"></textarea>
+                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;width:12em;\">$instructor_queue->description</div>
+                <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"22\"></textarea>
             ";
             $this->content->text .= "<div id=\"helpmenow_login\" style='text-align:center;font-size:small;'></div>";
             $this->content->text .= "Online students:<br />";
@@ -131,6 +132,7 @@ class block_helpmenow extends block_base {
                     helpmenow_instructor_refresh();
                     var helpmenow_t = setInterval(helpmenow_instructor_refresh, helpmenow_interval);
                 </script>
+                </div>
             ";
         }
 
