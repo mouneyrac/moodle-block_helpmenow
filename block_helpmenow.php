@@ -137,8 +137,14 @@ class block_helpmenow extends block_base {
         }
 
         # helper link
-        if (false) {
-        # if (record_exists('block_helpmenow_helper', 'userid', $USER->id)) { # todo: filter instructor queues
+        $sql = "
+            SELECT *
+            FROM {$CFG->prefix}block_helpmenow_helper h
+            JOIN {$CFG->prefix}block_helpmenow_queue q ON h.queueid = q.id
+            WHERE q.type = '".HELPMENOW_QUEUE_TYPE_HELPDESK."'
+            AND h.userid = $USER->id
+        ";
+        if (record_exists_sql($sql)) {
             $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
             $helper_text = get_string('helper_link', 'block_helpmenow');
             $this->content->text .= '<hr />' . link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
