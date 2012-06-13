@@ -77,12 +77,10 @@ try {
             $login->param('login', 0);
             $login_status = get_string('in_office', 'block_helpmenow');
             $login_text = get_string('leave_office', 'block_helpmenow');
-            $response->isloggedin = true;
         } else {
             $login->param('login', 1);
             $login_status = get_string('out_office', 'block_helpmenow');
             $login_text = get_string('enter_office', 'block_helpmenow');
-            $response->isloggedin = false;
         }
         $response->login_html = "$login_status " . link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true);
 
