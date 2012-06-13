@@ -103,6 +103,11 @@ function helpmenow_instructor_refresh() {
             for (var i = 0; i < response.students.length; i++) {
                 student_list.innerHTML += response.students[i].html;
             }
+
+            if (!response.isloggedin) {
+                var motd_element = document.getElementById("helpmenow_motd");
+                motd_element.innerHTML = '';
+            }
         }
     });
 }
