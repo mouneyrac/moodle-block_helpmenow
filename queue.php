@@ -151,6 +151,8 @@ class helpmenow_queue extends helpmenow_db_object {
                     JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
                     WHERE ce.sis_user_idstr = '$USER->idnumber'
                     AND u.id = $this->userid
+                    AND ce.iscurrent = 1
+                    AND ce.status_idstr = 'ACTIVE'
                 ";
                 if (record_exists_sql($sql)) {
                     return HELPMENOW_QUEUE_HELPEE;
@@ -414,12 +416,12 @@ class helpmenow_queue extends helpmenow_db_object {
 
         $sql = "
             SELECT DISTINCT(u2.id)
-            FROM {$CFG->prefix}user u
-            JOIN {$CFG->prefix}classroom_enrolment ce ON u.idnumber = ce.sis_user_idstr
+            FROM {$CFG->prefix}classroom_enrolment ce
             JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
             JOIN {$CFG->prefix}user u2 ON c.sis_user_idstr = u2.idnumber
-            WHERE u.id = $USER->id
+            WHERE ce.sis_user_idstr = '$USER->idnumber'
             AND ce.iscurrent = 1
+            AND ce.status_idstr = 'ACTIVE'
         ";
 
         if (!$instructor_recs = get_records_sql($sql)) {
