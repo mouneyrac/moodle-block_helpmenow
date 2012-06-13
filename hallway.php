@@ -41,12 +41,12 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 }
 
 # title, navbar, and a nice box
-$title = get_string('admin', 'block_helpmenow');
+$title = "Administrators' Hallway";
 $nav = array(array('name' => $title));
 print_header($title, $title, build_navigation($nav));
 print_box_start('generalbox centerpara');
 
-print_heading("Administrators' Hallway");
+print_heading($title);
 
 $sql = "
     SELECT q.*

@@ -190,7 +190,7 @@ class helpmenow_queue extends helpmenow_db_object {
      */
     public function login() {
         global $USER;
-        return $this->set_login($USER->id, 1);
+        return $this->set_login($USER->id, time());
     }
 
     /**

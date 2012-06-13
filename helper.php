@@ -66,7 +66,7 @@ class helpmenow_helper extends helpmenow_db_object {
     public $userid;
 
     /**
-     * Integer boolean, login status of helper
+     * timestamp/0, login status of helper
      * @var int $isloggedin
      */
     public $isloggedin = 0;

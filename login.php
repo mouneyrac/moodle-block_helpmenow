@@ -62,9 +62,12 @@ if ($login) {
         redirect($launch->out());
     }
 } else {
+    $duration = time() - $queue->helper[$USER->id]->isloggedin;
     $queue->logout();
-    helpmenow_log($USER->id, 'logged_out', "queueid: {$queueid}");
+    helpmenow_log($USER->id, 'logged_out', "queueid: {$queueid}, duration: $duration seconds");
     if ($queue->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
+        $queue->description = '';
+        $queue->update();
         $queue->helper[$USER->id]->meetingid = 0;
         $queue->helper[$USER->id]->update();
         helpmenow_fatal_error('You may now close this window', true, true);

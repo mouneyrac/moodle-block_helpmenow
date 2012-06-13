@@ -113,6 +113,7 @@ class block_helpmenow extends block_base {
             WHERE q.userid = $USER->id
         ";
         if ($instructor_queue = get_record_sql($sql)) {
+            $instructor = true;
             $instructor_queue = helpmenow_queue::get_instance(null, $instructor_queue);
 
             $this->content->text .= "
@@ -153,6 +154,12 @@ class block_helpmenow extends block_base {
         # block message
         if (strlen($CFG->helpmenow_block_message)) {
             $this->content->text .= '<hr />' . $CFG->helpmenow_block_message;
+        }
+        if ($instructor) {
+            $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
+            $token_url->param('redirect', qualified_me());
+            $token_url = $token_url->out();
+            $this->content->text .= "<a href='$token_url'>Allow GoToMeeting Access</a>";
         }
 
         # admin link
