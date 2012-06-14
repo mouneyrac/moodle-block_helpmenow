@@ -52,7 +52,7 @@ try {
             break;
         }
         $queue = helpmenow_queue::get_instance(null, $queue);
-        $queue->helper[$USER->id]->last_activity = time();
+        $queue->helper[$USER->id]->last_refresh = time();
         $queue->helper[$USER->id]->update();
     }
 
@@ -75,7 +75,9 @@ try {
         $login->param('queueid', $queue->id);
         if ($queue->helper[$USER->id]->isloggedin) {
             $login->param('login', 0);
-            $login_status = get_string('in_office', 'block_helpmenow');
+            $meeting = helpmenow_meeting::get_instance($queue->helper[$USER->id]->meetingid);
+            $meetingid = preg_replace("/^(\d{3})(\d{3})(\d{3})$/", "$1-$2-$3", $meeting->meetingid);
+            $login_status =  "Meeting ID# {$meetingid}<br />" . get_string('in_office', 'block_helpmenow');
             $login_text = get_string('leave_office', 'block_helpmenow');
         } else {
             $login->param('login', 1);
@@ -99,7 +101,7 @@ try {
                 $request->param('userid', $student->userid);
                 $student->html .= link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
             } else {
-                $student->html .= $student->fullname;
+                $student->html .= $student->fullname . "<br />";
             }
             if (isset($queue->request[$student->userid])) {
                 $response->border_style = "5px solid #5CB063";
