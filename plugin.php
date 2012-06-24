@@ -23,30 +23,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/db_object.php');
+require_once(dirname(__FILE__) . '/plugin_object.php');
 
-abstract class helpmenow_plugin extends helpmenow_db_object {
+abstract class helpmenow_plugin extends helpmenow_plugin_object {
     const table = 'plugin';
-
-    /**
-     * Array of required db fields.
-     * @var array $required_fields
-     */
-    protected $required_fields = array(
-        'id',
-        'timecreated',
-        'timemodified',
-        'modifiedby',
-        'plugin',
-        'cron_interval',
-        'last_cron',
-    );
-
-    /**
-     * The plugin name
-     * @var string $plugin
-     */
-    public $plugin;
 
     /**
      * Cron delay in seconds; 0 represents no cron
@@ -79,21 +59,14 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
     }
 
     /**
-     * Connecting message displayed
-     * @return string
-     */
-    public static function connect_message() {
-        return get_string('connecting', 'block_helpmenow');
-    }
-
-    /**
      * Calls install for all plugins
      * @return boolean success
      */
     public final static function install_all() {
         $success = true;
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
-            $class = self::get_class($pluginname);
+            require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/plugin.php");
+            $class = "helpmenow_plugin_$pluginname";
             $success = $success and $class::install();
         }
         return $success;
@@ -107,9 +80,10 @@ abstract class helpmenow_plugin extends helpmenow_db_object {
         $success = true;
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
             $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
-            $plugin = self::get_instance(null, $record);
+            $class = "helpmenow_plugin_$pluginname";
+            $plugin = new $class(null, $record);
             if (($plugin->cron_interval != 0) and (time() >= $plugin->last_cron + $plugin->cron_interval)) {
-                $class = "helpmenow_plugin_$pluginname";    # we don't need a require here
+                $class = "helpmenow_plugin_$pluginname";
                 $success = $success and $class::cron();
                 $plugin->last_cron = time();
                 $plugin->update();

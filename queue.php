@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Help me now queue abstract class.
+ * Help me now queue class.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -23,52 +23,14 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/db_object.php');
+require_once(dirname(__FILE__) . '/lib.php');
 
-class helpmenow_queue extends helpmenow_db_object {
-    const table = 'queue';
-
+class helpmenow_queue {
     /**
-     * Array of required db fields.
-     * @var array $required_fields
+     * queue.id
+     * @var int $id
      */
-    protected $required_fields = array(
-        'id',
-        'timecreated',
-        'timemodified',
-        'modifiedby',
-        'plugin',
-        'contextid',
-        'name',
-        'weight',
-        'description',
-        'type',
-    );
-
-    /**
-     * Array of optional db fields.
-     * @var array $optional_fields
-     */
-    protected $optional_fields = array(
-        'userid'
-    );
-
-    /**
-     * Array of relations, key is relation, element is id used to key relation
-     * array.
-     * @var array $relations
-     */
-    protected $relations = array(
-        'helper' => 'userid',
-        'request' => 'userid',
-        'meeting' => 'id',
-    );
-
-    /**
-     * The context the queue belongs to, if a helpdesk queue.
-     * @var int $contextid
-     */
-    public $contextid;
+    public $id;
 
     /**
      * The name of the queue.
@@ -77,89 +39,62 @@ class helpmenow_queue extends helpmenow_db_object {
     public $name;
 
     /**
-     * plugin queue's meetings use
-     * @var string $plugin
-     */
-    public $plugin;
-
-    /**
      * Weight for queue display order
      * @var int $weight
      */
-    public $weight = HELPMENOW_DEFAULT_WEIGHT;
+    public $weight;
 
     /**
      * Description of the queue
      * @var string $desription
      */
-    public $description = '';
+    public $description;
 
     /**
-     * Type of queue
-     * @var string $type
-     */
-    public $type = HELPMENOW_QUEUE_TYPE_HELPDESK;
-
-    /**
-     * user.id of instructor in instructor queues
-     * @var integer $userid
-     */
-    public $userid;
-
-    /**
-     * Array of user ids of helpers
+     * Queue helpers
      * @var array $helper
      */
-    public $helper = array();
+    public $helpers;
 
     /**
-     * Array of meeting requests
-     * @var array $request
+     * Queue sessions
+     * @var array $sessions
      */
-    public $request = array();
+    public $sessions;
 
     /**
-     * Array of meetings
-     * @var array $meeting
+     * Constructor. If we get an id, load from the database. If we get a object
+     * from the db and no id, use that.
+     * @param int $id id of the queue in the db
+     * @param object $record db record
      */
-    public $meeting = array();
+    public function __construct($id=null, $record=null) {
+        if (isset($id)) {
+            $record = get_record('block_helpmenow_queue', 'id', $id);
+        }
+        foreach ($record as $k => $v) {
+            $this->$k = $v;
+        }
+    }
 
     /**
-     * Returns user's privilege given optional userid
-     * @param int $userid user.id, if none provided uses $USER->id
+     * Returns USER's privilege
      * @return string queue privilege
      */
     public function get_privilege() {
         global $USER, $CFG;
 
-        # if it's not set, try loading helpers
-        if (!isset($this->helper[$USER->id])) {
-            $this->load_relation('helper');
-        }
+        $this->load_helpers();
+
         # if it's set now, they're a helper
-        if (isset($this->helper[$USER->id])) {
+        if (isset($this->helpers[$USER->id])) {
             return HELPMENOW_QUEUE_HELPER;
         }
 
-        $context = get_context_instance_by_id($this->contextid);
+        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+
         if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
-            if ($this->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
-                $sql = "
-                    SELECT *
-                    FROM {$CFG->prefix}classroom_enrolment ce
-                    JOIN {$CFG->prefix}classroom c ON ce.classroom_idstr = c.classroom_idstr
-                    JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
-                    WHERE ce.sis_user_idstr = '$USER->idnumber'
-                    AND u.id = $this->userid
-                    AND ce.iscurrent = 1
-                    AND ce.status_idstr = 'ACTIVE'
-                ";
-                if (record_exists_sql($sql)) {
-                    return HELPMENOW_QUEUE_HELPEE;
-                }
-            } else {
-                return HELPMENOW_QUEUE_HELPEE;
-            }
+            return HELPMENOW_QUEUE_HELPEE;
         }
 
         return HELPMENOW_NOT_PRIVILEGED;
@@ -169,14 +104,12 @@ class helpmenow_queue extends helpmenow_db_object {
      * Returns boolean of helper availability
      * @return boolean
      */
-    public function check_available() {
-        if (!count($this->helper)) {
-            $this->load_relation('helper');
-        }
-        if (!count($this->helper)) {
+    public function is_open() {
+        $this->load_helpers();
+        if (!count($this->helpers)) {
             return false;
         }
-        foreach ($this->helper as $h) {
+        foreach ($this->helpers as $h) {
             if ($h->isloggedin) {
                 return true;
             }
@@ -185,60 +118,29 @@ class helpmenow_queue extends helpmenow_db_object {
     }
 
     /**
-     * Logs $USER into the queue
-     * @return boolean success
-     */
-    public function login() {
-        global $USER;
-        return $this->set_login($USER->id, time());
-    }
-
-    /**
-     * Logs $USER into the queue
-     * @return boolean success
-     */
-    public function logout() {
-        global $USER;
-        $this->helper[$USER->id]->last_action = 0;
-        return $this->set_login($USER->id, 0);
-    }
-
-    /**
-     * Sets login state for passed user
-     * @param int $userid user.id
-     * @param int $state integer boolean
-     * @return boolean success
-     */
-    public function set_login($userid, $state = 0) {
-        if (!isset($this->helper[$userid])) {
-            $this->load_relation('helper');
-            if (!isset($this->helper[$userid])) {
-                debugging("User with userid $userid is not a queue helper");
-                return false;
-            }
-        }
-        $this->helper[$userid]->isloggedin = $state;
-        return $this->helper[$userid]->update();
-    }
-
-    /**
      * Creates helper for queue using passed userid
      * @param int $userid user.id
      * @return boolean success
      */
     public function add_helper($userid) {
-        if (isset($this->helper[$userid])) {
-            $this->load_relation('helper');
-            if (!isset($this->helper[$userid])) {
-                return false;   # already a helper
-            }
+        $this->load_helpers();
+        
+        if (!isset($this->helpers[$userid])) {
+            return false;   # already a helper
         }
-        $helper = helpmenow_helper::new_instance($this->plugin);
-        $helper->queueid = $this->id;
-        $helper->userid = $userid;
-        $rval = $helper->insert();
-        $this->helper[$userid] = $helper;
-        return $rval;
+
+        $helper = (object) array(
+            'queueid' => $this->id,
+            'userid' => $userid,
+            'isloggedin' => 0,
+        );
+
+        if (!$helper->id = insert_record('block_helpmenow_helper', $helper)) {
+            return false;
+        }
+        $this->helpers[$userid] = $helper;
+
+        return true;
     }
 
     /**
@@ -247,209 +149,52 @@ class helpmenow_queue extends helpmenow_db_object {
      * @return boolean success
      */
     public function remove_helper($userid) {
-        if (!isset($queue->helper[$userid])) {
-            $this->load_relation('helper');
-            if (!isset($this->helper[$userid])) {
-                return false;
-            }
-        }
-        $rval = $this->helper[$userid]->delete();
-        unset($this->helper[$userid]);
-        return $rval;
-    }
+        $this->load_helpers();
 
-    /**
-     * Overridding load_relation to make sure requests are ordered by
-     * timecreated ascending
-     */
-    public function load_relation($relation) {
-        parent::load_relation($relation);
-        if ($relation = 'request') {
-            uasort($this->request, array('helpmenow_request', 'cmp'));
-        }
-    }
-
-    /**
-     * Returns moodle form to edit/create queue
-     * @return object moodle form
-     */
-    public static function get_form() {
-        global $CFG;
-        require_once(dirname(__FILE__) . '/form.php');
-        return new helpmenow_queue_form();
-    }
-
-    /**
-     * Process form data
-     * @param object $formdata
-     * @return mixed false if failed, queue object if successfull
-     */
-    public static function process_form($formdata) {
-        if ($formdata->queueid) {
-            $queue = helpmenow_queue::get_instance($formdata->queueid);
-        } else {
-            $queue = helpmenow_queue::new_instance($formdata->plugin);
-            if ($formdata->courseid == SITEID) {
-                $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
-            } else {
-                $context = get_context_instance(CONTEXT_COURSE, $formdata->courseid);
-            }
-            $queue->contextid = $context->id;
-        }
-
-        $queue->name = $formdata->name;
-        $queue->description = $formdata->description;
-        $queue->weight = $formdata->weight;
-
-        if ($formdata->queueid) {
-            if (!$queue->update()) {
-                return false;
-            }
-        } else {
-            if (!$queue->insert()) {
-                return false;
-            }
-        }
-        return $queue;
-    }
-
-    /**
-     * Returns array meant for mform's set_data(). If given a valid queueid, use
-     * values in the database, otherwise use some predefined defaults
-     * @param int $queueid queue.id; if passed 0, return some default values
-     *      for a new queue
-     * @return array moodle form set_data() array
-     */
-    public static function get_form_defaults($queueid) {
-        global $COURSE;
-        $toform = array(
-            'queueid' => $queueid,
-            'courseid' => $COURSE->id,
-        );
-        if (!$queueid) {
-            return $toform;
-        }
-        $queue = helpmenow_queue::get_instance($queueid);
-        $toform['name'] = $queue->name;
-        $toform['description'] = $queue->description;
-        $toform['plugin'] = $queue->plugin;
-        $toform['weight'] = $queue->weight;
-        return $toform;
-    }
-
-    /**
-     * Called only from the block, gets queues relevant to the context as well
-     * as getting instructor queues for students
-     */
-    public static final function get_queues_block() {
-        global $COURSE, $USER, $CFG;
-
-        # contexts
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-
-        $context_queues = helpmenow_queue::get_queues_by_context(array($sitecontext->id, $context->id));
-        $instructor_queues = helpmenow_queue::get_instructor_queues();
-
-        return array_merge($context_queues, $instructor_queues);
-    }
-
-    /**
-     * Gets an array of queues by contexts
-     * @param array $contexts array of contexts.id
-     * @return array of queues
-     */
-    public static final function get_queues_by_context($contexts) {
-        global $CFG;
-        $contexts = implode(',', $contexts);
-
-        $sql = "
-            SELECT q.*
-            FROM {$CFG->prefix}block_helpmenow_queue q
-            WHERE q.contextid IN ($contexts)
-            AND q.type = '" . HELPMENOW_QUEUE_TYPE_HELPDESK . "'
-            ORDER BY q.weight
-        ";
-
-        if (!$records = get_records_sql($sql)) {
+        if (!isset($this->helpers[$userid])) {
             return false;
         }
-        return helpmenow_queue::objects_from_records($records);
+
+        if (!delete_records('block_helpmenow_helper', 'id', $this->helpers[$userid]->id)) {
+            return false;
+        }
+        unset($this->helpers[$userid]);
+
+        return true;
     }
 
     /**
-     * Gets an array of queues user is a helper for
-     * @param int $userid optional user.id, otherwise uses $USER
-     * @return array of queues
+     * Loads helpers into $this->helpers array
      */
-    public static final function get_queues_by_user($userid = null) {
-        global $CFG;
-        if (!isset($userid)) {
-            global $USER;
-            $userid = $USER->id;
+    public function load_helpers() {
+        if (isset($this->helpers)) {
+            return true;
         }
 
-        $sql = "
-            SELECT q.*
-            FROM {$CFG->prefix}block_helpmenow_queue q
-            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
-            WHERE h.userid = $userid
-            AND q.type = '" . HELPMENOW_QUEUE_TYPE_HELPDESK . "'
-            ORDER BY q.weight
-        ";
-
-        if (!$records = get_records_sql($sql)) {
+        if (!$helpers = get_records('block_helpmenow_helper', 'queueid', $this->id)) {
             return false;
         }
-        return helpmenow_queue::objects_from_records($records);
+
+        foreach ($helpers as $h) {
+            $this->helpers[$h->userid] = $h;
+        }
+
+        return true;
     }
 
-    /**
-     * Gets an array of instructor queues for a student
-     * @param int $userid optional user.id, otherwise uses $USER
-     * @return array of queues
-     */
-    private static final function get_instructor_queues() {
-        global $CFG, $USER;
-
-        $instructors = array();
-
-        $sql = "
-            SELECT DISTINCT(u2.id)
-            FROM {$CFG->prefix}classroom_enrolment ce
-            JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
-            JOIN {$CFG->prefix}user u2 ON c.sis_user_idstr = u2.idnumber
-            WHERE ce.sis_user_idstr = '$USER->idnumber'
-            AND ce.iscurrent = 1
-            AND ce.status_idstr = 'ACTIVE'
-        ";
-
-        if (!$instructor_recs = get_records_sql($sql)) {
-            return $instructors;
-        }
-        foreach ($instructor_recs as $ir) {
-            $instructors[] = $ir->id;
-        }
-        $instructors = implode(',', $instructors);
-
-        $sql = "
-            SELECT q.*
-            FROM {$CFG->prefix}block_helpmenow_queue q
-            JOIN {$CFG->prefix}block_helpmenow_helper h ON q.id = h.queueid
-            WHERE q.userid IN ($instructors)
-        ";
-
-        if (!$records = get_records_sql($sql)) {
+    public static function get_queues() {
+        if (!$records = get_records('block_helpmenow_queue')) {
             return false;
         }
-        return helpmenow_queue::objects_from_records($records);
+        return self::queues_from_recs($records);
     }
 
-    private static final function cmp($a, $b) {
-        if ($a->weight == $b->weight) {
-            return 0;
+    private static function queues_from_recs($records) {
+        $queues = array();
+        foreach ($records as $r) {
+            $queues[$r->id] = new helpmenow_queue(null, $r);
         }
-        return ($a->weight < $b->weight) ? -1 : 1;
+        return $queues;
     }
 }
 

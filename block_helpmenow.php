@@ -25,14 +25,11 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
+# our library
 require_once(dirname(__FILE__) . '/lib.php');
 
 class block_helpmenow extends block_base {
-    /**
-     * Overridden block_base method that sets block title and version.
-     *
-     * @return null
-     */
+
     function init() {
         global $CFG;
         $this->title = get_string('helpmenow', 'block_helpmenow'); 
@@ -43,167 +40,63 @@ class block_helpmenow extends block_base {
         $this->cron = $plugin->cron;
     }
 
-    /**
-     * Overridden block_base method that generates the content diplayed in the
-     * block and returns it.
-     *
-     * @return stdObject
-     */
     function get_content() {
-        if (isset($this->content)) { return $this->content; }
+        if ($this->content !== NULL) {
+            return $this->content;
+        }
 
-        global $CFG, $COURSE, $USER;
+        global $CFG, $USER;
 
         $this->content = (object) array(
             'text' => '',
             'footer' => '',
         );
 
-        # For now, restrict to tech dept for testing.
-        /*
-        switch ($USER->id) {
-            # test accounts:
-        case 57219:
-        case 56956:
-            # tech staff
-        case 8712:
-        case 58470:
-        case 930:
-        case 919:
-        case 57885:
-        case 52650:
-        case 37479:
-        case 56385:
-        case 56528:
-        case 5:
-            break;
-        default:
-            if ($USER->id % 2) {
-                return $this->content;
+        $this->content->text .= '<div id="helpmenow_queue_div"></div><hr />';
+
+        $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
+        switch ($privilege) {
+        case 'TEACHER':
+            helpmenow_ensure_user_exists();
+            $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
+            $instyle = $outstyle = '';
+            if ($helpmenow_user->isloggedin) {
+                $outstyle = 'style="display: none;"';
+            } else {
+                $instyle = 'style="display: none;"';
             }
+            $this->content->text .= <<<EOF
+<div id="helpmenow_office">
+    <div><b>My Office</b></div>
+    <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black;width:12em;min-height:1em;">$helpmenow_user->motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none;" rows="4" cols="22"></textarea>
+    <div style="text-align: center; font-size:small;">
+        <div id="helpmenow_logged_in_div_0" $instyle><a href="javascript:void();" onclick="helpmenow_login(false, 0);">Leave Office</a></div>
+        <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | <a href="javascript:void();" onclick="helpmenow_login(true, 0);">Enter Office</a></div>
+    </div>
+    <div>Online Students:</div>
+    <div id="helpmenow_users_div"></div>
+</div>
+EOF;
+            break;
+        case 'STUDENT':
+            $this->content->text .= '
+                <div>Online Instructors:</div>
+                <div id="helpmenow_users_div"></div>
+            ';
+            break;
         }
-         */
-
-        helpmenow_ensure_queue_exists(); # autocreates a course queue if necessary
-
-        # contexts
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
-
-        # queues
-        $url = $CFG->wwwroot . "/blocks/helpmenow/";
-        $this->content->text .= "
-            <script type=\"text/javascript\">
-                var helpmenow_url = \"$url\";
-                var helpmenow_interval = ".HELPMENOW_AJAX_REFRESH.";
-            </script>
-            <script type=\"text/javascript\" src=\"{$CFG->wwwroot}/blocks/helpmenow/lib.js\"></script>
-            <div id=\"helpmenow_queue\"></div>
-            <script type=\"text/javascript\">
-                // call helpmenow_refresh() immediately and periodically
-                helpmenow_queue_refresh();
-                var helpmenow_tq = setInterval(helpmenow_queue_refresh, helpmenow_interval);
-            </script>
-        ";
-
-        # instructor
-        $instructor = false;
-        $sql = "
-            SELECT q.*
-            FROM {$CFG->prefix}block_helpmenow_queue q
-            WHERE q.userid = $USER->id
-        ";
-        if ($instructor_queue = get_record_sql($sql)) {
-            $instructor = true;
-            $instructor_queue = helpmenow_queue::get_instance(null, $instructor_queue);
-
-            $this->content->text .= "
-                <hr />
-                <div id=\"helpmenow_instructor\">
-                <b>My Office</b>
-                <div id=\"helpmenow_motd\" onclick=\"helpmenow_toggle_motd(true);\" style=\"border:1px dotted black;width:12em;min-height:1em;\">$instructor_queue->description</div>
-                <textarea id=\"helpmenow_motd_edit\" onkeypress=\"return helpmenow_enter_motd(event);\" onblur=\"helpmenow_toggle_motd(false)\" style=\"display:none;\" rows=\"4\" cols=\"22\"></textarea>
-            ";
-            $this->content->text .= "<div id=\"helpmenow_login\" style='text-align:center;font-size:small;'></div>";
-            $this->content->text .= "Online students:<br />";
-
-            $this->content->text .= "
-                <div id=\"helpmenow_students\"></div>
-                <script type=\"text/javascript\">
-                    // call helpmenow_refresh() immediately and periodically
-                    helpmenow_instructor_refresh();
-                    var helpmenow_t = setInterval(helpmenow_instructor_refresh, helpmenow_interval);
-                </script>
-                </div>
-            ";
-        }
-
-        # helper link
-        $sql = "
-            SELECT *
-            FROM {$CFG->prefix}block_helpmenow_helper h
-            JOIN {$CFG->prefix}block_helpmenow_queue q ON h.queueid = q.id
-            WHERE q.type = '".HELPMENOW_QUEUE_TYPE_HELPDESK."'
-            AND h.userid = $USER->id
-        ";
-        if (record_exists_sql($sql)) {
-            $helper = new moodle_url("$CFG->wwwroot/blocks/helpmenow/helpmenow.php");
-            $helper_text = get_string('helper_link', 'block_helpmenow');
-            $this->content->text .= '<hr />' . link_to_popup_window($helper->out(), 'helper', $helper_text, 400, 700, null, null, true) . "<br />";
-        }
-
-        # block message
-        if (strlen($CFG->helpmenow_block_message)) {
-            $this->content->text .= '<hr /><div>' . $CFG->helpmenow_block_message . "</div>";
-        }
-        if ($instructor) {
-            $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
-            $token_url->param('redirect', qualified_me());
-            $token_url = $token_url->out();
-            $this->content->text .= "<div><a href='$token_url'>Allow GoToMeeting Access</a></div>";
-        }
-
-        # admin link
-        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-            $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
-            $admin->param('courseid', $COURSE->id);
-            $admin = $admin->out();
-            $admin_text = get_string('admin_link', 'block_helpmenow');
-            $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
-            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
-        }
+        $this->content->text .= <<<EOF
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block.js"></script>
+<script type="text/javascript">
+    var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
+    helpmenow_block_refresh();
+    var chat_t = setInterval(helpmenow_block_refresh, 10000);
+</script>
+EOF;
 
         return $this->content;
-    }
-
-    /**
-     * Overriden block_base method that is called when Moodle's cron runs.
-     *
-     * @return boolean
-     */
-    function cron() {
-        $success = true;
-
-        # clean up helpers
-        $success = $success and helpmenow_helper::auto_logout();
-
-        # clean up old meetings
-        $success = $success and helpmenow_meeting::clean_meetings();
-
-        # clean up abandoned requests
-        $success = $success and helpmenow_request::clean_requests();
-
-        # call plugin crons
-        $success = $success and helpmenow_plugin::cron_all();
-
-        return $success;
-    }
-
-    /**
-     * Overriden block_base method that is called when block is installed
-     */
-    function after_install() {
-        helpmenow_plugin::install_all();
     }
 }
 

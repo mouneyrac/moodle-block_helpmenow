@@ -23,14 +23,13 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-# suppress error messages
-error_reporting(0);
+# capture output
 ob_start();
 
 # moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 
-# helpmenow library
+# our library
 require_once(dirname(__FILE__) . '/lib.php');
 
 if (!isloggedin()) {
@@ -43,154 +42,309 @@ require_login(0, false);
 
 try {
     # get the request body
-    $request = @json_decode(file_get_contents('php://input'));
+    $request = json_decode(file_get_contents('php://input'));
 
-    # get queue for motd and students functions
-    if ($request->function === 'motd' or $request->function === 'instructor') {
-        if (!$queue = get_record('block_helpmenow_queue', 'userid', $USER->id)) {
-            throw new Exception('No instructor queue exists for user');
-            break;
-        }
-        $queue = helpmenow_queue::get_instance(null, $queue);
-        $queue->helper[$USER->id]->last_refresh = time();
-        $queue->helper[$USER->id]->update();
-    }
-
-    # process
+    # generate response
     $response = new stdClass;
     switch ($request->function) {
-    case 'motd':
-        $queue->description = $request->motd;
-        if (!$queue->update()) {
-            throw new Exception('Could not update queue');
-            break;
+    case 'message':
+        # verify sesion
+        if (!helpmenow_verify_session($request->session)) {
+            throw new Exception('Invalid session');
         }
-        $response->motd = $queue->description;
+
+        $message_rec = (object) array(
+            'userid' => $USER->id,
+            'sessionid' => $request->session,
+            'time' => time(),
+            'message' => $request->message,
+        );
+        if (!insert_record('block_helpmenow_message', $message_rec)) {
+            throw new Exception('Could insert message record');
+        }
         break;
-    case 'instructor':
-        $student_records = helpmenow_get_students();
-
-        # login state
-        $login = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-        $login->param('queueid', $queue->id);
-        if ($queue->helper[$USER->id]->isloggedin) {
-            $login->param('login', 0);
-            $meeting = helpmenow_meeting::get_instance($queue->helper[$USER->id]->meetingid);
-            $meetingid = preg_replace("/^(\d{3})(\d{3})(\d{3})$/", "$1-$2-$3", $meeting->meetingid);
-            $login_status =  "Meeting ID# {$meetingid}<br />" . get_string('in_office', 'block_helpmenow');
-            $login_text = get_string('leave_office', 'block_helpmenow');
-        } else {
-            $login->param('login', 1);
-            $login_status = get_string('out_office', 'block_helpmenow');
-            $login_text = get_string('enter_office', 'block_helpmenow');
+    case 'refresh':
+        # verify sesion
+        if (!helpmenow_verify_session($request->session)) {
+            throw new Exception('Invalid session');
         }
-        $response->login_html = "$login_status " . link_to_popup_window($login->out(), 'connect', $login_text, 400, 700, null, null, true);
 
-        $response->border_style = 'none';
+        set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
 
-        # student list
-        $response->students = array();
-        foreach($student_records as $s) {
-            $student = (object) array(
-                'userid' => $s->id,
-                'fullname' => fullname($s),
-                'html' => '',
-            );
-            if ($queue->helper[$USER->id]->isloggedin) {
-                $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-                $request->param('userid', $student->userid);
-                $student->html .= link_to_popup_window($request->out(), 'connect', $student->fullname, 400, 700, null, null, true) . "<br />";
+        $sql = "
+            SELECT m.*, u.id AS userid, u.firstname, u.lastname
+            FROM {$CFG->prefix}block_helpmenow_message m
+            JOIN {$CFG->prefix}user u ON m.userid = u.id
+            WHERE m.sessionid = $request->session
+            ORDER BY m.time ASC
+        ";
+        $messages = get_records_sql($sql);
+
+        $response->html = '';
+        foreach ($messages as $m) {
+            $msg = $m->message;
+            if ($m->userid == get_admin()->id) {
+                $msg = "<i>$msg</i>";
             } else {
-                $student->html .= $student->fullname . "<br />";
+                $msg = "<b>$m->firstname $m->lastname:</b> $msg";
             }
-            if (isset($queue->request[$student->userid])) {
-                $response->border_style = "5px solid #5CB063";
-                $student->request = $queue->request[$s->id]->description;
-                $student->html .= "<div style=\"margin-left:1em;\">" . $queue->request[$s->id]->description . "</div>";
-            }
-            $response->students[] = $student;
+            $response->html .= "<div>$msg</div>";
         }
-        usort($response->students, function ($a, $b) {
-            if (isset($a->request) === isset($b->request)) {
-                return 0;
-            }
-            return isset($a->request) ? -1 : 1;
-        });
         break;
-    case 'queues':
-        $queues = helpmenow_queue::get_queues_block();
-        $response->queues = array();
-        foreach ($queues as $q) {
-            if ($q->get_privilege() !== HELPMENOW_QUEUE_HELPEE) {
+    case 'block':
+        # clean up sessions
+        $sql = "
+            SELECT s.*
+            FROM {$CFG->prefix}block_helpmenow_session s
+            JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id
+            WHERE s.iscurrent = 1
+        ";
+        if ($sessions = get_records_sql($sql)) {
+            foreach ($sessions as $s) {
+                $session_users = get_records('block_helpmenow_session2user', 'sessionid', $s->id);
+                foreach ($session_users as $su) {
+                    if (($su->last_refresh + 60) > time()) {
+                        continue 2;
+                    }
+                }
+                set_field('block_helpmenow_session', 'iscurrent', 0, 'id', $s->id);
+            }
+        }
+
+        # queues
+        $response->queues_html = '';
+        $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+        if ($queues = helpmenow_queue::get_queues()) {
+            foreach ($queues as $q) {
+                $response->queues_html .= '<div>';
+                switch ($q->get_privilege()) {
+                case HELPMENOW_QUEUE_HELPER:
+                    $instyle = $outstyle = '';
+                    if ($q->helpers[$USER->id]->isloggedin) {
+                        $outstyle = 'style="display: none;"';
+                    } else {
+                        $instyle = 'style="display: none;"';
+                    }
+                    $response->queues_html .= <<<EOF
+<div>$q->name</div>
+<div style="text-align: center; font-size:small;">
+    <div id="helpmenow_logged_in_div_$q->id" $instyle><a href="javascript:void();" onclick="helpmenow_login(false, $q->id);">Log Out</a></div>
+    <div id="helpmenow_logged_out_div_$q->id" $outstyle>You're Logged Out | <a href="javascript:void();" onclick="helpmenow_login(true, $q->id);">Log In</a></div>
+</div>
+EOF;
+
+                    # sessions
+                    $sql = "
+                        SELECT u.*, s.id AS sessionid, m.message
+                        FROM {$CFG->prefix}block_helpmenow_session s
+                        JOIN {$CFG->prefix}user u ON u.id = s.createdby
+                        JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                            SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid = s.createdby
+                        )
+                        WHERE s.queueid = $q->id
+                        AND s.iscurrent = 1
+                    ";
+                    if ($sessions = get_records_sql($sql)) {
+                        $response->queues_html .= '<div style="margin-left: 1em;">';
+
+                        foreach ($sessions as &$s) {
+                            $s->pending = true;
+                            $sql = "
+                                SELECT *
+                                FROM {$CFG->prefix}block_helpmenow_session2user s2u
+                                JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+                                WHERE s2u.sessionid = $s->sessionid
+                                AND s2u.userid <> $s->id
+                            ";
+                            $s->helpers = get_records_sql($sql);
+                            foreach ($s->helpers as $h) {
+                                if (($h->last_refresh + 30) > time()) {
+                                    $s->pending = false;
+                                    continue 2;
+                                }
+                                if (($h->last_refresh > $s->time)) {
+                                    $s->pending = false;
+                                    continue 2;
+                                }
+                            }
+                        }
+
+                        # sort by unseen messages, lastname, firstname
+                        usort($sessions, function($a, $b) {
+                            if (!($a->pending xor $b->pending)) {
+                                return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+                            }
+                            return $a->pending ? -1 : 1;
+                        });
+
+                        foreach ($sessions as $s) {
+                            $connect->remove_params('queueid');
+                            $connect->param('sessionid', $s->sessionid);
+                            $message = $style = '';
+                            if ($s->pending) {
+                                $style = ' style="background-color:yellow"';
+                                $message = '<div style="margin-left: 1em;">' . $s->message . '</div>';
+                            }
+                            $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
+                        }
+                        $response->queues_html .= '</div>';
+                    }
+                    break;
+                case HELPMENOW_QUEUE_HELPEE:
+                    $message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
+
+                    $sql = "
+                        SELECT s.*, m.message
+                        FROM {$CFG->prefix}block_helpmenow_session s
+                        JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
+                        JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                            SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
+                        )
+                        WHERE s.iscurrent = 1
+                        AND s.createdby = $USER->id
+                        AND s.queueid = $q->id
+                        AND (s2u.last_refresh + 30) < ".time()."
+                        AND s2u.last_refresh < m.time
+                    ";
+                    if ($session = get_record_sql($sql) or $q->is_open()) {
+                        $connect->remove_params('sessionid');
+                        $connect->param('queueid', $q->id);
+                        $style = '';
+                        if ($session) {
+                            $style = ' style="background-color:yellow"';
+                            $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
+                        }
+                        $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
+                    } else {
+                        $response->queues_html .= "<div>$q->name</div>$message";
+                    }
+                    break;
+                }
+                $response->queues_html .= '</div>';
+            }
+        }
+
+        # user lists for students and instructors
+        $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
+        switch ($privilege) {
+        case 'TEACHER':
+            $users = helpmenow_get_students();
+            break;
+        case 'STUDENT':
+            $users = helpmenow_get_instructors();
+            break;
+        default:
+            break 2;
+        }
+
+        # get any unseen messages
+        foreach ($users as $u) {
+            $sql = "
+                SELECT s.*, m.message
+                FROM {$CFG->prefix}block_helpmenow_session2user s2u
+                JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+                JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
+                JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid = s2u2.userid
+                )
+                WHERE s2u.userid = $USER->id
+                AND s.iscurrent = 1
+                AND s2u2.userid = $u->id
+                AND s.queueid IS NULL
+                AND (s2u.last_refresh + 30) < ".time()."
+                AND s2u.last_refresh < m.time
+            ";
+            if (!$session = get_record_sql($sql)) {
                 continue;
             }
-
-            $queue = (object) array(
-                'queueid' => $q->id,
-                'name' => $q->name,
-                'description' => $q->description,
-                'html' => '',
-            );
-
-            if (isset($prev_type) and ($prev_type != $q->type)) {
-                $queue->html .= "<hr />";
-            }
-
-            # if the user has a request, display it, otherwise give a link
-            # to create one
-            if (isset($q->request[$USER->id])) {
-                $queue->html .= "<div style=\"border:5px solid #5CB063;\">";
-                $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
-                $connect->param('requestid', $q->request[$USER->id]->id);
-                if ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR) {
-                    $q->request[$USER->id]->last_refresh = time();
-                    $q->request[$USER->id]->update();
-                    $smalltext = $q->request[$USER->id]->description;
-                } else {
-                    $smalltext = get_string('pending', 'block_helpmenow');
-                }
-                $linktext = "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>$smalltext</div>";
-                $queue->html .= link_to_popup_window($connect->out(), 'connect', $linktext, 400, 700, null, null, true);
-            } else {
-                $queue->html .= "<div>";
-                if ($q->check_available()) {
-                    $request = new moodle_url("$CFG->wwwroot/blocks/helpmenow/new_request.php");
-                    $request->param('queueid', $q->id);
-                    $linktext = "<b>$q->name</b><br />";
-                    if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK) {
-                        $linktext .= "<div style='text-align:center;font-size:small;'>" . get_string('new_request', 'block_helpmenow') . "</div>";
-                    }
-                    $queue->html .= link_to_popup_window($request->out(), 'connect', $linktext, 400, 700, null, null, true);
-                } else {
-                    # todo: make this smarter (helpers leave message or configurable)
-                    $queue->html.= "<b>$q->name</b><br /><div style='text-align:center;font-size:small;'>" . get_string('queue_na_short', 'block_helpmenow') . "</div>";
-                }
-            }
-            if ($q->type === HELPMENOW_QUEUE_TYPE_HELPDESK or
-                    ($q->type === HELPMENOW_QUEUE_TYPE_INSTRUCTOR and $q->check_available())) {
-                $queue->html .= "<div style=\"margin-left:1em;\">" . $q->description . "</div>";
-            }
-            $queue->html .= "</div>";
-            $response->queues[] = $queue;
-
-            $prev_type = $q->type;
+            $u->sessionid = $session->id;
+            $u->message = $session->message;
         }
+
+        # sort by unseen messages, lastname, firstname
+        usort($users, function($a, $b) {
+            if (!(isset($a->sessionid) xor isset($b->sessionid))) {
+                return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+            }
+            return isset($a->sessionid) ? -1 : 1;
+        });
+
+        # build the list
+        $response->users_html = '';
+        $connect->remove_params('queueid');
+        foreach ($users as $u) {
+            $connect->param('userid', $u->id);
+            $message = $style = '';
+            if (isset($u->motd)) {
+                $message .= '<div style="font-size: smaller;">' . $u->motd . '</div>';
+            }
+            if (isset($u->sessionid)) {
+                $style = ' style="background-color:yellow"';
+                $message .= '<div>' . $u->message . '</div>';
+            }
+            $message = '<div style="margin-left: 1em;">'.$message.'</div>';
+            $response->users_html .= "<div$style>" . link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true) . "$message</div>";
+        }
+        break;
+    case 'login':
+        # todo: log this
+
+        if ($request->queue) {     # helper
+            if (!$record = get_record('block_helpmenow_helper', 'queueid', $request->queue, 'userid', $USER->id)) {
+                throw new Exception('No helpmenow_helper record');
+            }
+        } else {    # instructor
+            if (!$record = get_record('block_helpmenow_user', 'userid', $USER->id)) {
+                throw new Exception('No helpmenow_user record');
+            }
+        }
+
+        if ($request->login) {
+            $record->isloggedin = time();
+        } else {
+            $record->isloggedin = 0;
+        }
+
+        if ($request->queue) {     # helper
+            if (!update_record('block_helpmenow_helper', $record)) {
+                throw new Exception('Could not update user record');
+            }
+        } else {    # instructor
+            if (!update_record('block_helpmenow_user', $record)) {
+                throw new Exception('Could not update user record');
+            }
+        }
+        $response->login = $request->login;
+        break;
+    case 'motd':
+        if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {
+            throw new Exception('No helpmenow_user record');
+        }
+        $helpmenow_user->motd = $request->motd;
+        if (!update_record('block_helpmenow_user', $helpmenow_user)) {
+            throw new Exception('Could not update user record');
+        }
+        $response->motd = $helpmenow_user->motd;
         break;
     default:
         throw new Exception('Unknown method');
     }
 } catch (Exception $e) {
-    ob_end_clean();
+    $debugging = ob_get_clean();
     header('HTTP/1.1 400 Bad Request');
     if ($CFG->debugdisplay) {
         $response = new stdClass;
         $response->error = $e->getMessage();
+        $response->debugging = $debugging;
         echo json_encode($response);
     }
     die;
 }
 
-ob_end_clean();
+$debugging = ob_get_clean();
+if ($CFG->debugdisplay) {
+    $response->debugging = $debugging;
+}
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');
 header('Expires: '. gmdate('D, d M Y H:i:s', 0) .' GMT');

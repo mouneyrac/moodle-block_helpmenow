@@ -23,11 +23,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/meeting.php');
-require_once(dirname(__FILE__) . '/plugin.php');
-require_once(dirname(__FILE__) . '/request.php');
 require_once(dirname(__FILE__) . '/queue.php');
-require_once(dirname(__FILE__) . '/helper.php');
 require_once(dirname(__FILE__) . '/db/access.php');
 
 /**
@@ -39,48 +35,86 @@ define('HELPMENOW_QUEUE_HELPER', 'helper');
 define('HELPMENOW_QUEUE_HELPEE', 'helpee');
 define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
-# Default queue weight value, used to determine queue display order
-define('HELPMENOW_DEFAULT_WEIGHT', 50);
-
-# queue types
-define('HELPMENOW_QUEUE_TYPE_INSTRUCTOR', 'instructor');
-define('HELPMENOW_QUEUE_TYPE_HELPDESK', 'helpdesk');
-
-# ajax stuff
-define('HELPMENOW_AJAX_REFRESH', 5000);
-
-/**
- * Checks if we want to auto create instructor queues. If we do, check if we
- * need to create a queue for this user and do so if necessary.
- */
-function helpmenow_ensure_queue_exists($contextid = null) {
+function helpmenow_verify_session($session) {
     global $CFG, $USER;
+    $sql = "
+        SELECT 1
+        FROM {$CFG->prefix}block_helpmenow_session s
+        JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id
+        WHERE s2u.userid = $USER->id
+        AND s.id = $session
+    ";
+    return record_exists_sql($sql);
+}
 
-    # bail if we're not autocreating instructor queues
-    if (!$CFG->helpmenow_autocreate_instructor_queue) { return; }
+function helpmenow_check_privileged($session) {
+    global $USER;
 
-    # check if user is an instructor
-    if (!record_exists('sis_user', 'sis_user_idstr', $USER->idnumber, 'privilege', 'TEACHER')) { return; }
+    if (isset($session->queueid)) {
+        $sql = "
+            SELECT 1
+            FROM {$CFG->prefix}block_helpmenow_queue q
+            JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
+            WHERE q.id = $session->queueid
+            AND h.userid = $USER->id
+            ";
+        if (record_exists_sql($sql)) {
+            return true;
+        }
+    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
+        return true;
+    }
+    return false;
+}
 
-    # check if we already have a queue
-    if (record_exists('block_helpmenow_queue', 'userid', $USER->id)) { return; }
+function helpmenow_get_students() {
+    global $CFG, $USER;
+    $cutoff = helpmenow_cutoff();
+    $sql = "
+        SELECT u.*
+        FROM {$CFG->prefix}classroom c
+        JOIN {$CFG->prefix}classroom_enrolment ce ON ce.classroom_idstr = c.classroom_idstr
+        JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
+        WHERE c.sis_user_idstr = '$USER->idnumber'
+        AND ce.status_idstr = 'ACTIVE'
+        AND ce.iscurrent = 1
+        AND u.lastaccess > $cutoff
+    ";
+    return get_records_sql($sql);
+}
 
-    $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+function helpmenow_get_instructors() {
+    global $CFG, $USER;
+    $cutoff = helpmenow_cutoff();
+    $sql = "
+        SELECT u.*, hu.motd
+        FROM {$CFG->prefix}classroom_enrolment ce
+        JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
+        JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
+        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
+        WHERE ce.sis_user_idstr = '$USER->idnumber'
+        AND ce.status_idstr = 'ACTIVE'
+        AND ce.iscurrent = 1
+        AND hu.isloggedin <> 0
+    ";
+    return get_records_sql($sql);
+}
 
-    # make a queue
-    $queue = helpmenow_queue::new_instance($CFG->helpmenow_default_plugin);
-    $queue->contextid = $sitecontext->id;
-    $queue->name = fullname($USER);
-    $queue->description = '';
-    $queue->userid = $USER->id;
-    $queue->type = HELPMENOW_QUEUE_TYPE_INSTRUCTOR;
-    $queue->insert();
+function helpmenow_cutoff() {
+    global $CFG;
+    if ($CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
+        return 0;
+    }
+    return time() - 300;
+}
 
-    $helper = helpmenow_helper::new_instance($CFG->helpmenow_default_plugin);
-    $helper->queueid = $queue->id;
-    $helper->userid = $USER->id;
-    $helper->isloggedin = 0;
-    $helper->insert();
+function helpmenow_add_user($userid, $sessionid) {
+    $session2user_rec = (object) array(
+        'sessionid' => $sessionid,
+        'userid' => $userid,
+        'last_refresh' => time(),
+    );
+    return insert_record('block_helpmenow_session2user', $session2user_rec);
 }
 
 /**
@@ -104,38 +138,22 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
     die;
 }
 
-function helpmenow_get_students() {
-    global $CFG, $USER;
-
-    $cutoff = time() - 300;     # go with the same cutoff as Moodle
-    $sql = "
-        SELECT u.*
-        FROM {$CFG->prefix}classroom c
-        JOIN {$CFG->prefix}classroom_enrolment ce ON ce.classroom_idstr = c.classroom_idstr
-        JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
-        WHERE c.sis_user_idstr = '$USER->idnumber'
-        AND ce.status_idstr = 'ACTIVE'
-        AND ce.iscurrent = 1
-        AND u.lastaccess > $cutoff
-    ";
-
-    return get_records_sql($sql);
-}
-
 /**
- * inserts a message into block_helpmenow_log
- * @param int $userid user performing action
- * @param string $action action user is performing
- * @param string $details details of the action
+ * ensures our instructors have a helpmenow_user record
  */
-function helpmenow_log($userid, $action, $details) {
-    $new_record = (object) array(
-        'userid' => $userid,
-        'action' => $action,
-        'details' => $details,
-        'timecreated' => time(),
+function helpmenow_ensure_user_exists() {
+    global $USER;
+    if (record_exists('block_helpmenow_user', 'userid', $USER->id)) {
+        return;
+    }
+
+    $helpmenow_user = (object) array(
+        'userid' => $USER->id,
+        'isloggedin' => 0,
+        'motd' => '',
     );
-    insert_record('block_helpmenow_log', $new_record);
+
+    insert_record('block_helpmenow_user', $helpmenow_user);
 }
 
 ?>

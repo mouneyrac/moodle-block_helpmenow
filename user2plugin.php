@@ -24,23 +24,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/db_object.php');
+require_once(dirname(__FILE__) . '/plugin_object.php');
 
-abstract class helpmenow_user2plugin extends helpmenow_db_object {
+abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
     const table = 'user2plugin';
-
-    /**
-     * Array of required db fields.
-     * @var array $required_fields
-     */
-    protected $required_fields = array(
-        'id',
-        'timecreated',
-        'timemodified',
-        'modifiedby',
-        'userid',
-        'plugin',
-    );
 
     /**
      * user.id

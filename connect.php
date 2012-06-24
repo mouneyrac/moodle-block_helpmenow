@@ -15,9 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script handles refreshing the requesting user's page until a helper or
- * the requested user accepts. It also handles the accepting by said helper or
- * requested user.
+ * This script creates chat session and connects users to them
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -25,136 +23,65 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-# moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-
-# helpmenow library
 require_once(dirname(__FILE__) . '/lib.php');
 
-# require login
 require_login(0, false);
 
-# get our parameters
-$requestid = optional_param('requestid', 0, PARAM_INT);
-$meetingid = optional_param('meetingid', 0, PARAM_INT);
-$connect = optional_param('connect', 0, PARAM_INT);
+$userid = optional_param('userid', 0, PARAM_INT);
+$queueid = optional_param('queueid', 0, PARAM_INT);
+$sessionid = optional_param('sessionid', 0, PARAM_INT);
 
-# get the request
-if (!$request = helpmenow_request::get_instance($requestid)) {
-    helpmenow_fatal_error(get_string('missing_request', 'block_helpmenow'));
-}
+$chat_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
 
-# launch.php
-$launch = new moodle_url($CFG->wwwroot . '/blocks/helpmenow/launch.php');
-
-# for the helper
-if ($connect) {
-    # check privileges
-    $queue = helpmenow_queue::get_instance($request->queueid);
-    if ($queue->get_privilege() !== HELPMENOW_QUEUE_HELPER) {
-        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
+if ($sessionid) {
+    $session = get_record('block_helpmenow_session', 'id', $sessionid);
+    if (!record_exists('block_helpmenow_helper', 'queueid', $session->queueid, 'userid', $USER->id)) {
+        helpmenow_fatal_error('You do not have permission to view this page. You may have been linked here in error.');
     }
-
-    if (isset($request->meetingid)) {
-        helpmenow_fatal_error(get_string('too_slow', 'block_helpmenow'));
-    }
-
-    # new meeting
-    $meeting = helpmenow_meeting::new_instance($queue->plugin);
-    $meeting->owner_userid = $USER->id;
-    $meeting->description = $request->description;  # get the description from the request
-    $meeting->queueid = $request->queueid;
-    $meeting->create();
-    $meeting->insert();
-
-    # add both users to the meeting
-    $meeting->add_user();
-    $meeting->add_user($request->userid);
-    $meeting->update();
-
-    # update the request with the meetingid so we know its been accepted
-    $request->meetingid = $meeting->id;
-    $request->update();
-
-    $only_request = true;
-    foreach ($queue->request as $r) {
-        if ($r->id == $requestid) {
-            continue;
-        }
-        $only_request = false;
-        break;
-    }
-
-    if ($only_request) {
-        foreach ($queue->helper as $h) {
-            $h->last_action = 0;
-            $h->update();
-        }
+    helpmenow_add_user($USER->id, $session->id);
+} else {
+    # build sql to check for existing sesssions
+    $sql = "
+        SELECT s.*
+        FROM {$CFG->prefix}block_helpmenow_session2user s2u
+        JOIN {$CFG->prefix}block_helpmenow_session s ON s2u.sessionid = s.id
+    ";
+    if ($userid) {
+        $sql .= "
+            JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
+            WHERE s2u2.userid = $userid
+        ";
+    } else if ($queueid) {
+        $sql .= " WHERE s.queueid = $queueid ";
     } else {
-        $queue->helper[$USER->id]->last_action = 0;
-        $queue->helper[$USER->id]->update();
+        # todo: error: wat
     }
+    $sql .= "
+        AND s2u.userid = $USER->id
+        AND s.iscurrent = 1
+    ";
+    if (!$session = get_record_sql($sql)) {
+        # if we don't have a current session, create one
+        $session = (object) array(
+            'timecreated' => time(),
+            'iscurrent' => 1,
+            'createdby' => $USER->id,
+        );
+        if ($queueid) {
+            $session->queueid = $queueid;
+        }
+        $session->id = insert_record('block_helpmenow_session', $session);
 
-    # log
-    helpmenow_log($USER->id, 'answered_request', "requestid: {$requestid}; meetingid: {$meeting->id}");
-
-    $launch->param('meetingid', $meeting->id);
-    redirect($launch->out());
-}
-
-# for the helpee/requester
-
-if ($USER->id !== $request->userid) {
-    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
-}
-
-# if we have a meeting
-if (isset($request->meetingid)) {
-    # delete the request
-    $request->delete();
-
-    # log
-    helpmenow_log($USER->id, 'connected_to_meeting', "requestid: {$request->id}; meetingid: {$request->meetingid}");
-
-    # connect user to the meeting
-    $launch->param('meetingid', $request->meetingid);
-    redirect($launch->out());
-}
-
-# check to make sure we still have a helper
-$queue = helpmenow_queue::get_instance($request->queueid);
-
-# title, navbar, and a nice box
-$title = get_string('connect', 'block_helpmenow');
-$nav = array(array('name' => $title));
-$refresh = '';
-if ($queue->check_available()) {
-    $refresh = "<meta http-equiv=\"refresh\" content=\"{$CFG->helpmenow_refresh_rate}\" />";
-}
-print_header($title, $title, build_navigation($nav), '', $refresh);
-
-if (!$queue->check_available()) {
-    $request->delete();
-
-    if (strlen($CFG->helpmenow_missing_helper)) {
-        $message = $CFG->helpmenow_missing_helper;
-    } else {
-        $message = get_string('missing_helper', 'block_helpmenow');
+        # add user(s)
+        helpmenow_add_user($USER->id, $session->id);
+        if ($userid) {
+            helpmenow_add_user($userid, $session->id);
+        }
     }
-    helpmenow_fatal_error($message, false);
 }
 
-# set the last refresh so cron doesn't clean this up
-$request->last_refresh = time();
-$request->update();
-# todo: display some sort of cancel link
-
-print_box_start('generalbox');
-echo "<p align='center'>" . get_string('please_wait', 'block_helpmenow') . "</p>" .
-    "<p align='center'>" . get_string('your_request', 'block_helpmenow') . "<br />&quot;" .
-    $request->description . "&quot;</p>";
-
-# footer
-//print_footer();
+$chat_url->param('session', $session->id);
+redirect($chat_url->out());
 
 ?>

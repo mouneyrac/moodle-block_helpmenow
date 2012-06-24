@@ -25,7 +25,7 @@
 
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 
-require_once(dirname(__FILE__) . '/meeting.php');
+require_once(dirname(__FILE__) . '/session2plugin.php');
 require_once(dirname(__FILE__) . '/user2plugin.php');
 
 define('HELPMENOW_G2M_OAUTH_EXCHANGE_URI', 'https://api.citrixonline.com/oauth/access_token');

@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Native moodle chat helpmenow plugin class
+ * Help me now meeting, and meeting2user classes. Meeting is abstract and
+ * defines what the plugins will need to have.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -23,22 +24,16 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/plugin.php');
+require_once(dirname(__FILE__) . '/plugin_object.php');
 
-class helpmenow_plugin_native extends helpmenow_plugin {
-    /**
-     * Plugin name
-     * @var string $plugin
-     */
-    public $plugin = 'native';
+abstract class helpmenow_session2plugin extends helpmenow_plugin_object {
+    const table = 's2p';
 
     /**
-     * Cron
-     * @return boolean
+     * session.id
+     * @var int $sessionid
      */
-    public static function cron() {
-        return true;
-    }
+    public $sessionid;
 }
 
 ?>

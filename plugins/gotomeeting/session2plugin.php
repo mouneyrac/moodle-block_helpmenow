@@ -23,10 +23,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/meeting.php');
+require_once(dirname(dirname(dirname(__FILE__))) . '/session2plugin.php');
 require_once(dirname(__FILE__) . '/plugin.php');
 
-class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
+class helpmenow_session2plugin_gotomeeting extends helpmenow_session2plugin {
     /**
      * Plugin name
      * @var string $plugin
@@ -69,17 +69,11 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
     public $meetingid;
 
     /**
-     * GoToMeeting meetings
-     */
-    public static $organizer_meetings = null;
-
-    /**
      * Create the meeting. Caller will insert record.
      */
     public function create() {
         $params = array(
-            # TODO: does the subject show up anywhere in the meeting?
-            'subject' => $this->description,
+            'subject' => 'Something',   # todo: change this
             'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (24*60*60)), # do a day from now to be safe
             'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (25*60*60)),    # lenght of 1 hour, but it doesn't really matter
             'passwordrequired' => 'false',
@@ -87,70 +81,13 @@ class helpmenow_meeting_gotomeeting extends helpmenow_meeting {
             'timezonekey' => '',
             'meetingtype' => 'Immediate',
         );
-        $meetingdata = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params, $this->owner_userid);
+        $meetingdata = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params);
         $meetingdata = reset($meetingdata);
         $this->join_url = $meetingdata->joinURL;
         $this->max_participants = $meetingdata->maxParticipants;
         $this->unique_meetingid = $meetingdata->uniqueMeetingId;
         $this->meetingid = $meetingdata->meetingid;
         return true;
-    }
-
-    /**
-     * Plugin specific function to connect USER to meeting.
-     * @return $string url
-     */
-    public function connect() {
-        return $this->join_url;
-
-        /*
-         * global $CFG;
-         * $connect_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/connect.php");
-         * $connect_url->param('meetingid', $this->id);
-         * return $connect_url->out();
-         */
-    }
-
-    /**
-     * Returns boolean of meeting completed or not.
-     * @return boolean
-     */
-    public function check_completion() {
-        global $CFG;
-
-        if (!isset(self::$organizer_meetings[$this->owner_userid])) {
-            $min_time = get_field_sql("
-                SELECT min(timecreated)
-                FROM {$CFG->prefix}block_helpmenow_meeting
-                WHERE plugin = 'gotomeeting'
-            ");
-            $params = array(
-                'history' => 'true',
-                'startDate' => gmdate('Y-m-d\TH:i:s\Z', $min_time),
-                'endDate' => gmdate('Y-m-d\TH:i:s\Z', time()),
-            );
-            $meetings = helpmenow_plugin_gotomeeting::api('meetings', 'GET', $params, $this->owner_userid);
-            foreach ($meetings as $m) {
-                self::$organizer_meetings[$this->owner_userid]->meetings[$m->meetingId] = $m;
-            }
-        }
-
-        $meeting_instance = self::$organizer_meetings[$this->owner_userid]->meetings[$this->meetingid]->meetingInstanceKey;
-        $attendees = helpmenow_plugin_gotomeeting::api("meetings/$meeting_instance/attendees", 'GET', array(), $this->owner_userid);
-        foreach ($attendees as $a) {
-            if (!isset($a->endTime)) {
-                return false;
-            }
-        }
-        return parent::check_completion();
-    }
-
-    /**
-     * Return boolean of meeting full or not.
-     * @return boolean
-     */
-    public function check_full() {
-        return count($this->meeting2user) >= $this->max_participants;
     }
 }
 
