@@ -34,6 +34,10 @@ class helpmenow_user2plugin_gotomeeting extends helpmenow_user2plugin {
         'access_token',
         'token_expiration',
         'refresh_token',
+        'join_url',
+        'max_participants',
+        'unique_meetingid',
+        'meetingid',
     );
 
     /**
@@ -55,10 +59,57 @@ class helpmenow_user2plugin_gotomeeting extends helpmenow_user2plugin {
     public $refresh_token;
 
     /**
+     * GoToMeeting joinURL
+     * @var string $join_url
+     */
+    public $join_url;
+
+    /**
+     * GoToMeeting maxParticipants
+     * @var int $max_participants
+     */
+    public $max_participants;
+
+    /**
+     * GoToMeeting uniquemeetingid
+     * @var int $unique_meetingid
+     */
+    public $unique_meetingid;
+
+    /**
+     * GoToMeeting meetingid
+     * @var int $meetingid
+     */
+    public $meetingid;
+
+
+    /**
      * plugin queue's meetings use
      * @var string $plugin
      */
     public $plugin = 'gotomeeting';
+
+    /**
+     * Create the meeting. Caller will insert record.
+     */
+    public function create_meeting() {
+        $params = array(
+            'subject' => 'Something',   # todo: change this
+            'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (24*60*60)), # do a day from now to be safe
+            'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (25*60*60)),    # lenght of 1 hour, but it doesn't really matter
+            'passwordrequired' => 'false',
+            'conferencecallinfo' => 'Hybrid',
+            'timezonekey' => '',
+            'meetingtype' => 'Immediate',
+        );
+        $meetingdata = helpmenow_plugin_gotomeeting::api('meetings', 'POST', $params);
+        $meetingdata = reset($meetingdata);
+        $this->join_url = $meetingdata->joinURL;
+        $this->max_participants = $meetingdata->maxParticipants;
+        $this->unique_meetingid = $meetingdata->uniqueMeetingId;
+        $this->meetingid = $meetingdata->meetingid;
+        return true;
+    }
 }
 
 ?>

@@ -48,7 +48,7 @@ function helpmenow_verify_session($session) {
 }
 
 function helpmenow_check_privileged($session) {
-    global $USER;
+    global $USER, $CFG;
 
     if (isset($session->queueid)) {
         $sql = "
@@ -57,7 +57,7 @@ function helpmenow_check_privileged($session) {
             JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
             WHERE q.id = $session->queueid
             AND h.userid = $USER->id
-            ";
+        ";
         if (record_exists_sql($sql)) {
             return true;
         }

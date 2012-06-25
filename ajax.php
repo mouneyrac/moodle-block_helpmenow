@@ -91,6 +91,26 @@ try {
             $response->html .= "<div>$msg</div>";
         }
         break;
+    case 'invite':
+        # verify sesion
+        if (!helpmenow_verify_session($request->session)) {
+            throw new Exception('Invalid session');
+        }
+
+        if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            throw new Exception('No u2p record');
+        }
+        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+
+        $message = fullname($USER) . ' has started GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
+        $message_rec = (object) array(
+            'userid' => get_admin()->id,
+            'sessionid' => $request->session,
+            'time' => time(),
+            'message' => $message,
+        );
+        insert_record('block_helpmenow_message', $message_rec);
+        break;
     case 'block':
         # clean up sessions
         $sql = "
@@ -229,9 +249,11 @@ EOF;
         switch ($privilege) {
         case 'TEACHER':
             $users = helpmenow_get_students();
+            $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
             break;
         case 'STUDENT':
             $users = helpmenow_get_instructors();
+            $isloggedin = true;
             break;
         default:
             break 2;
@@ -283,7 +305,12 @@ EOF;
                 $message .= '<div>' . $u->message . '</div>';
             }
             $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-            $response->users_html .= "<div$style>" . link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true) . "$message</div>";
+            if ($isloggedin) {
+                $link = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+            } else {
+                $link = fullname($u);
+            }
+            $response->users_html .= "<div$style>".$link.$message."</div>";
         }
         break;
     case 'login':

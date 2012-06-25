@@ -39,19 +39,23 @@ $session = get_record('block_helpmenow_session', 'id',  $sessionid);
 $privileged = helpmenow_check_privileged($session);
 
 # title
-$sql = "
-    SELECT u.*
-    FROM {$CFG->prefix}block_helpmenow_session2user s2u
-    JOIN {$CFG->prefix}user u ON u.id = s2u.userid
-    WHERE s2u.sessionid = $sessionid
-    AND s2u.userid <> $USER->id
-";
-$other_user_recs = get_records_sql($sql);
-$other_users = array();
-foreach ($other_user_recs as $r) {
-    $other_users[] = fullname($r);
+if (!$privileged and isset($session->queueid)) {
+    $title = get_field('block_helpmenow_queue', 'name', 'id', $session->queueid);
+} else {
+    $sql = "
+        SELECT u.*
+        FROM {$CFG->prefix}block_helpmenow_session2user s2u
+        JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+        WHERE s2u.sessionid = $sessionid
+        AND s2u.userid <> $USER->id
+    ";
+    $other_user_recs = get_records_sql($sql);
+    $other_users = array();
+    foreach ($other_user_recs as $r) {
+        $other_users[] = fullname($r);
+    }
+    $title = implode(', ', $other_users);
 }
-$title = implode(', ', $other_users);
 
 print_header($title, '', '', 'inputTextarea');
 
@@ -59,9 +63,9 @@ print_header($title, '', '', 'inputTextarea');
 $plugins = '';
 $top = '1em';
 if ($privileged) {
-    $launch_gtm = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/create.php");
+    $launch_gtm = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/invite.php");
     $launch_gtm->param('sessionid', $session->id);
-    $link = link_to_popup_window($launch_gtm->out(), 'gotomeeting', 'GoToMeeting', 600, 700, null, null, true);
+    $link = link_to_popup_window($launch_gtm->out(), 'gotomeeting', 'Invite To My GoToMeeting', 600, 700, null, null, true);
     $plugins = <<<EOF
 <div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
     <div style="margin-top: .5em;">$link</div>

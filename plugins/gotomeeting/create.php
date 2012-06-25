@@ -30,23 +30,11 @@ require_once(dirname(__FILE__) . '/session2plugin.php');
 
 require_login(0, false);
 
-$sessionid = required_param('sessionid', PARAM_INT);
-
-# make sure user is in this session
-if (!helpmenow_verify_session($sessionid)) {
+# make sure user is instructor or helper
+$user = get_record('block_helpmenow_user', 'userid', $USER->id);
+$helper = get_records('block_helpmenow_helper', 'userid', $USER->id);
+if (!$user and !$helper) {
     helpmenow_fatal_error('You do not have permission to view this page.');
-}
-
-# make sure user is privileged
-$session = get_record('block_helpmenow_session', 'id',  $sessionid);
-if (!$privileged = helpmenow_check_privileged($session)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
-
-# if we've already made a g2m session, redirect
-if ($session2user = get_record('block_helpmenow_s2p', 'sessionid', $session->id, 'plugin', 'gotomeeting')) {
-    $session2user = new helpmenow_session2plugin_gotomeeting(null, $session2user);
-    redirect($session2user->join_url);
 }
 
 # make sure we've got a gotomeeting user2plugin record with a token
@@ -66,21 +54,9 @@ if ($user2plugin->token_expiration < time()) {
     redirect($token_url);
 }
 
-$session2user = new helpmenow_session2plugin_gotomeeting();
-$session2user->create();
-$session2user->sessionid = $session->id;
-$session2user->insert();
+$user2plugin->create_meeting();
+$user2plugin->update();
 
-$message = fullname($USER) . ' has started GoToMeeting, <a target="_blank" href="'.$session2user->join_url.'">click here</a> to join.';
-
-$message_rec = (object) array(
-    'userid' => get_admin()->id,
-    'sessionid' => $session->id,
-    'time' => time(),
-    'message' => $message,
-);
-insert_record('block_helpmenow_message', $message_rec);
-
-redirect($session2user->join_url);
+redirect($user2plugin->join_url);
 
 ?>
