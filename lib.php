@@ -108,11 +108,11 @@ function helpmenow_cutoff() {
     return time() - 300;
 }
 
-function helpmenow_add_user($userid, $sessionid) {
+function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
     $session2user_rec = (object) array(
         'sessionid' => $sessionid,
         'userid' => $userid,
-        'last_refresh' => time(),
+        'last_refresh' => $last_refresh,
     );
     return insert_record('block_helpmenow_session2user', $session2user_rec);
 }

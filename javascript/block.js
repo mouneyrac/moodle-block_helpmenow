@@ -21,9 +21,9 @@ function helpmenow_toggle_motd(edit) {
 /**
  * toggles logged in status display
  */
-function helpmenow_toggle_login_display(loggedin, queue) {
-    var logged_in_div = document.getElementById("helpmenow_logged_in_div_" + queue);
-    var logged_out_div = document.getElementById("helpmenow_logged_out_div_" + queue);
+function helpmenow_toggle_login_display(loggedin) {
+    var logged_in_div = document.getElementById("helpmenow_logged_in_div_0");
+    var logged_out_div = document.getElementById("helpmenow_logged_out_div_0");
     if (loggedin) {
         logged_in_div.style.display = "block";
         logged_out_div.style.display = "none";
@@ -31,26 +31,6 @@ function helpmenow_toggle_login_display(loggedin, queue) {
         logged_out_div.style.display = "block";
         logged_in_div.style.display = "none";
     }
-}
-
-/**
- * logs instructor in
- */
-function helpmenow_login(login, queue) {
-    var params = {
-        "function" : "login",
-        "login" : login,
-        "queue" : queue,
-    };
-    helpmenow_call(params, function(xmlhttp) {
-        if (xmlhttp.readyState == 4) {
-            var response = JSON.parse(xmlhttp.responseText);
-            console.debug(response);
-            if (xmlhttp.status == 200) {
-                helpmenow_toggle_login_display(response.login, queue);
-            }
-        }
-    });
 }
 
 /**
@@ -115,15 +95,27 @@ function helpmenow_block_refresh() {
             var response = JSON.parse(xmlhttp.responseText);
             console.debug(response);
             if (xmlhttp.status==200) {
-
                 var queue_div = document.getElementById("helpmenow_queue_div");
                 queue_div.innerHTML = response.queues_html;
 
-                if (typeof response.users_html === "undefined") {
-                    return;
+                if (response.pending) {
+                    var helpmenow_chime = document.getElementById("helpmenow_chime");
+                    helpmenow_chime.Play();
                 }
-                var users_div = document.getElementById("helpmenow_users_div");
-                users_div.innerHTML = response.users_html;
+
+                if (typeof response.isloggedin !== "undefined") {
+                    helpmenow_toggle_login_display(response.isloggedin);
+                }
+
+                if (typeof response.meetingid !== "undefined") {
+                    var meetingid_div = document.getElementById("helpmenow_meetingid_div");
+                    meetingid_div.innerHTML = "Meeting ID #" + response.meetingid;
+                }
+
+                if (typeof response.users_html !== "undefined") {
+                    var users_div = document.getElementById("helpmenow_users_div");
+                    users_div.innerHTML = response.users_html;
+                }
             }
         }
     });

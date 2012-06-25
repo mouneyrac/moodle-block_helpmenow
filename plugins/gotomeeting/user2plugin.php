@@ -93,10 +93,12 @@ class helpmenow_user2plugin_gotomeeting extends helpmenow_user2plugin {
      * Create the meeting. Caller will insert record.
      */
     public function create_meeting() {
+        global $USER;
+
         $params = array(
-            'subject' => 'Something',   # todo: change this
-            'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (24*60*60)), # do a day from now to be safe
-            'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (25*60*60)),    # lenght of 1 hour, but it doesn't really matter
+            'subject' => fullname($USER), # todo: change this
+            'starttime' => gmdate('Y-m-d\TH:i:s\Z', time() + (24*60*60)),   # do a day from now to be safe
+            'endtime' => gmdate('Y-m-d\TH:i:s\Z', time() + (30*60*60)),     # length of 6 hours to be safe
             'passwordrequired' => 'false',
             'conferencecallinfo' => 'Hybrid',
             'timezonekey' => '',

@@ -65,3 +65,24 @@ function helpmenow_chat_refresh() {
         }
     });
 }
+
+/**
+ * Function to invite user to gotomeeting
+ */
+function helpmenow_invite() {
+    var params = {
+        "function" : "invite",
+        "session" : helpmenow_session,
+    };
+    helpmenow_call(params, function(xmlhttp) {
+        if (xmlhttp.readyState==4) {
+            var response = JSON.parse(xmlhttp.responseText);
+            console.debug(response);
+            if (xmlhttp.status != 200) {
+                helpmenow_invite();
+                return;
+            }
+        }
+    });
+}
+

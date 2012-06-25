@@ -63,12 +63,9 @@ print_header($title, '', '', 'inputTextarea');
 $plugins = '';
 $top = '1em';
 if ($privileged) {
-    $launch_gtm = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/invite.php");
-    $launch_gtm->param('sessionid', $session->id);
-    $link = link_to_popup_window($launch_gtm->out(), 'gotomeeting', 'Invite To My GoToMeeting', 600, 700, null, null, true);
     $plugins = <<<EOF
 <div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
-    <div style="margin-top: .5em;">$link</div>
+    <div style="margin-top: .5em;"><a href="javascript:void();" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div>
 </div>
 EOF;
     $top = '4em';

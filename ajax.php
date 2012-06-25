@@ -26,11 +26,9 @@
 # capture output
 ob_start();
 
-# moodle stuff
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-
-# our library
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/plugins/gotomeeting/user2plugin.php');
 
 if (!isloggedin()) {
     ob_end_clean();
@@ -102,7 +100,7 @@ try {
         }
         $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
 
-        $message = fullname($USER) . ' has started GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
+        $message = fullname($USER) . ' has invited you to GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
         $message_rec = (object) array(
             'userid' => get_admin()->id,
             'sessionid' => $request->session,
@@ -131,6 +129,14 @@ try {
             }
         }
 
+        # meetingid for helpers and instructors
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+            $response->meetingid = preg_replace("/^(\d{3})(\d{3})(\d{3})$/", "$1-$2-$3", $user2plugin->meetingid);
+        }
+
+        $response->pending = false;
+
         # queues
         $response->queues_html = '';
         $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
@@ -145,11 +151,17 @@ try {
                     } else {
                         $instyle = 'style="display: none;"';
                     }
+                    $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+                    $login_url->param('queueid', $q->id);
+                    $login_url->param('login', 0);
+                    $logout = link_to_popup_window($login_url->out(), "login", 'Log Out', 400, 500, null, null, true);
+                    $login_url->param('login', 1);
+                    $login = link_to_popup_window($login_url->out(), "login", 'Log In', 400, 500, null, null, true);
                     $response->queues_html .= <<<EOF
 <div>$q->name</div>
 <div style="text-align: center; font-size:small;">
-    <div id="helpmenow_logged_in_div_$q->id" $instyle><a href="javascript:void();" onclick="helpmenow_login(false, $q->id);">Log Out</a></div>
-    <div id="helpmenow_logged_out_div_$q->id" $outstyle>You're Logged Out | <a href="javascript:void();" onclick="helpmenow_login(true, $q->id);">Log In</a></div>
+    <div id="helpmenow_logged_in_div_$q->id" $instyle>$logout</div>
+    <div id="helpmenow_logged_out_div_$q->id" $outstyle>You're Logged Out | $login</div>
 </div>
 EOF;
 
@@ -204,6 +216,7 @@ EOF;
                             if ($s->pending) {
                                 $style = ' style="background-color:yellow"';
                                 $message = '<div style="margin-left: 1em;">' . $s->message . '</div>';
+                                $response->pending = true;
                             }
                             $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
                         }
@@ -233,6 +246,7 @@ EOF;
                         if ($session) {
                             $style = ' style="background-color:yellow"';
                             $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
+                            $response->pending = true;
                         }
                         $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
                     } else {
@@ -250,6 +264,7 @@ EOF;
         case 'TEACHER':
             $users = helpmenow_get_students();
             $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
+            $response->isloggedin = $isloggedin ? true : false;
             break;
         case 'STUDENT':
             $users = helpmenow_get_instructors();
@@ -267,7 +282,7 @@ EOF;
                 JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
                 JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
                 JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid = s2u2.userid
+                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s2u.userid
                 )
                 WHERE s2u.userid = $USER->id
                 AND s.iscurrent = 1
@@ -303,6 +318,7 @@ EOF;
             if (isset($u->sessionid)) {
                 $style = ' style="background-color:yellow"';
                 $message .= '<div>' . $u->message . '</div>';
+                $response->pending = true;
             }
             $message = '<div style="margin-left: 1em;">'.$message.'</div>';
             if ($isloggedin) {
@@ -312,36 +328,6 @@ EOF;
             }
             $response->users_html .= "<div$style>".$link.$message."</div>";
         }
-        break;
-    case 'login':
-        # todo: log this
-
-        if ($request->queue) {     # helper
-            if (!$record = get_record('block_helpmenow_helper', 'queueid', $request->queue, 'userid', $USER->id)) {
-                throw new Exception('No helpmenow_helper record');
-            }
-        } else {    # instructor
-            if (!$record = get_record('block_helpmenow_user', 'userid', $USER->id)) {
-                throw new Exception('No helpmenow_user record');
-            }
-        }
-
-        if ($request->login) {
-            $record->isloggedin = time();
-        } else {
-            $record->isloggedin = 0;
-        }
-
-        if ($request->queue) {     # helper
-            if (!update_record('block_helpmenow_helper', $record)) {
-                throw new Exception('Could not update user record');
-            }
-        } else {    # instructor
-            if (!update_record('block_helpmenow_user', $record)) {
-                throw new Exception('Could not update user record');
-            }
-        }
-        $response->login = $request->login;
         break;
     case 'motd':
         if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {

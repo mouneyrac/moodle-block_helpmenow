@@ -74,7 +74,7 @@ if ($sessionid) {
         $session->id = insert_record('block_helpmenow_session', $session);
 
         # add user(s)
-        helpmenow_add_user($USER->id, $session->id);
+        helpmenow_add_user($USER->id, $session->id, time());
         if ($userid) {
             helpmenow_add_user($userid, $session->id);
         }
