@@ -114,6 +114,19 @@ EOF;
 
         $this->content->text .= '<div><a target="_blank" href="http://vlacs.org/~dzaharee/gotomeeting-setup.html">Set Up GoToMeeting</a></div>';
 
+        # admin link
+        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
+            /*
+            $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
+            $admin->param('courseid', $COURSE->id);
+            $admin = $admin->out();
+            $admin_text = get_string('admin_link', 'block_helpmenow');
+            $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
+             */
+            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
+        }
+
         return $this->content;
     }
 }

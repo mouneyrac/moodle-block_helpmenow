@@ -69,11 +69,11 @@ function helpmenow_motd(motd) {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState == 4) {
-            var response = JSON.parse(xmlhttp.responseText);
             if (xmlhttp.status != 200) {
                 helpmenow_motd(motd);
                 return;
             }
+            var response = JSON.parse(xmlhttp.responseText);
             var edit_element = document.getElementById("helpmenow_motd_edit");
             var motd_element = document.getElementById("helpmenow_motd");
             edit_element.value = response.motd;
@@ -92,9 +92,10 @@ function helpmenow_block_refresh() {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            var response = JSON.parse(xmlhttp.responseText);
-            console.debug(response);
             if (xmlhttp.status==200) {
+                var response = JSON.parse(xmlhttp.responseText);
+                console.debug(response);
+
                 var queue_div = document.getElementById("helpmenow_queue_div");
                 queue_div.innerHTML = response.queues_html;
 
@@ -109,7 +110,9 @@ function helpmenow_block_refresh() {
 
                 if (typeof response.meetingid !== "undefined") {
                     var meetingid_div = document.getElementById("helpmenow_meetingid_div");
-                    meetingid_div.innerHTML = "Meeting ID #" + response.meetingid;
+                    if (meetingid_div) {
+                        meetingid_div.innerHTML = "Meeting ID #" + response.meetingid;
+                    }
                 }
 
                 if (typeof response.users_html !== "undefined") {

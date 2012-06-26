@@ -32,8 +32,8 @@ function helpmenow_message(message) {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            var response = JSON.parse(xmlhttp.responseText);
-            console.debug(response);
+            //var response = JSON.parse(xmlhttp.responseText);
+            //console.debug(response);
             if (xmlhttp.status != 200) {
                 helpmenow_message(message);
                 return;
@@ -54,7 +54,7 @@ function helpmenow_chat_refresh() {
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
             var response = JSON.parse(xmlhttp.responseText);
-            console.debug(response);
+            //console.debug(response);
             if (xmlhttp.status==200) {
                 var chatDiv = document.getElementById("chatDiv");
                 if (chatDiv.innerHTML != response.html) {
@@ -76,8 +76,8 @@ function helpmenow_invite() {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            var response = JSON.parse(xmlhttp.responseText);
-            console.debug(response);
+            //var response = JSON.parse(xmlhttp.responseText);
+            //console.debug(response);
             if (xmlhttp.status != 200) {
                 helpmenow_invite();
                 return;

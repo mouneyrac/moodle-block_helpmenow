@@ -98,6 +98,7 @@ function helpmenow_get_instructors() {
         AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
         AND hu.isloggedin <> 0
+        AND u.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
 }

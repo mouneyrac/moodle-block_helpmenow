@@ -55,7 +55,7 @@ try {
             'userid' => $USER->id,
             'sessionid' => $request->session,
             'time' => time(),
-            'message' => $request->message,
+            'message' => addslashes($request->message),
         );
         if (!insert_record('block_helpmenow_message', $message_rec)) {
             throw new Exception('Could insert message record');
@@ -105,7 +105,7 @@ try {
             'userid' => get_admin()->id,
             'sessionid' => $request->session,
             'time' => time(),
-            'message' => $message,
+            'message' => addslashes($message),
         );
         insert_record('block_helpmenow_message', $message_rec);
         break;
@@ -216,7 +216,9 @@ EOF;
                             if ($s->pending) {
                                 $style = ' style="background-color:yellow"';
                                 $message = '<div style="margin-left: 1em;">' . $s->message . '</div>';
-                                $response->pending = true;
+                                if ($q->helpers[$USER->id]->isloggedin) {
+                                    $response->pending = true;
+                                }
                             }
                             $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
                         }
