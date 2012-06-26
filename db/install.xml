@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/helpmenow/db" VERSION="20120624" COMMENT="XMLDB file for Moodle blocks/helpmenow"
+<XMLDB PATH="blocks/helpmenow/db" VERSION="20120625" COMMENT="XMLDB file for Moodle blocks/helpmenow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -61,6 +61,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="session2user_userid_sessionid_ux" UNIQUE="true" FIELDS="userid, sessionid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="block_helpmenow_message" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_session2user" NEXT="block_helpmenow_helper">
       <FIELDS>
@@ -73,6 +76,9 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="message_userid_sessionid" UNIQUE="false" FIELDS="userid, sessionid"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="block_helpmenow_helper" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_message" NEXT="block_helpmenow_s2p">
       <FIELDS>
@@ -96,12 +102,24 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_helpmenow_user2plugin" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_s2p">
+    <TABLE NAME="block_helpmenow_user2plugin" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_s2p" NEXT="block_helpmenow_log">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="plugin"/>
         <FIELD NAME="plugin" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="plugin" NEXT="data"/>
         <FIELD NAME="data" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="userid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="block_helpmenow_log" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_user2plugin">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" ENUM="false" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="id" NEXT="action"/>
+        <FIELD NAME="action" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="userid" NEXT="details"/>
+        <FIELD NAME="details" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" ENUM="false" PREVIOUS="action" NEXT="timecreated"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="20" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" ENUM="false" PREVIOUS="details"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

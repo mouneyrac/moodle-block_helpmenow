@@ -36,10 +36,12 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 
 # todo: log this
 
+$message = '';
 if ($queueid) {     # helper
     if (!$record = get_record('block_helpmenow_helper', 'queueid', $queueid, 'userid', $USER->id)) {
         helpmenow_fatal_error('You do not have permission to view this page.');
     }
+    $message = "queueid: $queueid, ";
 } else {    # instructor
     if (!$record = get_record('block_helpmenow_user', 'userid', $USER->id)) {
         helpmenow_fatal_error('You do not have permission to view this page.');
@@ -47,8 +49,11 @@ if ($queueid) {     # helper
 }
 
 if ($login) {
+    helpmenow_log($USER->id, 'logged_in', $message); 
     $record->isloggedin = time();
 } else {
+    $duration = time() - $record->isloggedin;
+    helpmenow_log($USER->id, 'logged_out', "{$message}duration: $duration seconds");
     $record->isloggedin = 0;
 }
 

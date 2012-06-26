@@ -190,7 +190,7 @@ EOF;
                             ";
                             $s->helpers = get_records_sql($sql);
                             foreach ($s->helpers as $h) {
-                                if (($h->last_refresh + 30) > time()) {
+                                if (($h->last_refresh + 20) > time()) {
                                     $s->pending = false;
                                     continue 2;
                                 }
@@ -236,7 +236,7 @@ EOF;
                         WHERE s.iscurrent = 1
                         AND s.createdby = $USER->id
                         AND s.queueid = $q->id
-                        AND (s2u.last_refresh + 30) < ".time()."
+                        AND (s2u.last_refresh + 20) < ".time()."
                         AND s2u.last_refresh < m.time
                     ";
                     if ($session = get_record_sql($sql) or $q->is_open()) {
@@ -288,7 +288,7 @@ EOF;
                 AND s.iscurrent = 1
                 AND s2u2.userid = $u->id
                 AND s.queueid IS NULL
-                AND (s2u.last_refresh + 30) < ".time()."
+                AND (s2u.last_refresh + 20) < ".time()."
                 AND s2u.last_refresh < m.time
             ";
             if (!$session = get_record_sql($sql)) {

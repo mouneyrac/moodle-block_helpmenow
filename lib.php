@@ -77,6 +77,7 @@ function helpmenow_get_students() {
         JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
         WHERE c.sis_user_idstr = '$USER->idnumber'
         AND ce.status_idstr = 'ACTIVE'
+        AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
         AND u.lastaccess > $cutoff
     ";
@@ -94,6 +95,7 @@ function helpmenow_get_instructors() {
         JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
         WHERE ce.sis_user_idstr = '$USER->idnumber'
         AND ce.status_idstr = 'ACTIVE'
+        AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
         AND hu.isloggedin <> 0
     ";
@@ -154,6 +156,22 @@ function helpmenow_ensure_user_exists() {
     );
 
     insert_record('block_helpmenow_user', $helpmenow_user);
+}
+
+/**
+ * inserts a message into block_helpmenow_log
+ * @param int $userid user performing action
+ * @param string $action action user is performing
+ * @param string $details details of the action
+ */
+function helpmenow_log($userid, $action, $details) {
+    $new_record = (object) array(
+        'userid' => $userid,
+        'action' => $action,
+        'details' => $details,
+        'timecreated' => time(),
+    );
+    insert_record('block_helpmenow_log', $new_record);
 }
 
 ?>
