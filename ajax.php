@@ -254,7 +254,7 @@ EOF;
                     }
                     break;
                 }
-                $response->queues_html .= '</div>';
+                $response->queues_html .= '</div><hr />';
             }
         }
 

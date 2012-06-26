@@ -53,7 +53,7 @@ class block_helpmenow extends block_base {
         );
 
         $this->content->text .= <<<EOF
-<div id="helpmenow_queue_div"></div><hr />
+<div id="helpmenow_queue_div"></div>
 EOF;
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
@@ -77,6 +77,7 @@ EOF;
     <div><b>My Office</b></div>
     <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black;width:12em;min-height:1em;">$helpmenow_user->motd</div>
     <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none;" rows="4" cols="22"></textarea>
+    <div id="helpmenow_meetingid_div"></div>
     <div style="text-align: center; font-size:small;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
         <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | $login</div>
@@ -105,7 +106,6 @@ EOF;
 
         # meetingid in the footer
         $this->content->footer .= <<<EOF
-<div id="helpmenow_meetingid_div"></div>
 <embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="0" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 EOF;
 
