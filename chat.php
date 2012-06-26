@@ -72,6 +72,7 @@ EOF;
 }
 
 $output = <<<EOF
+<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="0" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 $plugins
 <div id="chatDiv" style="position: absolute; top: $top; left: 1em; right: 1em; bottom: 6em; padding: .5em; overflow: auto; border: 1px solid black; min-height: 5em;"> </div>
 <div style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4em; padding: 1em;">

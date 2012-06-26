@@ -335,11 +335,11 @@ EOF;
         if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {
             throw new Exception('No helpmenow_user record');
         }
-        $helpmenow_user->motd = $request->motd;
+        $helpmenow_user->motd = addslashes($request->motd);
         if (!update_record('block_helpmenow_user', $helpmenow_user)) {
             throw new Exception('Could not update user record');
         }
-        $response->motd = $helpmenow_user->motd;
+        $response->motd = $request->motd;
         break;
     default:
         throw new Exception('Unknown method');

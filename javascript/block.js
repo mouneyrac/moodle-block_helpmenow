@@ -70,7 +70,6 @@ function helpmenow_motd(motd) {
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState == 4) {
             if (xmlhttp.status != 200) {
-                helpmenow_motd(motd);
                 return;
             }
             var response = JSON.parse(xmlhttp.responseText);

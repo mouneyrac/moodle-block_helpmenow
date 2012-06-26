@@ -60,7 +60,7 @@ if ($login) {
 if ($queueid) {     # helper
     update_record('block_helpmenow_helper', $record);
 } else {    # instructor
-    update_record('block_helpmenow_user', $record);
+    update_record('block_helpmenow_user', addslashes_recursive($record));
 }
 
 # gotomeeting

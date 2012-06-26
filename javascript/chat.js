@@ -60,6 +60,10 @@ function helpmenow_chat_refresh() {
                 if (chatDiv.innerHTML != response.html) {
                     chatDiv.innerHTML = response.html;
                     chatDiv.scrollTop = chatDiv.scrollHeight;
+                    if (!document.hasFocus()) {
+                        var helpmenow_chime = document.getElementById("helpmenow_chime");
+                        helpmenow_chime.Play();
+                    }
                 }
             }
         }
