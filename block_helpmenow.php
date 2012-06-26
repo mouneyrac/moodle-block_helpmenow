@@ -77,20 +77,19 @@ EOF;
     <div><b>My Office</b></div>
     <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black;width:12em;min-height:1em;">$helpmenow_user->motd</div>
     <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none;" rows="4" cols="22"></textarea>
-    <div id="helpmenow_meetingid_div"></div>
     <div style="text-align: center; font-size:small;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
         <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | $login</div>
     </div>
     <div>Online Students:</div>
     <div id="helpmenow_users_div"></div>
-</div>
+</div><hr />
 EOF;
             break;
         case 'STUDENT':
             $this->content->text .= '
                 <div>Online Instructors:</div>
-                <div id="helpmenow_users_div"></div>
+                <div id="helpmenow_users_div"></div><hr />
             ';
             break;
         }
@@ -102,6 +101,7 @@ EOF;
     helpmenow_block_refresh();
     var chat_t = setInterval(helpmenow_block_refresh, 10000);
 </script>
+<div id="helpmenow_meetingid_div"></div>
 EOF;
 
         # meetingid in the footer

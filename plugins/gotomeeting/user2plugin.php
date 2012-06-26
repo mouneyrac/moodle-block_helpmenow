@@ -24,6 +24,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/user2plugin.php');
+require_once(dirname(__FILE__) . '/plugin.php');
 
 class helpmenow_user2plugin_gotomeeting extends helpmenow_user2plugin {
     /**
