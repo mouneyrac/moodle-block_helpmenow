@@ -101,13 +101,18 @@ EOF;
     helpmenow_block_refresh();
     var chat_t = setInterval(helpmenow_block_refresh, 10000);
 </script>
-<div id="helpmenow_meetingid_div"></div>
-EOF;
-
-        # meetingid in the footer
-        $this->content->footer .= <<<EOF
 <embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="0" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 EOF;
+
+        if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+            $this->content->text .= '<div id="helpmenow_meetingid_div"></div><hr />';
+            $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
+            $token_url->param('redirect', qualified_me());
+            $token_url = $token_url->out();
+            $this->content->text .= "<div><a href='$token_url'>Allow GoToMeeting Access</a></div>";
+        }
+
+        $this->content->text .= '<div><a target="_blank" href="http://vlacs.org/~dzaharee/gotomeeting-setup.html">Set Up GoToMeeting</a></div>';
 
         return $this->content;
     }
