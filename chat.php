@@ -59,6 +59,9 @@ if (!$privileged and isset($session->queueid)) {
 
 print_header($title, '', '', 'inputTextarea');
 
+$output = <<<EOF
+<div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
+EOF;
 
 $plugins = '';
 $top = '1em';
@@ -71,8 +74,8 @@ EOF;
     $top = '4em';
 }
 
-$output = <<<EOF
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="0" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
+$output .= <<<EOF
+<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 $plugins
 <div id="chatDiv" style="position: absolute; top: $top; left: 1em; right: 1em; bottom: 6em; padding: .5em; overflow: auto; border: 1px solid black; min-height: 5em;"> </div>
 <div style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4em; padding: 1em;">
@@ -86,6 +89,10 @@ $plugins
     helpmenow_chat_refresh();
     var chat_t = setInterval(helpmenow_chat_refresh, 2000);
 </script>
+</div>
+</div>
+</body>
+</html>
 EOF;
 
 echo $output;

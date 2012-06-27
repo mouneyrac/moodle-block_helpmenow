@@ -101,7 +101,7 @@ EOF;
     helpmenow_block_refresh();
     var chat_t = setInterval(helpmenow_block_refresh, 10000);
 </script>
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="0" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
+<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 EOF;
 
         if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
@@ -112,7 +112,7 @@ EOF;
             $this->content->text .= "<div><a href='$token_url'>Allow GoToMeeting Access</a></div>";
         }
 
-        $this->content->text .= '<div><a target="_blank" href="http://vlacs.org/~dzaharee/gotomeeting-setup.html">Set Up GoToMeeting</a></div>';
+        $this->content->text .= '<div><a target="_blank" href="https://webdes2.vlacs.org//~eohare1/help_me_now/gtm_install.html">Set Up GoToMeeting</a></div>';
 
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);

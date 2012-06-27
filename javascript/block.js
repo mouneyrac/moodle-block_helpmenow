@@ -93,7 +93,7 @@ function helpmenow_block_refresh() {
         if (xmlhttp.readyState==4) {
             if (xmlhttp.status==200) {
                 var response = JSON.parse(xmlhttp.responseText);
-                console.debug(response);
+                // console.debug(response);
 
                 var queue_div = document.getElementById("helpmenow_queue_div");
                 queue_div.innerHTML = response.queues_html;
