@@ -86,7 +86,7 @@ $plugins
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     var helpmenow_session = $sessionid;
-    var helpmenow_last_message = 0;
+    var helpmenow_last_message = -1;
     helpmenow_chat_refresh();
     var chat_t = setInterval(helpmenow_chat_refresh, 2000);
 </script>

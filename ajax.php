@@ -69,8 +69,10 @@ try {
 
         set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
 
-        $sql = '';
-        if ($request->last_message != 0) {
+        if ($request->last_message == -1) {
+            $sql = '';
+            $response->last_message = 0;
+        } else {
             $sql = "AND u.id <> $USER->id";
         }
         $sql = "
