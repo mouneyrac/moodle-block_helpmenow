@@ -175,4 +175,64 @@ function helpmenow_log($userid, $action, $details) {
     insert_record('block_helpmenow_log', $new_record);
 }
 
+function helpmenow_block_interface() {
+    global $CFG, $USER;
+
+    $output = '';
+
+    $output .= <<<EOF
+<div id="helpmenow_queue_div"></div>
+EOF;
+
+    $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
+    switch ($privilege) {
+    case 'TEACHER':
+        helpmenow_ensure_user_exists();
+        $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
+        $instyle = $outstyle = '';
+        if ($helpmenow_user->isloggedin) {
+            $outstyle = 'style="display: none;"';
+        } else {
+            $instyle = 'style="display: none;"';
+        }
+        $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+        $login_url->param('login', 0);
+        $logout = link_to_popup_window($login_url->out(), "login", 'Leave Office', 400, 500, null, null, true);
+        $login_url->param('login', 1);
+        $login = link_to_popup_window($login_url->out(), "login", 'Enter Office', 400, 500, null, null, true);
+        $output .= <<<EOF
+<div id="helpmenow_office">
+    <div><b>My Office</b></div>
+    <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+    <div style="text-align: center; font-size:small; margin-top:.5em;">
+        <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
+        <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | $login</div>
+    </div>
+    <div style="margin-top:.5em;">Online Students:</div>
+    <div id="helpmenow_users_div"></div>
+</div>
+EOF;
+        break;
+    case 'STUDENT':
+        $output .= '
+            <div>Online Instructors:</div>
+            <div id="helpmenow_users_div"></div><hr />
+            ';
+        break;
+    }
+    $output .= <<<EOF
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block.js"></script>
+<script type="text/javascript">
+    var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
+    helpmenow_block_refresh();
+    var chat_t = setInterval(helpmenow_block_refresh, 10000);
+</script>
+<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
+EOF;
+
+    return $output;
+}
+
 ?>

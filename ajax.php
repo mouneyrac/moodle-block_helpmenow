@@ -69,11 +69,17 @@ try {
 
         set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
 
+        $sql = '';
+        if ($request->last_message != 0) {
+            $sql = "AND u.id <> $USER->id";
+        }
         $sql = "
             SELECT m.*, u.id AS userid, u.firstname, u.lastname
             FROM {$CFG->prefix}block_helpmenow_message m
             JOIN {$CFG->prefix}user u ON m.userid = u.id
             WHERE m.sessionid = $request->session
+            AND m.id > $request->last_message
+            $sql
             ORDER BY m.time ASC
         ";
         $messages = get_records_sql($sql);
@@ -84,9 +90,15 @@ try {
             if ($m->userid == get_admin()->id) {
                 $msg = "<i>$msg</i>";
             } else {
-                $msg = "<b>$m->firstname $m->lastname:</b> $msg";
+                if ($m->userid == $USER->id) {
+                    $name = "Me";
+                } else {
+                    $name = "$m->firstname $m->lastname";
+                }
+                $msg = "<b>$name:</b> $msg";
             }
             $response->html .= "<div>$msg</div>";
+            $response->last_message = $m->id;
         }
         break;
     case 'invite':
@@ -163,7 +175,7 @@ try {
                     $login = link_to_popup_window($login_url->out(), "login", 'Log In', 400, 500, null, null, true);
                     $response->queues_html .= <<<EOF
 <div>$q->name</div>
-<div style="text-align: center; font-size:small;">
+<div style="text-align: center; font-size:small; margin-top:.5em; margin-bottom:.5em;">
     <div id="helpmenow_logged_in_div_$q->id" $instyle>$logout</div>
     <div id="helpmenow_logged_out_div_$q->id" $outstyle>You're Logged Out | $login</div>
 </div>
@@ -320,12 +332,13 @@ EOF;
         $connect->remove_params('sessionid');
         foreach ($users as $u) {
             $connect->param('userid', $u->id);
-            $message = $style = '';
+            $message = '';
+            $style = 'margin-left: 1em;';
             if (isset($u->motd)) {
                 $message .= '<div style="font-size: smaller;">' . $u->motd . '</div>';
             }
             if (isset($u->sessionid)) {
-                $style = ' style="background-color:yellow"';
+                $style .= 'background-color:yellow;';
                 $message .= '<div>' . $u->message . '</div>';
                 $response->pending = true;
             }
@@ -335,7 +348,7 @@ EOF;
             } else {
                 $link = fullname($u);
             }
-            $response->users_html .= "<div$style>".$link.$message."</div>";
+            $response->users_html .= "<div style=\"$style\">".$link.$message."</div>";
         }
         break;
     case 'motd':

@@ -52,59 +52,15 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
-        $this->content->text .= <<<EOF
-<div id="helpmenow_queue_div"></div>
-EOF;
+        $this->content->text .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Open In New Window', 300, 250, null, null, true) . '<hr />';
+
+        $this->content->text .= helpmenow_block_interface();
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
-        switch ($privilege) {
-        case 'TEACHER':
-            helpmenow_ensure_user_exists();
-            $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
-            $instyle = $outstyle = '';
-            if ($helpmenow_user->isloggedin) {
-                $outstyle = 'style="display: none;"';
-            } else {
-                $instyle = 'style="display: none;"';
-            }
-            $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-            $login_url->param('login', 0);
-            $logout = link_to_popup_window($login_url->out(), "login", 'Leave Office', 400, 500, null, null, true);
-            $login_url->param('login', 1);
-            $login = link_to_popup_window($login_url->out(), "login", 'Enter Office', 400, 500, null, null, true);
-            $this->content->text .= <<<EOF
-<div id="helpmenow_office">
-    <div><b>My Office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black;width:12em;min-height:1em;">$helpmenow_user->motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none;" rows="4" cols="22"></textarea>
-    <div style="text-align: center; font-size:small;">
-        <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
-        <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | $login</div>
-    </div>
-    <div>Online Students:</div>
-    <div id="helpmenow_users_div"></div>
-</div><hr />
-EOF;
-            break;
-        case 'STUDENT':
-            $this->content->text .= '
-                <div>Online Instructors:</div>
-                <div id="helpmenow_users_div"></div><hr />
-            ';
-            break;
-        }
-        $this->content->text .= <<<EOF
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block.js"></script>
-<script type="text/javascript">
-    var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-    helpmenow_block_refresh();
-    var chat_t = setInterval(helpmenow_block_refresh, 10000);
-</script>
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
-EOF;
-
         if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+            if ($privilege == 'TEACHER') {
+                $this->content->text .= '<hr />';
+            }
             $this->content->text .= '<div id="helpmenow_meetingid_div"></div><hr />';
             $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
             $token_url->param('redirect', qualified_me());

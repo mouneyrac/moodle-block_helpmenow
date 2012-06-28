@@ -68,7 +68,7 @@ $top = '1em';
 if ($privileged) {
     $plugins = <<<EOF
 <div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
-    <div style="margin-top: .5em;"><a href="javascript:void();" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div>
+    <div style="margin-top: .5em;"><a href="javascript:void(0)" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div>
 </div>
 EOF;
     $top = '4em';
@@ -86,6 +86,7 @@ $plugins
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     var helpmenow_session = $sessionid;
+    var helpmenow_last_message = 0;
     helpmenow_chat_refresh();
     var chat_t = setInterval(helpmenow_chat_refresh, 2000);
 </script>

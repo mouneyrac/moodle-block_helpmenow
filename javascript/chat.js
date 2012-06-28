@@ -32,13 +32,13 @@ function helpmenow_message(message) {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            //var response = JSON.parse(xmlhttp.responseText);
-            //console.debug(response);
             if (xmlhttp.status != 200) {
                 helpmenow_message(message);
                 return;
             }
-            helpmenow_chat_refresh();
+            var chatDiv = document.getElementById("chatDiv");
+            chatDiv.innerHTML += "<div><b>Me:</b> " + message + "</div>";
+            chatDiv.scrollTop = chatDiv.scrollHeight;
         }
     });
 }
@@ -50,15 +50,16 @@ function helpmenow_chat_refresh() {
     var params = {
         "function" : "refresh",
         "session" : helpmenow_session,
+        "last_message" : helpmenow_last_message,
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            var response = JSON.parse(xmlhttp.responseText);
-            //console.debug(response);
             if (xmlhttp.status==200) {
-                var chatDiv = document.getElementById("chatDiv");
-                if (chatDiv.innerHTML != response.html) {
-                    chatDiv.innerHTML = response.html;
+                var response = JSON.parse(xmlhttp.responseText);
+                if (response.last_message > helpmenow_last_message) {
+                    helpmenow_last_message = response.last_message;
+                    var chatDiv = document.getElementById("chatDiv");
+                    chatDiv.innerHTML += response.html;
                     chatDiv.scrollTop = chatDiv.scrollHeight;
                     if (!document.hasFocus()) {
                         var helpmenow_chime = document.getElementById("helpmenow_chime");
@@ -80,8 +81,6 @@ function helpmenow_invite() {
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
-            //var response = JSON.parse(xmlhttp.responseText);
-            //console.debug(response);
             if (xmlhttp.status != 200) {
                 helpmenow_invite();
                 return;
