@@ -175,6 +175,28 @@ function helpmenow_log($userid, $action, $details) {
     insert_record('block_helpmenow_log', $new_record);
 }
 
+function helpmenow_clean_sessions() {
+    global $CFG, $USER;
+
+    $sql = "
+        SELECT s.*
+        FROM {$CFG->prefix}block_helpmenow_session s
+        JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id
+        WHERE s.iscurrent = 1
+        ";
+    if ($sessions = get_records_sql($sql)) {
+        foreach ($sessions as $s) {
+            $session_users = get_records('block_helpmenow_session2user', 'sessionid', $s->id);
+            foreach ($session_users as $su) {
+                if (($su->last_refresh + 60) > time()) {
+                    continue 2;
+                }
+            }
+            set_field('block_helpmenow_session', 'iscurrent', 0, 'id', $s->id);
+        }
+    }
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
