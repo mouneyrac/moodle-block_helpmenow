@@ -125,7 +125,7 @@ class helpmenow_queue {
     public function add_helper($userid) {
         $this->load_helpers();
         
-        if (!isset($this->helpers[$userid])) {
+        if (isset($this->helpers[$userid])) {
             return false;   # already a helper
         }
 
