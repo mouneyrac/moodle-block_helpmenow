@@ -201,6 +201,8 @@ EOF;
                             }
                         }
 
+                        unset($s);
+
                         # sort by unseen messages, lastname, firstname
                         usort($sessions, function($a, $b) {
                             if (!($a->pending xor $b->pending)) {

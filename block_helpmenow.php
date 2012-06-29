@@ -117,13 +117,9 @@ EOF;
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-            /*
-            $admin = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin.php");
-            $admin->param('courseid', $COURSE->id);
-            $admin = $admin->out();
+            $admin = "$CFG->wwwroot/blocks/helpmenow/admin.php";
             $admin_text = get_string('admin_link', 'block_helpmenow');
             $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
-             */
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
         }
 
