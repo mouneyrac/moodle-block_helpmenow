@@ -56,9 +56,6 @@ class block_helpmenow extends block_base {
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
         if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-            if ($privilege == 'TEACHER') {
-                $this->content->text .= '<hr />';
-            }
             $this->content->text .= '<div id="helpmenow_meetingid_div"></div><hr />';
             $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
             $token_url->param('redirect', qualified_me());
@@ -78,7 +75,7 @@ class block_helpmenow extends block_base {
         }
 
         $this->content->footer .= '<div id="helpmenow_last_refresh_div"></div>';
-        $this->content->footer .= '<div style="text-align:right;">'.link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 300, 250, null, null, true) . '</div>';
+        $this->content->footer .= '<div style="text-align:right;">'.link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 400, 250, null, null, true) . '</div>';
 
         return $this->content;
     }

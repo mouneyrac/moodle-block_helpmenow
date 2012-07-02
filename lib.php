@@ -239,11 +239,12 @@ EOF;
     case 'STUDENT':
         $output .= '
             <div>Online Instructors:</div>
-            <div id="helpmenow_users_div"></div><hr />
+            <div id="helpmenow_users_div"></div>
             ';
         break;
     }
     $output .= <<<EOF
+<hr />
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block.js"></script>
 <script type="text/javascript">
