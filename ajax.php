@@ -112,7 +112,7 @@ try {
     case 'block':
         # datetime for debugging
         date_default_timezone_set('America/New_York');
-        $response->last_refresh = 'Last updated: '.date('g:i:s a T');
+        $response->last_refresh = 'Updated: '.date('g:i:s a T');
 
         # clean up sessions
         $sql = "
