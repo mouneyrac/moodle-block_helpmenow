@@ -48,6 +48,7 @@ $output = <<<EOF
 EOF;
 
 $output .= helpmenow_block_interface();
+$output .= '<div id="helpmenow_last_refresh_div" style="font-size:small;"></div>';
 
 $output .= "</div>$meetingid_div</div></div></body></html>";
 

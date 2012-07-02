@@ -52,8 +52,6 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
-        $this->content->text .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Open In New Window', 300, 250, null, null, true) . '<hr />';
-
         $this->content->text .= helpmenow_block_interface();
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
@@ -80,6 +78,7 @@ class block_helpmenow extends block_base {
         }
 
         $this->content->footer .= '<div id="helpmenow_last_refresh_div"></div>';
+        $this->content->footer .= '<div style="text-align:right;">'.link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 300, 250, null, null, true) . '</div>';
 
         return $this->content;
     }
