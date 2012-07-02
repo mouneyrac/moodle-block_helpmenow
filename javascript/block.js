@@ -98,6 +98,9 @@ function helpmenow_block_refresh() {
                 var queue_div = document.getElementById("helpmenow_queue_div");
                 queue_div.innerHTML = response.queues_html;
 
+                var last_refresh_div = document.getElementById("helpmenow_last_refresh_div");
+                last_refresh_div.innerHTML = response.last_refresh;
+
                 if (response.pending) {
                     var helpmenow_chime = document.getElementById("helpmenow_chime");
                     helpmenow_chime.Play();

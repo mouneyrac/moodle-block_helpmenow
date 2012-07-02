@@ -123,6 +123,8 @@ EOF;
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
         }
 
+        $this->content->footer .= '<div id="helpmenow_last_refresh_div"></div>';
+
         return $this->content;
     }
 }

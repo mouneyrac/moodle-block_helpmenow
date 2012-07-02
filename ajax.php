@@ -110,6 +110,10 @@ try {
         insert_record('block_helpmenow_message', $message_rec);
         break;
     case 'block':
+        # datetime for debugging
+        date_default_timezone_set('America/New_York');
+        $response->last_refresh = 'Last updated: '.date('g:i:s a T');
+
         # clean up sessions
         $sql = "
             SELECT s.*
@@ -313,6 +317,7 @@ EOF;
         # build the list
         $response->users_html = '';
         $connect->remove_params('queueid');
+        $connect->remove_params('sessionid');
         foreach ($users as $u) {
             $connect->param('userid', $u->id);
             $message = $style = '';
