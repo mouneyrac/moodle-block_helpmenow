@@ -214,6 +214,8 @@ function helpmenow_autologout_helpers() {
 
     $success = true;
     foreach ($helpers as $h) {
+        $duration = time() - $h->isloggedin;
+        helpmenow_log($h->userid, 'auto_logged_out', "queueid: $h->queueid, duration: $duration seconds");
         $h->isloggedin = 0;
         $success = $success and update_record('block_helpmenow_helper', $h);
     }
@@ -238,8 +240,10 @@ function helpmenow_autologout_users() {
 
     $success = true;
     foreach ($users as $u) {
+        $duration = time() - $u->isloggedin;
+        helpmenow_log($u->userid, 'auto_logged_out', "duration: $duration seconds");
         $u->isloggedin = 0;
-        $success = $success and update_record('block_helpmenow_user', $u);
+        $success = $success and update_record('block_helpmenow_user', addslashes_recursive($u));
     }
 
     return $success;
