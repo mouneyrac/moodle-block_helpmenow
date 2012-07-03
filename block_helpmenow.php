@@ -79,6 +79,13 @@ class block_helpmenow extends block_base {
 
         return $this->content;
     }
+
+    function cron() {
+        $success = true;
+        $success = $success and helpmenow_autologout_helpers();
+        $success = $success and helpmenow_autologout_users();
+        return $success;
+    }
 }
 
 ?>

@@ -197,6 +197,54 @@ function helpmenow_clean_sessions() {
     }
 }
 
+function helpmenow_autologout_helpers() {
+    global $CFG;
+
+    $cutoff = helpmenow_cutoff();
+    $sql = "
+        SELECT h.*
+        FROM {$CFG->prefix}block_helpmenow_helper h
+        JOIN {$CFG->prefix}user u ON u.id = h.userid
+        WHERE h.isloggedin <> 0
+        AND u.lastaccess < $cutoff
+        ";
+    if (!$helpers = get_records_sql($sql)) {
+        return true;
+    }
+
+    $success = true;
+    foreach ($helpers as $h) {
+        $h->isloggedin = 0;
+        $success = $success and update_record('block_helpmenow_helper', $h);
+    }
+
+    return $success;
+}
+
+function helpmenow_autologout_users() {
+    global $CFG;
+
+    $cutoff = helpmenow_cutoff();
+    $sql = "
+        SELECT hu.*
+        FROM {$CFG->prefix}block_helpmenow_user hu
+        JOIN {$CFG->prefix}user u ON u.id = hu.userid
+        WHERE hu.isloggedin <> 0
+        AND u.lastaccess < $cutoff
+        ";
+    if (!$users = get_records_sql($sql)) {
+        return true;
+    }
+
+    $success = true;
+    foreach ($users as $u) {
+        $u->isloggedin = 0;
+        $success = $success and update_record('block_helpmenow_user', $u);
+    }
+
+    return $success;
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
