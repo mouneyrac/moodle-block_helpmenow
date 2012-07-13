@@ -231,8 +231,6 @@ EOF;
                 $response->queues_html .= '</div>';
                 break;
             case HELPMENOW_QUEUE_HELPEE:
-                $message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
-
                 $sql = "
                     SELECT s.*, m.message
                     FROM {$CFG->prefix}block_helpmenow_session s
@@ -261,7 +259,8 @@ EOF;
                 }
                 break;
             }
-            $response->queues_html .= '</div><hr />';
+            $message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
+            $response->queues_html .= '</div>' . $message . '<hr />';
         }
 
         # user lists for students and instructors
