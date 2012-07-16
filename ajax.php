@@ -259,8 +259,8 @@ EOF;
                 }
                 break;
             }
-            $message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
-            $response->queues_html .= '</div>' . $message . '<hr />';
+            $desc_message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
+            $response->queues_html .= '</div>' . $desc_message . '<hr />';
         }
 
         # user lists for students and instructors
