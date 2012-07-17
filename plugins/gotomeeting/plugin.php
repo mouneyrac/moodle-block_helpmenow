@@ -43,6 +43,54 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
         return true;
     }
 
+    public static function display() {
+        return '';
+    }
+
+    public static function on_login() {
+        $user2plugin = static::get_user2plugin();
+        # if we don't have a user2plugin record or we don't have a current meeting for the user, redirect to the create meeting script
+        if (!$user2plugin or !isset($user2plugin->meetingid)) {
+            return "$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/create.php";
+        }
+        return true;
+    }
+
+    public static function on_logout() {
+        $user2plugin = static::get_user2plugin();
+
+        # see if the user is still logged in to a different queue/office
+        $sql = "
+            SELECT 1
+            WHERE EXISTS (
+                SELECT 1
+                FROM {$CFG->prefix}block_helpmenow_helper
+                WHERE userid = $USER->id
+                AND isloggedin <> 0
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM {$CFG->prefix}block_helpmenow_user
+                WHERE userid = $USER->id
+                AND isloggedin <> 0
+            )
+        ";
+        # if they aren't, delete the meeting info from user2plugin record and update the db
+        if (!record_exists_sql($sql)) {
+            foreach (array('join_url', 'max_participants', 'unique_meetingid', 'meetingid') as $attribute) {
+                unset($user2plugin->$attribute);
+            }
+            $user2plugin->update();
+        }
+    }
+
+    private static function get_user2plugin() {
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            return new helpmenow_user2plugin_gotomeeting(null, $record);
+        }
+        return false;
+    }
+
     /**
      * Handles g2m api calls
      * @param string $uri

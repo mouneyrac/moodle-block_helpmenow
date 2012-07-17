@@ -59,15 +59,35 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     /**
+     * Used to define what is displayed in the the plugin section of the chat window
+     * @return string
+     */
+    public abstract static function display();
+
+    /**
+     * Code to be run when USER logs in
+     * @return mixed string url to redirect, true for other success
+     */
+    public static function on_login() {
+        return true;
+    }
+
+    /**
+     * Code to be run when USER logs out
+     * @return mixed string url to redirect, true for other success
+     */
+    public static function on_logout();
+        return true;
+    }
+
+    /**
      * Calls install for all plugins
      * @return boolean success
      */
     public final static function install_all() {
         $success = true;
-        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
-            require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/plugin.php");
-            $class = "helpmenow_plugin_$pluginname";
-            $success = $success and $class::install();
+        foreach (static::get_plugins() as $plugin) {
+            $success = $success and $plugin::install();
         }
         return $success;
     }
@@ -78,9 +98,8 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      */
     public final static function cron_all() {
         $success = true;
-        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+        foreach (static::get_plugins() as $pluginname => $class) {
             $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
-            $class = "helpmenow_plugin_$pluginname";
             $plugin = new $class(null, $record);
             if (($plugin->cron_interval != 0) and (time() >= $plugin->last_cron + $plugin->cron_interval)) {
                 $class = "helpmenow_plugin_$pluginname";
@@ -90,6 +109,19 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
             }
         }
         return $success;
+    }
+
+    /**
+     * Handles requiring the necessary files and returns array of plugins
+     * @return array of strings that are the plugin classnames
+     */
+    public final static function get_plugins() {
+        $plugins = array();
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/plugin.php");
+            $plugins[$pluginname] = "helpmenow_plugin_$pluginname";
+        }
+        return $plugins;
     }
 }
 

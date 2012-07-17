@@ -63,41 +63,44 @@ if ($queueid) {     # helper
     update_record('block_helpmenow_user', addslashes_recursive($record));
 }
 
-# gotomeeting
-if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
-    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
-} else {
-    $user2plugin = false;
-}
-if ($login) {
-    if (!$user2plugin or !isset($user2plugin->meetingid)) {
-        $create_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/create.php");
-        redirect($create_url->out());
+/**
+ * handle plugins' on_login/on_logout
+ *
+ * plugins that return true don't need anymore
+ * plugins that return a string are giving us a url to redirect too
+ *
+ * if multiple plugins give us a url to redirect to, we're going to have have 
+ * to handle that by presenting links to the user instead of auto redirecting
+ */
+$redirects = array();
+foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
+    if ($login) {
+        $returned = $class::on_login();
+    } else {
+        $returned = $class::on_logout();
     }
-} else {
-    $sql = "
-        SELECT 1
-        WHERE EXISTS (
-            SELECT 1
-            FROM {$CFG->prefix}block_helpmenow_helper
-            WHERE userid = $USER->id
-            AND isloggedin <> 0
-        )
-        OR EXISTS (
-            SELECT 1
-            FROM {$CFG->prefix}block_helpmenow_user
-            WHERE userid = $USER->id
-            AND isloggedin <> 0
-        )
-    ";
-    if (!record_exists_sql($sql)) {
-        foreach (array('join_url', 'max_participants', 'unique_meetingid', 'meetingid') as $attribute) {
-            unset($user2plugin->$attribute);
-        }
-        $user2plugin->update();
+    if (!is_bool($returned)) {
+        $redirects[$pluginname] = $returned;
     }
 }
 
-helpmenow_fatal_error('You may now close this window', true, true);
+if (count($redirects) == 0) {
+    helpmenow_fatal_error('You may now close this window', true, true);
+}
+if (count($redirects) == 1) {
+    redirect(reset($redirects));
+}
+
+$output = <<<EOF
+<p>Multiple plugins require further action. Please follow the links below to finish logging in.</p>
+EOF;
+foreach ($redirects as $pluginname => $redirect) {
+    $output .= link_to_popup_window($redirect, $pluginname, $pluginname, 400, 500, null, null, true) . "<br />";
+}
+$title = get_string('helpmenow', 'block_helpmenow');
+$nav = array(array('name' => $title));
+print_header($title, $title, build_navigation($nav));
+print_box($output);
+print_footer();
 
 ?>
