@@ -74,8 +74,16 @@ class block_helpmenow extends block_base {
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Administrators' Hallway</a>";
         }
 
-        $this->content->footer .= '<div id="helpmenow_last_refresh_div"></div>';
-        $this->content->footer .= '<div style="text-align:right;">'.link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 400, 250, null, null, true) . '</div>';
+        $this->content->footer .= <<<EOF
+<div id="helpmenow_last_refresh_div"></div>
+<div style="text-align:right;">
+    <div style="float:left;">
+        <a href="javascript:void(0)" onclick="document.getElementById('helpmenow_chime').Play();">
+            <img src="$CFG->wwwroot/blocks/helpmenow/Bell.png" />
+        </a>
+    </div>
+EOF;
+        $this->content->footer .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 400, 250, null, null, true) . '</div>';
 
         return $this->content;
     }
