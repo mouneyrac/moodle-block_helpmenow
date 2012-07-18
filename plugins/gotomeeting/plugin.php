@@ -48,7 +48,9 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     public static function on_login() {
-        $user2plugin = static::get_user2plugin();
+        global $CFG;
+
+        $user2plugin = helpmenow_user2plugin_gotomeeting::get_user2plugin();
         # if we don't have a user2plugin record or we don't have a current meeting for the user, redirect to the create meeting script
         if (!$user2plugin or !isset($user2plugin->meetingid)) {
             return "$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/create.php";
@@ -57,7 +59,9 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     public static function on_logout() {
-        $user2plugin = static::get_user2plugin();
+        global $CFG, $USER;
+
+        $user2plugin = helpmenow_user2plugin_gotomeeting::get_user2plugin();
 
         # see if the user is still logged in to a different queue/office
         $sql = "
@@ -82,13 +86,6 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
             }
             $user2plugin->update();
         }
-    }
-
-    private static function get_user2plugin() {
-        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
-            return new helpmenow_user2plugin_gotomeeting(null, $record);
-        }
-        return false;
     }
 
     /**

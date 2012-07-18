@@ -85,7 +85,7 @@ class helpmenow_user2plugin_gotomeeting extends helpmenow_user2plugin {
 
 
     /**
-     * plugin queue's meetings use
+     * plugin
      * @var string $plugin
      */
     public $plugin = 'gotomeeting';

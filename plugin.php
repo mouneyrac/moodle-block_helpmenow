@@ -76,7 +76,7 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      * Code to be run when USER logs out
      * @return mixed string url to redirect, true for other success
      */
-    public static function on_logout();
+    public static function on_logout() {
         return true;
     }
 

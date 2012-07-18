@@ -34,6 +34,21 @@ abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
      * @var int $userid
      */
     public $userid;
+
+    /**
+     * Returns user2plugin object for USER
+     * @return object
+     */
+    public static function get_user2plugin() {
+        global $USER;
+
+        $plugin = preg_replace('/helpmenow_user2plugin_/', '', get_called_class());
+
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', $plugin)) {
+            return new static(null, $record);
+        }
+        return false;
+    }
 }
 
 ?>

@@ -74,11 +74,11 @@ if ($queueid) {     # helper
  */
 $redirects = array();
 foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
-    if ($login) {
-        $returned = $class::on_login();
-    } else {
-        $returned = $class::on_logout();
+    $method = $login ? 'on_login' : 'on_logout';
+    if (!method_exists($class, $method)) {
+        continue;
     }
+    $returned = $class::$method();
     if (!is_bool($returned)) {
         $redirects[$pluginname] = $returned;
     }
