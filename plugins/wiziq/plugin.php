@@ -73,8 +73,8 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         $response = curl_exec($ch);
         curl_close($ch);
 
-        if (PHP_SAPI === 'cli') {
-            var_dump($response);
+        if (debugging()) {
+            print_object($response);
         }
 
         return new SimpleXMLElement($response);

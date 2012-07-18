@@ -84,8 +84,9 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
             foreach (array('join_url', 'max_participants', 'unique_meetingid', 'meetingid') as $attribute) {
                 unset($user2plugin->$attribute);
             }
-            $user2plugin->update();
+            return $user2plugin->update();
         }
+        return true;
     }
 
     /**

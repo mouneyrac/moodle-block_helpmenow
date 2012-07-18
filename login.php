@@ -25,7 +25,7 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/plugins/gotomeeting/user2plugin.php');
+require_once(dirname(__FILE__) . '/plugin.php');
 
 # require login
 require_login(0, false);
@@ -83,6 +83,7 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
         $redirects[$pluginname] = $returned;
     }
 }
+var_dump($redirects);
 
 if (count($redirects) == 0) {
     helpmenow_fatal_error('You may now close this window', true, true);

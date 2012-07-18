@@ -68,7 +68,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
 
         $response = helpmenow_plugin_wiziq::api('create', $params);
         $this->class_id = $response->create->class_details->class_id;
-        $this->class_id = $response->create->class_details->presenter_list->presenter[0]->presenter_email;
+        $this->presenter_url = $response->create->class_details->presenter_list->presenter[0]->presenter_email;
 
         return true;
     }

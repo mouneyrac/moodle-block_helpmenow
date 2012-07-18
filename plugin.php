@@ -116,6 +116,8 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      * @return array of strings that are the plugin classnames
      */
     public final static function get_plugins() {
+        global $CFG;
+
         $plugins = array();
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
             require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/plugin.php");

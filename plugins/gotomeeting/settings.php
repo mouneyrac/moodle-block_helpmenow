@@ -32,7 +32,7 @@ $token_url->param('redirect', qualified_me());
 $token_url = $token_url->out();
  */
 
-$settings->add(new admin_setting_heading('heading',
+$settings->add(new admin_setting_heading('helpmenow_gotomeeting_heading',
                                          get_string('gotomeeting_settings_heading', 'block_helpmenow'),
                                          get_string('gotomeeting_settings_heading_desc', 'block_helpmenow') //.
                                          //"<a href='$token_url'>" .
