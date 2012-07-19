@@ -62,7 +62,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
 
         $params = array(
             'title' => fullname($USER),
-            'start_time' => gmdate('m/d/Y G:i:s', time() + (5*60)),  # let's try 5 minutes in the future
+            'start_time' => gmdate('m/d/Y G:i:s', time() + (24*60*60)),  # let's try 5 minutes in the future
             'presenter_email' => $USER->email,
         );
 

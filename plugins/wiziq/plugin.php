@@ -48,6 +48,51 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     }
 
     public static function on_login() {
+        global $CFG, $USER;
+
+        $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
+        # if we don't have a user2plugin record or we don't have a current meeting for the user, redirect to the create meeting script
+        if (!$user2plugin) {
+            $user2plugin = new helpmenow_user2plugin_wiziq();
+            $user2plugin->userid = $USER->id;
+            $user2plugin->insert();
+        }
+        if (!isset($user2plugin->class_id)) {
+            $user2plugin->create_meeting();
+            $user2plugin->update();
+            return $user2plugin->presenter_url;
+        }
+        return true;
+    }
+
+    public static function on_logout() {
+        global $CFG, $USER;
+
+        $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
+
+        # see if the user is still logged in to a different queue/office
+        $sql = "
+            SELECT 1
+            WHERE EXISTS (
+                SELECT 1
+                FROM {$CFG->prefix}block_helpmenow_helper
+                WHERE userid = $USER->id
+                AND isloggedin <> 0
+            )
+            OR EXISTS (
+                SELECT 1
+                FROM {$CFG->prefix}block_helpmenow_user
+                WHERE userid = $USER->id
+                AND isloggedin <> 0
+            )
+        ";
+        # if they aren't, delete the meeting info from user2plugin record and update the db
+        if (!record_exists_sql($sql)) {
+            foreach (array('class_id', 'presenter_url') as $attribute) {
+                unset($user2plugin->$attribute);
+            }
+            return $user2plugin->update();
+        }
         return true;
     }
 
@@ -60,11 +105,15 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         $signature['method'] = $method;
         $signature['signature'] = static::api_signature($signature);
 
-        $params = array_merge($params, $signature);
+        $params = array_merge($signature, $params);
+
+        if (debugging()) {
+            print_object($params);
+        }
 
         $ch = curl_init();
-        $curl_setopt_array($ch, array(
-            CURLOPT_POSTFIELDS => $params,
+        curl_setopt_array($ch, array(
+            CURLOPT_POSTFIELDS => http_build_query($params, '', '&'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HEADER => false,
             CURLINFO_HEADER_OUT => true,
@@ -89,7 +138,36 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         }
         $sig_base = implode('&', $sig_base);
 
-        return base64_encode(hash_hmac('sha1', $sig_base, $CFG->helpmenow_wiziq_secret_key));
+        if (debugging()) {
+            print_object($sig_params);
+            print_object($sig_base);
+        }
+
+        return base64_encode(static::wiziq_hmacsha1(urlencode($CFG->helpmenow_wiziq_secret_key), $sig_base));
+    }
+
+    /**
+     * using wiziq's "hmac_sha1" function, as it doesn't match php's hash_hmac
+     */
+    private static function wiziq_hmacsha1($key, $data) {
+        $blocksize = 64;
+        $hashfunc = 'sha1';
+        if (strlen($key)>$blocksize) {
+            $key = pack('H*', $hashfunc($key));
+        }
+        $key = str_pad($key, $blocksize,chr(0x00));
+        $ipad = str_repeat(chr(0x36), $blocksize);
+        $opad = str_repeat(chr(0x5c), $blocksize);
+        $hmac = pack(
+                    'H*',$hashfunc(
+                        ($key^$opad).pack(
+                            'H*',$hashfunc(
+                                ($key^$ipad).$data
+                            )
+                        )
+                    )
+                );
+        return $hmac;
     }
 }
 
