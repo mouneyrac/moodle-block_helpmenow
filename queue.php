@@ -183,7 +183,8 @@ class helpmenow_queue {
     }
 
     public static function get_queues() {
-        if (!$records = get_records('block_helpmenow_queue')) {
+        global $CFG;
+        if (!$records = get_records_sql("SELECT * FROM {$CFG->prefix}block_helpmenow_queue ORDER BY weight ASC")) {
             return false;
         }
         return self::queues_from_recs($records);
