@@ -88,12 +88,28 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         ";
         # if they aren't, delete the meeting info from user2plugin record and update the db
         if (!record_exists_sql($sql)) {
-            foreach (array('class_id', 'presenter_url') as $attribute) {
+            foreach (array('class_id', 'presenter_url', 'duration', 'timecreated') as $attribute) {
                 unset($user2plugin->$attribute);
             }
             return $user2plugin->update();
         }
         return true;
+    }
+
+    public static function add_attendee($class_id) {
+        global $USER;
+
+        $attendee_list = new SimpleXMLElement('<attendee_list/>');
+        $attendee = $attendee_list->addChild('attendee');
+        $attendee->addChild('attendee_id', $USER->id);
+        $attendee->addChild('screen_name', fullname($USER));
+        $attendee->addChild('language_culture_name', 'en-us');
+
+        $params = array(
+            'class_id' => $class_id,
+            'attendee_list' => $attendee_list->asXML(),
+        );
+        return static::api('add_attendees', $params);
     }
 
     public static function api($method, $params) {

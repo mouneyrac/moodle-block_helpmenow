@@ -68,7 +68,8 @@ $top = '1em';
 if ($privileged) {
     $plugins = <<<EOF
 <div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
-    <div style="margin-top: .5em;"><a href="javascript:void(0)" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div>
+    <div style="margin-top: .5em; display: inline-block;"><a href="javascript:void(0)" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div> |
+    <div style="margin-top: .5em; display: inline-block;"><a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To My WizIQ</a></div>
 </div>
 EOF;
     $top = '4em';

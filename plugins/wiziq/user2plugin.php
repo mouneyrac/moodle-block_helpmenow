@@ -26,14 +26,18 @@
 require_once(dirname(dirname(dirname(__FILE__))) . '/user2plugin.php');
 require_once(dirname(__FILE__) . '/plugin.php');
 
+define('HELPMENOW_WIZIQ_DURATION', 60);     # this is minutes as that's what the api takes
+
 class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
     /**
      * Extra fields
      * @var array $extra_fields
      */
     protected $extra_fields = array(
-        'classid',
+        'class_id',
         'presenter_url',
+        'duration',
+        'timecreated',
     );
 
     /**
@@ -49,6 +53,18 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
     public $presenter_url;
 
     /**
+     * duration in seconds of meeting
+     * @var integer $duration
+     */
+    public $duration;
+
+    /**
+     * timestamp of creation
+     * @var integer $timecreated
+     */
+    public $timecreated;
+
+    /**
      * plugin
      * @var string $plugin
      */
@@ -62,13 +78,18 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
 
         $params = array(
             'title' => fullname($USER),
-            'start_time' => gmdate('m/d/Y G:i:s', time() + (24*60*60)),  # let's try 5 minutes in the future
-            'presenter_email' => $USER->email,
+            'start_time' => date('m/d/Y G:i:s'),
+            'time_zone' => date('e'),
+            'presenter_id' => $USER->id,
+            'presenter_name' => fullname($USER),
+            'duration' => HELPMENOW_WIZIQ_DURATION,
         );
 
         $response = helpmenow_plugin_wiziq::api('create', $params);
-        $this->class_id = $response->create->class_details->class_id;
-        $this->presenter_url = $response->create->class_details->presenter_list->presenter[0]->presenter_email;
+        $this->class_id = (integer) $response->create->class_details->class_id;
+        $this->presenter_url = (string) $response->create->class_details->presenter_list->presenter[0]->presenter_url;
+        $this->duration = HELPMENOW_WIZIQ_DURATION * 60;    # we're saving in seconds instead of minutes
+        $this->timecreated = time();
 
         return true;
     }

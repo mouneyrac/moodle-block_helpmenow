@@ -83,7 +83,6 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
         $redirects[$pluginname] = $returned;
     }
 }
-var_dump($redirects);
 
 if (count($redirects) == 0) {
     helpmenow_fatal_error('You may now close this window', true, true);

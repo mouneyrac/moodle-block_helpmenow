@@ -89,3 +89,20 @@ function helpmenow_invite() {
     });
 }
 
+/**
+ * Function to invite user to wiziq
+ */
+function helpmenow_wiziq_invite() {
+    var params = {
+        "function" : "wiziq_invite",
+        "session" : helpmenow_session,
+    };
+    helpmenow_call(params, function(xmlhttp) {
+        if (xmlhttp.readyState==4) {
+            if (xmlhttp.status != 200) {
+                helpmenow_wiziq_invite();
+                return;
+            }
+        }
+    });
+}
