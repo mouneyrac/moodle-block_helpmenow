@@ -29,6 +29,16 @@ $plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));
 foreach ($plugins as $pluginname) {
     $path = "$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/settings.php";
     if (file_exists($path)) {
+        # plugin heading
+        $settings->add(new admin_setting_heading("helpmenow_{$pluginname}_heading",
+            get_string("{$pluginname}_settings_heading", 'block_helpmenow'),
+            get_string("{$pluginname}_settings_heading_desc", 'block_helpmenow'),
+        ));
+        # setting to enable/disable plugin
+        $settings->add(new admin_setting_configcheckbox("helpmenow_{$pluginname}_enabled",
+            get_string("{$pluginname}_settings_enabled", 'block_helpmenow'),
+            get_string("{$pluginname}_settings_enabled_desc", 'block_helpmenow'),
+        ));
         require($path);
     }
 }

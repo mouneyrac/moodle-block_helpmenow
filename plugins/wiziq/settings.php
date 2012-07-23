@@ -25,11 +25,6 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
-$settings->add(new admin_setting_heading('helpmenow_wiziq_heading',
-                                         get_string('wiziq_settings_heading', 'block_helpmenow'),
-                                         get_string('wiziq_settings_heading_desc', 'block_helpmenow')
-                                     ));
-
 $settings->add(new admin_setting_configtext('helpmenow_wiziq_access_key',
                                             get_string('wiziq_settings_access_key', 'block_helpmenow'),
                                             get_string('wiziq_settings_access_key_desc', 'block_helpmenow'),
