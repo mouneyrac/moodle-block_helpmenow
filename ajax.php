@@ -105,62 +105,6 @@ try {
             $response->last_message = $m->id;
         }
         break;
-    case 'invite':
-        # verify sesion
-        if (!helpmenow_verify_session($request->session)) {
-            throw new Exception('Invalid session');
-        }
-
-        if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
-            throw new Exception('No u2p record');
-        }
-        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
-
-        $message = fullname($USER) . ' has invited you to GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
-        $message_rec = (object) array(
-            'userid' => get_admin()->id,
-            'sessionid' => $request->session,
-            'time' => time(),
-            'message' => addslashes($message),
-        );
-        insert_record('block_helpmenow_message', $message_rec);
-        break;
-    case 'wiziq_invite':
-        # verify sesion
-        if (!helpmenow_verify_session($request->session)) {
-            throw new Exception('Invalid session');
-        }
-
-        if (!$u2p_rec = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'wiziq')) {
-            throw new Exception('No u2p record');
-        }
-        $user2plugin = new helpmenow_user2plugin_wiziq(null, $u2p_rec);
-
-        if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $request->session, 'plugin', 'wiziq')) {
-            $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
-        } else {
-            $s2p = new helpmenow_session2plugin_wiziq(null, (object) array('sessionid' => $request->session));
-            $s2p->insert();
-        }
-        if (!in_array($user2plugin->class_id, $s2p->classes)) {
-            $s2p->classes[] = $user2plugin->class_id;
-            $s2p->update();
-        }
-
-        $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
-        $join_url->param('classid', $user2plugin->class_id);
-        $join_url->param('sessionid', $request->session);
-        $join_url = $join_url->out();
-
-        $message = fullname($USER) . ' has invited you to WizIQ, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
-        $message_rec = (object) array(
-            'userid' => get_admin()->id,
-            'sessionid' => $request->session,
-            'time' => time(),
-            'message' => addslashes($message),
-        );
-        insert_record('block_helpmenow_message', $message_rec);
-        break;
     case 'block':
         # datetime for debugging
         date_default_timezone_set('America/New_York');
@@ -383,6 +327,18 @@ EOF;
             throw new Exception('Could not update user record');
         }
         $response->motd = $request->motd;
+        break;
+    case 'plugin':
+        $plugin = $request->plugin;
+        $class = "helpmenow_plugin_$plugin";
+        $plugin_method = $request->plugin_method;
+        if (!in_array($plugin, array_keys(helpmenow_plugin::get_plugins()))) {
+            throw new Exception('Unknown plugin');
+        }
+        if (!in_array($plugin_method, $class::get_ajax_methods())) {
+            throw new Exception('Unknown method');
+        }
+        $response = $class::$plugin_method($request);
         break;
     default:
         throw new Exception('Unknown method');

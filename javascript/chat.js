@@ -74,15 +74,17 @@ function helpmenow_chat_refresh() {
 /**
  * Function to invite user to gotomeeting
  */
-function helpmenow_invite() {
+function helpmenow_gotomeeting_invite() {
     var params = {
-        "function" : "invite",
+        "function" : "plugin",
+        "plugin" : "gotomeeting",
+        "plugin_method" : "invite",
         "session" : helpmenow_session,
     };
     helpmenow_call(params, function(xmlhttp) {
         if (xmlhttp.readyState==4) {
             if (xmlhttp.status != 200) {
-                helpmenow_invite();
+                helpmenow_gotomeeting_invite();
                 return;
             }
         }
@@ -94,7 +96,9 @@ function helpmenow_invite() {
  */
 function helpmenow_wiziq_invite() {
     var params = {
-        "function" : "wiziq_invite",
+        "function" : "plugin",
+        "plugin" : "wiziq",
+        "plugin_method" : "invite",
         "session" : helpmenow_session,
     };
     helpmenow_call(params, function(xmlhttp) {

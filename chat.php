@@ -25,6 +25,7 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(__FILE__) . '/plugin.php');
 
 require_login(0, false);
 
@@ -66,12 +67,18 @@ EOF;
 $plugins = '';
 $top = '1em';
 if ($privileged) {
-    $plugins = <<<EOF
-<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
-    <div style="margin-top: .5em; display: inline-block;"><a href="javascript:void(0)" onclick="helpmenow_invite();">Invite To My GoToMeeting</a></div> |
-    <div style="margin-top: .5em; display: inline-block;"><a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To My WizIQ</a></div>
-</div>
-EOF;
+    $plugins = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">';
+    $first = true;
+    foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
+        if (!$first) {
+            $plugins .= ' | ';
+        }
+        $plugins .= '<div style="margin-top: .5em; display: inline-block;">';
+        $plugins .= $class::display();
+        $plugins .= '</div>';
+        $first = false;
+    }
+    $plugins .= '</div>';
     $top = '4em';
 }
 

@@ -81,6 +81,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     /**
+     * returns array of valid plugin ajax methods
+     * @return array
+     */
+    public static function get_ajax_methods() {
+        return array();
+    }
+
+    /**
      * Calls install for all plugins
      * @return boolean success
      */

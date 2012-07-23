@@ -44,7 +44,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     public static function display() {
-        return '';
+        return '<a href="javascript:void(0)" onclick="helpmenow_gotomeeitng_invite();">Invite To My GoToMeeting</a>';
     }
 
     public static function on_login() {
@@ -91,6 +91,44 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
             return $user2plugin->update();
         }
         return true;
+    }
+
+    /**
+     * returns array of valid plugin ajax methods
+     * @return array
+     */
+    public static function get_ajax_methods() {
+        return array('invite');
+    }
+
+    /**
+     * ajax method for inviting users to gtm session
+     * @param object $request ajax request
+     * @return object
+     */
+    public static function invite($request) {
+        global $USER, $CFG;
+
+        # verify sesion
+        if (!helpmenow_verify_session($request->session)) {
+            throw new Exception('Invalid session');
+        }
+
+        if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            throw new Exception('No u2p record');
+        }
+        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
+
+        $message = fullname($USER) . ' has invited you to GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
+        $message_rec = (object) array(
+            'userid' => get_admin()->id,
+            'sessionid' => $request->session,
+            'time' => time(),
+            'message' => addslashes($message),
+        );
+        insert_record('block_helpmenow_message', $message_rec);
+
+        return new stdClass;
     }
 
     /**
