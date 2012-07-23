@@ -128,6 +128,10 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
 
         $plugins = array();
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            $enabled = "helpmenow_{$pluginname}_enabled";
+            if (!$CFG->$enabled) {
+                continue;
+            }
             require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/plugin.php");
             $plugins[$pluginname] = "helpmenow_plugin_$pluginname";
         }
