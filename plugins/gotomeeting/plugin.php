@@ -44,7 +44,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     public static function display() {
-        return '<a href="javascript:void(0)" onclick="helpmenow_gotomeeitng_invite();">Invite To My GoToMeeting</a>';
+        return '<a href="javascript:void(0)" onclick="helpmenow_gotomeeting_invite();">Invite To My GoToMeeting</a>';
     }
 
     public static function on_login() {

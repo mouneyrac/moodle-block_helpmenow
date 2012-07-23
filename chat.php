@@ -64,27 +64,26 @@ $output = <<<EOF
 <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
 EOF;
 
-$plugins = '';
+$plugin_div = '';
 $top = '1em';
 if ($privileged) {
-    $plugins = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">';
-    $first = true;
+    $plugins = array();
     foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
-        if (!$first) {
-            $plugins .= ' | ';
+        $plugin_text = $class::display();
+        if (!strlen($plugin_text)) {
+            continue;
         }
-        $plugins .= '<div style="margin-top: .5em; display: inline-block;">';
-        $plugins .= $class::display();
-        $plugins .= '</div>';
-        $first = false;
+        $plugins[] = '<div style="margin-top: .5em; display: inline-block;">'.$plugin_text.'</div>';
     }
-    $plugins .= '</div>';
-    $top = '4em';
+    if (count($plugins)) {
+        $plugin_div = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">'.implode(' | ', $plugins).'</div>';
+        $top = '4em';
+    }
 }
 
 $output .= <<<EOF
 <embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
-$plugins
+$plugin_div
 <div id="chatDiv" style="position: absolute; top: $top; left: 1em; right: 1em; bottom: 6em; padding: .5em; overflow: auto; border: 1px solid black; min-height: 5em;"> </div>
 <div style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4em; padding: 1em;">
     <textarea id="inputTextarea" cols="30" rows="3" style="height: 100%; width: 100%; resize: none;" onkeypress="return helpmenow_chat_textarea(event);"></textarea>
