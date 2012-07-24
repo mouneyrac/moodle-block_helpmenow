@@ -66,19 +66,17 @@ EOF;
 
 $plugin_div = '';
 $top = '1em';
-if ($privileged) {
-    $plugins = array();
-    foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
-        $plugin_text = $class::display();
-        if (!strlen($plugin_text)) {
-            continue;
-        }
-        $plugins[] = '<div style="margin-top: .5em; display: inline-block;">'.$plugin_text.'</div>';
+$plugins = array();
+foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
+    $plugin_text = $class::display($privileged);
+    if (!strlen($plugin_text)) {
+        continue;
     }
-    if (count($plugins)) {
-        $plugin_div = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">'.implode(' | ', $plugins).'</div>';
-        $top = '4em';
-    }
+    $plugins[] = '<div style="margin-top: .5em; display: inline-block;">'.$plugin_text.'</div>';
+}
+if (count($plugins)) {
+    $plugin_div = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">'.implode(' | ', $plugins).'</div>';
+    $top = '4em';
 }
 
 $output .= <<<EOF

@@ -43,8 +43,11 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         return true;
     }
 
-    public static function display() {
-        return '<a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To My WizIQ</a>';
+    public static function display($privileged = false) {
+        if ($privileged) {
+            return '<a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To My WizIQ</a>';
+        }
+        return '';
     }
 
     public static function on_login() {

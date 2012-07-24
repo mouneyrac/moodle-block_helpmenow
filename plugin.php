@@ -60,9 +60,10 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
 
     /**
      * Used to define what is displayed in the the plugin section of the chat window
+     * @param bool $privileged
      * @return string
      */
-    public abstract static function display();
+    public abstract static function display($privileged = false);
 
     /**
      * Code to be run when USER logs in
