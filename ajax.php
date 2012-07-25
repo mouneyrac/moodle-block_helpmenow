@@ -28,9 +28,6 @@ ob_start();
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/plugins/gotomeeting/user2plugin.php');
-require_once(dirname(__FILE__) . '/plugins/wiziq/user2plugin.php');
-require_once(dirname(__FILE__) . '/plugins/wiziq/session2plugin.php');
 
 if (!isloggedin()) {
     ob_end_clean();
@@ -333,17 +330,17 @@ EOF;
     case 'plugin':
         $plugin = $request->plugin;
         $class = "helpmenow_plugin_$plugin";
-        $plugin_method = $request->plugin_method;
-        if (!in_array($plugin, array_keys(helpmenow_plugin::get_plugins()))) {
+        $plugin_function = $request->plugin_function;
+        if (!in_array($plugin, helpmenow_plugin::get_plugins())) {
             throw new Exception('Unknown plugin');
         }
-        if (!in_array($plugin_method, $class::get_ajax_methods())) {
-            throw new Exception('Unknown method');
+        if (!in_array($plugin_function, $class::get_ajax_methods())) {
+            throw new Exception('Unknown function');
         }
-        $response = $class::$plugin_method($request);
+        $response = $plugin_function($request);
         break;
     default:
-        throw new Exception('Unknown method');
+        throw new Exception('Unknown function');
     }
 } catch (Exception $e) {
     $debugging = ob_get_clean();

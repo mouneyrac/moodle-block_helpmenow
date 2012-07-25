@@ -25,7 +25,6 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/form.php');
 
 # require login
 require_login(0, false);

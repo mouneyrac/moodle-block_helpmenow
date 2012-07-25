@@ -97,7 +97,7 @@ function helpmenow_gotomeeting_invite() {
     var params = {
         "function" : "plugin",
         "plugin" : "gotomeeting",
-        "plugin_method" : "invite",
+        "plugin_function" : "helpmenow_gotomeeting_invite",
         "session" : chat_session,
     };
     helpmenow_call(params, function (xmlhttp) {
@@ -118,7 +118,7 @@ function helpmenow_wiziq_invite() {
     var params = {
         "function" : "plugin",
         "plugin" : "wiziq",
-        "plugin_method" : "invite",
+        "plugin_function" : "helpmenow_wiziq_invite",
         "session" : chat_session,
     };
     helpmenow_call(params, function (xmlhttp) {

@@ -23,8 +23,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/queue.php');
 require_once(dirname(__FILE__) . '/db/access.php');
+require_once(dirname(__FILE__) . '/form.php');
 
 /**
  * Some defines for queue privileges. This is disjoint from capabilities, as
@@ -308,6 +308,559 @@ EOF;
 EOF;
 
     return $output;
+}
+
+/**
+ *     _____ _
+ *    / ____| |
+ *   | |    | | __ _ ___ ___  ___  ___
+ *   | |    | |/ _` / __/ __|/ _ \/ __|
+ *   | |____| | (_| \__ \__ \  __/\__ \
+ *    \_____|_|\__,_|___/___/\___||___/
+ */
+
+/**
+ * Help me now queue class
+ */
+class helpmenow_queue {
+    /**
+     * queue.id
+     * @var int $id
+     */
+    public $id;
+
+    /**
+     * The name of the queue.
+     * @var string $name
+     */
+    public $name;
+
+    /**
+     * Weight for queue display order
+     * @var int $weight
+     */
+    public $weight;
+
+    /**
+     * Description of the queue
+     * @var string $desription
+     */
+    public $description;
+
+    /**
+     * Queue helpers
+     * @var array $helper
+     */
+    public $helpers;
+
+    /**
+     * Queue sessions
+     * @var array $sessions
+     */
+    public $sessions;
+
+    /**
+     * Constructor. If we get an id, load from the database. If we get a object
+     * from the db and no id, use that.
+     * @param int $id id of the queue in the db
+     * @param object $record db record
+     */
+    public function __construct($id=null, $record=null) {
+        if (isset($id)) {
+            $record = get_record('block_helpmenow_queue', 'id', $id);
+        }
+        foreach ($record as $k => $v) {
+            $this->$k = $v;
+        }
+    }
+
+    /**
+     * Returns USER's privilege
+     * @return string queue privilege
+     */
+    public function get_privilege() {
+        global $USER, $CFG;
+
+        $this->load_helpers();
+
+        # if it's set now, they're a helper
+        if (isset($this->helpers[$USER->id])) {
+            return HELPMENOW_QUEUE_HELPER;
+        }
+
+        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+
+        if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
+            return HELPMENOW_QUEUE_HELPEE;
+        }
+
+        return HELPMENOW_NOT_PRIVILEGED;
+    }
+
+    /**
+     * Returns boolean of helper availability
+     * @return boolean
+     */
+    public function is_open() {
+        $this->load_helpers();
+        if (!count($this->helpers)) {
+            return false;
+        }
+        foreach ($this->helpers as $h) {
+            if ($h->isloggedin) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Creates helper for queue using passed userid
+     * @param int $userid user.id
+     * @return boolean success
+     */
+    public function add_helper($userid) {
+        $this->load_helpers();
+
+        if (isset($this->helpers[$userid])) {
+            return false;   # already a helper
+        }
+
+        $helper = (object) array(
+            'queueid' => $this->id,
+            'userid' => $userid,
+            'isloggedin' => 0,
+        );
+
+        if (!$helper->id = insert_record('block_helpmenow_helper', $helper)) {
+            return false;
+        }
+        $this->helpers[$userid] = $helper;
+
+        return true;
+    }
+
+    /**
+     * Deletes helper
+     * @param int $userid user.id
+     * @return boolean success
+     */
+    public function remove_helper($userid) {
+        $this->load_helpers();
+
+        if (!isset($this->helpers[$userid])) {
+            return false;
+        }
+
+        if (!delete_records('block_helpmenow_helper', 'id', $this->helpers[$userid]->id)) {
+            return false;
+        }
+        unset($this->helpers[$userid]);
+
+        return true;
+    }
+
+    /**
+     * Loads helpers into $this->helpers array
+     */
+    public function load_helpers() {
+        if (isset($this->helpers)) {
+            return true;
+        }
+
+        if (!$helpers = get_records('block_helpmenow_helper', 'queueid', $this->id)) {
+            return false;
+        }
+
+        foreach ($helpers as $h) {
+            $this->helpers[$h->userid] = $h;
+        }
+
+        return true;
+    }
+
+    public static function get_queues() {
+        global $CFG;
+        if (!$records = get_records_sql("SELECT * FROM {$CFG->prefix}block_helpmenow_queue ORDER BY weight ASC")) {
+            return false;
+        }
+        return self::queues_from_recs($records);
+    }
+
+    private static function queues_from_recs($records) {
+        $queues = array();
+        foreach ($records as $r) {
+            $queues[$r->id] = new helpmenow_queue(null, $r);
+        }
+        return $queues;
+    }
+}
+
+/**
+ * Help me now plugin object abstract class. Base class for plugin, user2plugin,
+ * and session2plugin. Lets plugin writers define extra fields to be stored in
+ * the database (serialized as a data field, not joinable D: ).
+ */
+abstract class helpmenow_plugin_object {
+    const table = false;
+
+    /**
+     * Array of extra fields that must be defined by the child if the plugin
+     * requires more data be stored in the database. If this anything is
+     * defined here, then the child should also define the member variable
+     * @var array $extra_fields
+     */
+    protected $extra_fields = array();
+
+    /**
+     * Data simulates database fields in child classes by serializing data.
+     * This is only used if extra_fields is used, and does not need to be
+     * in the database if it's not being used. Needs to be public for
+     * addslashes_recursive.
+     * @var string $data
+     */
+    public $data;
+
+    /**
+     * The id of the object.
+     * @var int $id
+     */
+    public $id;
+
+    /**
+     * Plugin of the object; child should override this, if using a plugin class
+     * @var string $plugin
+     */
+    public $plugin = '';
+
+    /**
+     * Constructor. If we get an id, load from the database. If we get a object
+     * from the db and no id, use that.
+     * @param int $id id of the queue in the db
+     * @param object $record db record
+     */
+    public function __construct($id=null, $record=null) {
+        if (isset($id)) {
+            $record = get_record('block_helpmenow_'.static::table, 'id', $id);
+        }
+        if (isset($record)) {
+            foreach ($record as $k => $v) {
+                $this->$k = $v;
+            }
+            $this->load_extras();
+        }
+    }
+
+    /**
+     * Updates object in db, using object variables. Requires id.
+     * @return boolean success
+     */
+    public function update() {
+        global $USER;
+
+        if (empty($this->id)) {
+            debugging("Can not update " . static::table . ", no id!");
+            return false;
+        }
+
+        $this->serialize_extras();
+
+        return update_record("block_helpmenow_" . static::table, addslashes_recursive($this));
+    }
+
+    /**
+     * Records the object in the db, and sets the id from the return value.
+     * @return int PK ID if successful, false otherwise
+     */
+    public function insert() {
+        global $USER;
+
+        if (!empty($this->id)) {
+            debugging(static::table . " already exists in db.");
+            return false;
+        }
+
+        $this->serialize_extras();
+
+        if (!$this->id = insert_record("block_helpmenow_" . static::table, addslashes_recursive($this))) {
+            debugging("Could not insert " . static::table);
+            return false;
+        }
+
+        return $this->id;
+    }
+
+    /**
+     * Deletes object in db, using object variables. Requires id.
+     * @return boolean success
+     */
+    public function delete() {
+        if (empty($this->id)) {
+            debugging("Can not delete " . static::table . ", no id!");
+            return false;
+        }
+
+        return delete_records("block_helpmenow_" . static::table, 'id', $this->id);
+    }
+
+    /**
+     * Factory function to get existing object of the correct child class
+     * @param int $id *.id
+     * @return object
+     */
+    public final static function get_instance($id=null, $record=null) {
+        global $CFG;
+
+        # we have to get the record instead of passing the id to the
+        # constructor as we have no idea what class the record belongs to
+        if (isset($id)) {
+            if (!$record = get_record("block_helpmenow_" . static::table, 'id', $id)) {
+                return false;
+            }
+        }
+
+        $class = static::get_class($record->plugin);
+
+        return new $class(null, $record);
+    }
+
+    /**
+     * Factory function to create an object of the correct plugin
+     * @param string $plugin optional plugin parameter, if none supplied uses
+     *      configured default
+     * @return object
+     */
+    public final static function new_instance($plugin) {
+        global $CFG;
+
+        $class = static::get_class($plugin);
+
+        $object = new $class;
+        $object->plugin = $plugin;
+
+        return $object;
+    }
+
+    /**
+     * Returns an array of objects from an array of records
+     * @param array $records
+     * @return array of objects
+     */
+    public final static function objects_from_records($records) {
+        $objects = array();
+        foreach ($records as $r) {
+            $objects[$r->id] = static::get_instance(null, $r);
+        }
+        return $objects;
+    }
+
+    /**
+     * Return the class name and require_once the file that contains it
+     * @param string $plugin
+     * @return string classname
+     */
+    public final static function get_class($plugin) {
+        global $CFG;
+
+        $classpath = "$CFG->dirroot/blocks/helpmenow/plugins/$plugin/" . static::table . ".php";
+        if (!file_exists($classpath)) {
+            return "helpmenow_" . static::table;
+        }
+        $pluginclass = "helpmenow_" . static::table . "_$plugin";
+        require_once($classpath);
+
+        return $pluginclass;
+    }
+
+    /**
+     * Loads the fields from a passed record. Also unserializes simulated fields
+     * @param object $record db record
+     */
+    protected function load_extras() {
+        # bail at this point if we don't have extra fields
+        if (!count($this->extra_fields)) { return; }
+
+        $extras = unserialize($this->data);
+        foreach ($this->extra_fields as $field) {
+            $this->$field = $extras[$field];
+        }
+    }
+
+    /**
+     * Serializes simulated fields if necessary
+     */
+    protected final function serialize_extras() {
+        # bail immediately if we don't have any extra fields
+        if (!count($this->extra_fields)) { return; }
+        $extras = array();
+        foreach ($this->extra_fields as $field) {
+            $extras[$field] = $this->$field;
+        }
+        $this->data = serialize($extras);
+        return;
+    }
+}
+
+/**
+ * Help me now plugin abstract class. Plugins define things like cron and
+ * code that is run on installation.
+ */
+abstract class helpmenow_plugin extends helpmenow_plugin_object {
+    const table = 'plugin';
+
+    /**
+     * Cron delay in seconds; 0 represents no cron
+     * @var int $cron_interval
+     */
+    public $cron_interval = 0;
+
+    /**
+     * Last cron timestamp
+     * @var int $last_cron
+     */
+    public $last_cron;
+
+    /**
+     * "Installs" the plugin
+     * @return boolean success
+     */
+    public static function install() {
+        $plugin = new static();
+        $plugin->last_cron = 0;
+        $plugin->insert();
+    }
+
+    /**
+     * Cron that will run everytime block cron is run.
+     * @return boolean
+     */
+    public static function cron() {
+        return true;
+    }
+
+    /**
+     * Used to define what is displayed in the the plugin section of the chat window
+     * @param bool $privileged
+     * @return string
+     */
+    public abstract static function display($privileged = false);
+
+    /**
+     * Code to be run when USER logs in
+     * @return mixed string url to redirect, true for other success
+     */
+    public static function on_login() {
+        return true;
+    }
+
+    /**
+     * Code to be run when USER logs out
+     * @return mixed string url to redirect, true for other success
+     */
+    public static function on_logout() {
+        return true;
+    }
+
+    /**
+     * returns array of valid plugin ajax functions
+     * @return array
+     */
+    public static function get_ajax_functions() {
+        return array();
+    }
+
+    /**
+     * Calls install for all plugins
+     * @return boolean success
+     */
+    public final static function install_all() {
+        $success = true;
+        foreach (self::get_plugins() as $pluginname) {
+            $class = "helpmenow_plugin_$pluginname";
+            $success = $success and $class::install();
+        }
+        return $success;
+    }
+
+    /**
+     * Calls any existing cron functions of plugins
+     * @return boolean
+     */
+    public final static function cron_all() {
+        $success = true;
+        foreach (self::get_plugins() as $pluginname) {
+            $class = "helpmenow_plugin_$pluginname";
+            $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
+            $plugin = new $class(null, $record);
+            if (($plugin->cron_interval != 0) and (time() >= $plugin->last_cron + $plugin->cron_interval)) {
+                $class = "helpmenow_plugin_$pluginname";
+                $success = $success and $class::cron();
+                $plugin->last_cron = time();
+                $plugin->update();
+            }
+        }
+        return $success;
+    }
+
+    /**
+     * Handles requiring the necessary files and returns array of plugins
+     * @return array of strings that are the plugin classnames
+     */
+    public final static function get_plugins() {
+        global $CFG;
+
+        $plugins = array();
+        foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            $enabled = "helpmenow_{$pluginname}_enabled";
+            if (!$CFG->$enabled) {
+                continue;
+            }
+            require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/lib.php");
+            $plugins[] = "$pluginname";
+        }
+        return $plugins;
+    }
+}
+
+/**
+ * Help me now user2plugin abstract class.
+ */
+abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
+    const table = 'user2plugin';
+
+    /**
+     * user.id
+     * @var int $userid
+     */
+    public $userid;
+
+    /**
+     * Returns user2plugin object for USER
+     * @return object
+     */
+    public static function get_user2plugin() {
+        global $USER;
+
+        $plugin = preg_replace('/helpmenow_user2plugin_/', '', get_called_class());
+
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', $plugin)) {
+            return new static(null, $record);
+        }
+        return false;
+    }
+}
+
+/**
+ * Help me now session2plugin abstract class.
+ */
+abstract class helpmenow_session2plugin extends helpmenow_plugin_object {
+    const table = 's2p';
+
+    /**
+     * session.id
+     * @var int $sessionid
+     */
+    public $sessionid;
 }
 
 ?>

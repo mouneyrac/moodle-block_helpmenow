@@ -25,7 +25,6 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/plugin.php');
 
 require_login(0, false);
 
@@ -59,7 +58,8 @@ if (!$privileged and isset($session->queueid)) {
 }
 
 $plugins = array();
-foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
+foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+    $class = "helpmenow_plugin_$pluginname";
     $plugin_text = $class::display($privileged);
     if (!strlen($plugin_text)) {
         continue;

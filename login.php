@@ -25,7 +25,6 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
-require_once(dirname(__FILE__) . '/plugin.php');
 
 # require login
 require_login(0, false);
@@ -73,7 +72,8 @@ if ($queueid) {     # helper
  * to handle that by presenting links to the user instead of auto redirecting
  */
 $redirects = array();
-foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
+foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+    $class = "helpmenow_plugin_$pluginname";
     $method = $login ? 'on_login' : 'on_logout';
     if (!method_exists($class, $method)) {
         continue;
