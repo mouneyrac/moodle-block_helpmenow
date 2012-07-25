@@ -45,7 +45,7 @@ if (!in_array($class_id, $s2p->classes)) {
     helpmenow_fatal_error('Invalid class.');
 }
 
-$response = helpmenow_plugin_wiziq::add_attendee($class_id);
+$response = helpmenow_wiziq_add_attendee($class_id);
 
 print_object($response);
 
