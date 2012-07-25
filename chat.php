@@ -58,49 +58,46 @@ if (!$privileged and isset($session->queueid)) {
     $title = implode(', ', $other_users);
 }
 
-print_header($title, '', '', 'inputTextarea');
-
-$output = <<<EOF
-<div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
-EOF;
-
-$plugin_div = '';
-$top = '1em';
 $plugins = array();
 foreach (helpmenow_plugin::get_plugins() as $pluginname => $class) {
     $plugin_text = $class::display($privileged);
     if (!strlen($plugin_text)) {
         continue;
     }
-    $plugins[] = '<div style="margin-top: .5em; display: inline-block;">'.$plugin_text.'</div>';
+    $plugins[] = '<div>'.$plugin_text.'</div>';
 }
 if (count($plugins)) {
-    $plugin_div = '<div id="pluginDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; height: 2em; padding: 0; padding-left: .5em; border: 1px solid black; white-space: nowrap; overflow: auto;">'.implode(' | ', $plugins).'</div>';
-    $top = '4em';
+    $plugins = '<div id="pluginDiv">'.implode(' | ', $plugins).'</div>';
+} else {
+    $plugins = '';
 }
 
-$output .= <<<EOF
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
-$plugin_div
-<div id="chatDiv" style="position: absolute; top: $top; left: 1em; right: 1em; bottom: 6em; padding: .5em; overflow: auto; border: 1px solid black; min-height: 5em;"> </div>
-<div style="position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4em; padding: 1em;">
-    <textarea id="inputTextarea" cols="30" rows="3" style="height: 100%; width: 100%; resize: none;" onkeypress="return helpmenow_chat_textarea(event);"></textarea>
-</div>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/chat.js"></script>
-<script type="text/javascript">
-    var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-    var helpmenow_session = $sessionid;
-    var helpmenow_last_message = -1;
-    helpmenow_chat_refresh();
-    var chat_t = setInterval(helpmenow_chat_refresh, 2000);
-</script>
-</div>
-</div>
-</body>
+echo <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+    <head>
+        <title>$title</title>
+        <link rel="stylesheet" type="text/css" href="$CFG->wwwroot/blocks/helpmenow/style/chat.css" />
+        <script type="text/javascript">
+            var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
+            var chat_session = $sessionid;
+            var last_message = 0;
+            var refresh;
+        </script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" />
+        $plugins
+        <div id="chatDiv"></div>
+        <div id="inputDiv">
+            <textarea id="inputTextarea" cols="30" rows="3">Type your message here and press the "enter" or "return" key.</textarea>
+        </div>
+    </body>
 </html>
 EOF;
-
-echo $output;
 
 ?>

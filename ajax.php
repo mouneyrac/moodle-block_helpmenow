@@ -63,6 +63,11 @@ try {
             throw new Exception('Could insert message record');
         }
         break;
+    case 'history':
+        $sql = '';
+        $request->last_message = -1;
+        $response->last_message = 0;
+        # fall through here
     case 'refresh':
         # verify sesion
         if (!helpmenow_verify_session($request->session)) {
@@ -71,10 +76,7 @@ try {
 
         set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
 
-        if ($request->last_message == -1) {
-            $sql = '';
-            $response->last_message = 0;
-        } else {
+        if ($request->function == 'refresh') {
             $sql = "AND u.id <> $USER->id";
         }
         $sql = "
