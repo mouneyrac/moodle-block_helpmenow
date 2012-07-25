@@ -79,7 +79,7 @@ class block_helpmenow extends block_base {
 <div style="text-align:right;">
     <div style="float:left;">
         <a href="javascript:void(0)" onclick="document.getElementById('helpmenow_chime').Play();">
-            <img src="$CFG->wwwroot/blocks/helpmenow/Bell.png" />
+            <img src="$CFG->wwwroot/blocks/helpmenow/media/Bell.png" />
         </a>
     </div>
 EOF;

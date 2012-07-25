@@ -114,6 +114,7 @@ try {
 
         # meetingid for helpers and instructors
         if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+            require_once(dirname(__FILE__) . '/plugins/gotomeeting/lib.php');   # todo: fix this
             $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
             $response->meetingid = preg_replace("/^(\d{3})(\d{3})(\d{3})$/", "$1-$2-$3", $user2plugin->meetingid);
         }

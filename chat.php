@@ -91,8 +91,8 @@ echo <<<EOF
     </head>
     <body>
         <div>
-            <object id="helpmenow_chime" type="audio/x-wav" data="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" width="0" height="1">
-              <param name="src" value="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" />
+            <object id="helpmenow_chime" type="audio/x-wav" data="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" width="0" height="1">
+              <param name="src" value="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" />
               <param name="autoplay" value="false" />
               <param name="autoStart" value="0" />
             </object>

@@ -304,7 +304,7 @@ EOF;
     helpmenow_block_refresh();
     var chat_t = setInterval(helpmenow_block_refresh, 10000);
 </script>
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
+<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
 EOF;
 
     return $output;
