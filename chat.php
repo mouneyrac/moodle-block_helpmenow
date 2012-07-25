@@ -90,7 +90,13 @@ echo <<<EOF
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat.js" type="text/javascript"></script>
     </head>
     <body>
-        <embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" />
+        <div>
+            <object id="helpmenow_chime" type="audio/x-wav" data="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" width="0" height="1">
+              <param name="src" value="$CFG->wwwroot/blocks/helpmenow/cowbell.wav" />
+              <param name="autoplay" value="false" />
+              <param name="autoStart" value="0" />
+            </object>
+        </div>
         $plugins
         <div id="chatDiv"></div>
         <div id="inputDiv">
