@@ -46,6 +46,12 @@ if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
     helpmenow_fatal_error('No user2plugin');
 }
 
+if (isset($user2plugin->class_id)) {
+    if ($user2plugin->verify_active_meeting()) {
+        redirect($user2plugin->presenter_url);
+    }
+}
+
 $user2plugin->create_meeting();     # create meeting
 
 if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {

@@ -56,10 +56,6 @@ function helpmenow_wiziq_api($method, $params) {
 
     $params = array_merge($signature, $params);
 
-    if (debugging()) {
-        print_object($params);
-    }
-
     $ch = curl_init();
     curl_setopt_array($ch, array(
         CURLOPT_POSTFIELDS => http_build_query($params, '', '&'),
@@ -70,10 +66,6 @@ function helpmenow_wiziq_api($method, $params) {
     ));
     $response = curl_exec($ch);
     curl_close($ch);
-
-    if (debugging()) {
-        print_object($response);
-    }
 
     return new SimpleXMLElement($response);
 }
@@ -86,11 +78,6 @@ function helpmenow_wiziq_api_signature($sig_params) {
         $sig_base[] = "$f=$v";
     }
     $sig_base = implode('&', $sig_base);
-
-    if (debugging()) {
-        print_object($sig_params);
-        print_object($sig_base);
-    }
 
     return base64_encode(helpmenow_wiziq_hmacsha1(urlencode($CFG->helpmenow_wiziq_secret_key), $sig_base));
 }
@@ -244,6 +231,39 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         $this->update();
 
         return true;
+    }
+
+    /**
+     * see if the meeting is still ative
+     * @return bool true = active
+     */
+    public function verify_active_meeting() {
+        global $USER;
+
+        $params = array(
+            'class_id' => $this->class_id,
+            'title' => fullname($USER),
+        );
+        $response = helpmenow_wiziq_api('modify', $params);
+
+        if (debugging()) {
+            print_object($response);
+        }
+
+        # if we can modify it at all, it's cause it hasn't started
+        if ((string) $response['status'] == 'ok') {
+            return true;
+        }
+
+        switch ((integer) $response->error['code'] == 1015) {
+        case 1015:  # in-progress
+            return true;
+        case 1016:  # completed
+        case 1017:  # expired
+        case 1018:  # deleted
+        default:
+            return false;
+        }
     }
 
     /**
