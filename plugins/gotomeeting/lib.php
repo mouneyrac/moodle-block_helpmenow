@@ -176,8 +176,6 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     public static function on_login() {
         global $CFG;
 
-        return true;
-
         $user2plugin = helpmenow_user2plugin_gotomeeting::get_user2plugin();
         # if we don't have a user2plugin record or we don't have a current meeting for the user, redirect to the create meeting script
         if (!$user2plugin or !isset($user2plugin->meetingid)) {

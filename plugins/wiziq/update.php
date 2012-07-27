@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script connects students to wiziq
+ * This script gets updates from wiziq
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
@@ -26,31 +26,22 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
-require_login(0, false);
+# we do get more from wiziq, but these are all we care about for now
+$user_id = required_param('user_id', PARAM_INT);
+$class_id = required_param('class_id', PARAM_INT);
+$class_status = required_param('class_status', PARAM_Text);
 
-$session_id = required_param('sessionid', PARAM_INT);
-$class_id = required_param('classid', PARAM_INT);
+$user2plugin = helpmenow_wiziq_user2plugin::get_user2plugin($user_id);
 
-# verify sesion
-if (!helpmenow_verify_session($session_id)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
+# if the class that we're getting a status on is not the one we have attached
+# to this user, don't do anything
+if ($user2plugin->class_id != $class_id) {
+    die;
 }
 
-if (!$s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
-    helpmenow_fatal_error('Invalid session.');
+# these status indicate the class is over
+if ($class_status == 'expired' or $class_status == 'completed') {
+    $user2plugin->delete_meeting();
 }
-$s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
-
-if (!in_array($class_id, $s2p->classes)) {
-    helpmenow_fatal_error('Invalid class.');
-}
-
-$response = helpmenow_wiziq_add_attendee($class_id);
-
-if (debugging()) {
-    print_object($response);
-}
-
-redirect((string) $response->add_attendees->attendee_list->attendee[0]->attendee_url);
 
 ?>

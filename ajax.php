@@ -335,7 +335,7 @@ EOF;
         if (!in_array($plugin, helpmenow_plugin::get_plugins())) {
             throw new Exception('Unknown plugin');
         }
-        if (!in_array($plugin_function, $class::get_ajax_methods())) {
+        if (!in_array($plugin_function, $class::get_ajax_functions())) {
             throw new Exception('Unknown function');
         }
         $response = $plugin_function($request);

@@ -61,7 +61,7 @@ function helpmenow_check_privileged($session) {
         if (record_exists_sql($sql)) {
             return true;
         }
-    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
+    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {    #todo: change this to a capability
         return true;
     }
     return false;
@@ -838,12 +838,15 @@ abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
      * Returns user2plugin object for USER
      * @return object
      */
-    public static function get_user2plugin() {
-        global $USER;
+    public static function get_user2plugin($userid = null) {
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
 
         $plugin = preg_replace('/helpmenow_user2plugin_/', '', get_called_class());
 
-        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', $plugin)) {
+        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', $plugin)) {
             return new static(null, $record);
         }
         return false;
