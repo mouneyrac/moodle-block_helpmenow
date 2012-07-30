@@ -134,7 +134,21 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     }
 
     public static function display($privileged = false) {
-        global $CFG;
+        global $CFG, $USER;
+
+        switch ($USER->id) {
+        case 5:
+        case 56385:
+        case 919:
+        case 52650:
+        case 37479:
+        case 57885:
+        case 56528:
+        case 8712:
+                break;
+        default:
+            return '';
+        }
 
         if ($privileged) {
             $create_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/create.php");
