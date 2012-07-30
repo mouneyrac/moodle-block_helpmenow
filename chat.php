@@ -57,19 +57,31 @@ if (!$privileged and isset($session->queueid)) {
     $title = implode(', ', $other_users);
 }
 
-$plugins = array();
+# get plugin links and load necessary javascript
+$plugins_display = $plugins_js = array();
 foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+    # display
     $class = "helpmenow_plugin_$pluginname";
     $plugin_text = $class::display($privileged);
     if (!strlen($plugin_text)) {
         continue;
     }
-    $plugins[] = '<div>'.$plugin_text.'</div>';
+    $plugins_display[] = '<div>'.$plugin_text.'</div>';
+
+    # js
+    if (file_exists("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/lib.js")) {
+        $plugins_js[] = "<script src=\"$CFG->wwwroot/blocks/helpmenow/plugins/$pluginname/lib.js\" type=\"text/javascript\"></script>";
+    }
 }
-if (count($plugins)) {
-    $plugins = '<div id="pluginDiv">'.implode(' | ', $plugins).'</div>';
+if (count($plugins_display)) {
+    $plugins_display = '<div id="pluginDiv">'.implode(' | ', $plugins_display).'</div>';
 } else {
-    $plugins = '';
+    $plugins_display = '';
+}
+if (count($plugins_js)) {
+    $plugins_js = implode("\n", $plugins_js);
+} else {
+    $plugins_js = '';
 }
 
 echo <<<EOF
@@ -88,6 +100,7 @@ echo <<<EOF
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat.js" type="text/javascript"></script>
+        $plugins_js
     </head>
     <body>
         <div>
@@ -97,7 +110,7 @@ echo <<<EOF
               <param name="autoStart" value="0" />
             </object>
         </div>
-        $plugins
+        $plugins_display
         <div id="chatDiv"></div>
         <div id="inputDiv">
             <textarea id="inputTextarea" cols="30" rows="3">Type your message here and press the "enter" or "return" key.</textarea>

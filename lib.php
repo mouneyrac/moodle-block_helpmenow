@@ -298,7 +298,6 @@ EOF;
     $output .= <<<EOF
 <hr />
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block.js"></script>
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     helpmenow_block_refresh();
@@ -812,7 +811,7 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
         $plugins = array();
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
             $enabled = "helpmenow_{$pluginname}_enabled";
-            if (!$CFG->$enabled) {
+            if (isset($CFG->$enabled) and !$CFG->$enabled) {
                 continue;
             }
             require_once("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/lib.php");
