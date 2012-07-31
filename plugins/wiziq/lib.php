@@ -254,6 +254,8 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
      * @return bool true = active
      */
     public function verify_active_meeting() {
+        if (!isset($this->class_id)) { return false; }  # clearly if the class_id isn't set we don't have an active class
+
         global $USER;
 
         $params = array(

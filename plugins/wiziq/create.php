@@ -46,13 +46,9 @@ if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
     helpmenow_fatal_error('No user2plugin');
 }
 
-if (isset($user2plugin->class_id)) {
-    if ($user2plugin->verify_active_meeting()) {
-        redirect($user2plugin->presenter_url);
-    }
+if (!$user2plugin->verify_active_meeting()) {
+    $user2plugin->create_meeting();     # create meeting only if we don't have one
 }
-
-$user2plugin->create_meeting();     # create meeting
 
 if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
     $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
@@ -81,6 +77,19 @@ $message_rec = (object) array(
 if (!insert_record('block_helpmenow_message', $message_rec)) {
     helpmenow_fatal_error('Could not insert message record');
 }
+
+echo <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                
+            });
+        </script>
+EOF;
 
 redirect($user2plugin->presenter_url); 
 ?>
