@@ -187,8 +187,6 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     public static function on_logout() {
         global $CFG, $USER;
 
-        return true;
-
         $user2plugin = helpmenow_user2plugin_gotomeeting::get_user2plugin();
 
         # see if the user is still logged in to a different queue/office
