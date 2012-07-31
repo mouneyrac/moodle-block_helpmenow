@@ -86,10 +86,22 @@ echo <<<EOF
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         <script type="text/javascript">
             $(document).ready(function () {
-                
+                try {
+                    var wiziq_session = window.open("", "wiziq_session");
+                    if (wiziq_session.location == "about:blank") {
+                        wiziq_session.close();
+                        window.name = 'wiziq_session';
+                        window.location.replace("$user2plugin->presenter_url")
+                    }
+                } catch (err) {
+                }
+                close();
             });
         </script>
+    </head>
+    <body>
+    </body>
+</html>
 EOF;
 
-redirect($user2plugin->presenter_url); 
 ?>
