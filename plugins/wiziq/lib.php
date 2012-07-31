@@ -155,7 +155,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         if ($privileged) {
             $create_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/create.php");
             $create_url->param('sessionid', required_param('session', PARAM_INT));
-            return link_to_popup_window($create_url->out(), "wiziq", 'Start WizIQ', 400, 500, null, null, true);
+            return link_to_popup_window($create_url->out(), "wiziq", 'Start Voice & Video', 400, 500, null, null, true);
         }
         return '';
     }
