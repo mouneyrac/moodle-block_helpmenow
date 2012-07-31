@@ -26,6 +26,7 @@
 
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
+helpmenow_plugin::get_plugins();
 
 # require login
 require_login(0, false);
@@ -74,9 +75,10 @@ foreach ($instructors as $i) {
 
         if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $i->userid, 'plugin', 'gotomeeting')) {
             $meeting_link = 'Not Found';
+        } else {
+            $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
+            $meeting_link = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
         }
-        $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
-        $meeting_link = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
     } else {
         $login_status = "No";
         $meeting_link = "N/A";
