@@ -147,6 +147,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         case 8712:
         case 11:
         case 56895:
+        case 930:
                 break;
         default:
             return '';
