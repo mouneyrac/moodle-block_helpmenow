@@ -71,7 +71,7 @@ $join_url->param('classid', $user2plugin->class_id);
 $join_url->param('sessionid', $session_id);
 $join_url = $join_url->out();
 
-$message = fullname($USER) . ' has invited you to WizIQ, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
+$message = fullname($USER) . ' has invited you to use voice & video, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
 $message_rec = (object) array(
     'userid' => get_admin()->id,
     'sessionid' => $session_id,
