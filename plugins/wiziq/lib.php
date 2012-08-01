@@ -247,6 +247,16 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     public static function get_ajax_functions() {
         return array('helpmenow_wiziq_ajax_invite');
     }
+
+    /**
+     * returns array of full url paths to needed javascript libraries
+     * @return array
+     */
+    public static function get_js_libs() {
+        global $CFG;
+
+        return array("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/lib_2012080100.js");
+    }
 }
 
 /**

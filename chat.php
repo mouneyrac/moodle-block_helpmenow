@@ -69,9 +69,11 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname) {
     $plugins_display[] = '<div>'.$plugin_text.'</div>';
 
     # js
-    # todo: update this to avoid js caching issues similar to what we've done with main hmn js files
-    if (file_exists("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/lib.js")) {
-        $plugins_js[] = "<script src=\"$CFG->wwwroot/blocks/helpmenow/plugins/$pluginname/lib.js\" type=\"text/javascript\"></script>";
+    $plugin_libs = $class::get_js_libs();
+    if (count($plugin_libs)) {
+        foreach ($plugin_libs as $lib) {
+            $plugins_js[] = "<script src=\"$lib\" type=\"text/javascript\"></script>";
+        }
     }
 }
 if (count($plugins_display)) {

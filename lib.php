@@ -769,6 +769,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     /**
+     * returns array of full url paths to needed javascript libraries
+     * @return array
+     */
+    public static function get_js_libs() {
+        return array();
+    }
+
+    /**
      * Calls install for all plugins
      * @return boolean success
      */
