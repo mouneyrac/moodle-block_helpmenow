@@ -807,9 +807,11 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      */
     public final static function get_plugins() {
         global $CFG;
+        global $USER;
 
         $plugins = array();
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
+            if ($USER->id == 930 and $pluginname == 'gotomeeting') { continue; }
             $enabled = "helpmenow_{$pluginname}_enabled";
             if (isset($CFG->$enabled) and !$CFG->$enabled) {
                 continue;
