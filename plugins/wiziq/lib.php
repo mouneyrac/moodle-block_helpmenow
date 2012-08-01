@@ -107,6 +107,65 @@ function helpmenow_wiziq_hmacsha1($key, $data) {
 }
 
 /**
+ * ajax invitation to wiziq session
+ *
+ * @param object $request ajax request
+ * @return object
+ */
+function helpmenow_wiziq_ajax_invite($request) {
+    # verify sesion
+    if (!helpmenow_verify_session($request->session)) {
+        throw new Exception('Invalid session');
+    }
+
+    if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
+        throw new Exception('No u2p record');
+    }
+
+    if (!helpmenow_wiziq_invite($request->session, $user2plugin->class_id)) {
+        throw new Exception('Could not insert message record');
+    }
+    
+    return new stdClass;
+}
+
+/**
+ * invites user to a wiziq class
+ *
+ * @param int $session_id helpmenow_session.id
+ * @param int $class_id wiziq class id
+ */
+function helpmenow_wiziq_invite($session_id, $class_id) {
+    global $CFG, $USER;
+
+    if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
+        $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
+        $method = 'update';
+    } else {
+        $s2p = new helpmenow_session2plugin_wiziq(null, (object) array('sessionid' => $session_id));
+        $method = 'insert';
+    }
+    if (!in_array($class_id, $s2p->classes)) {
+        $s2p->classes[] = $class_id;
+        $s2p->$method();
+    }
+
+    $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
+    $join_url->param('classid', $class_id);
+    $join_url->param('sessionid', $session_id);
+    $join_url = $join_url->out();
+
+    $message = fullname($USER) . ' has invited you to use voice & video, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
+    $message_rec = (object) array(
+        'userid' => get_admin()->id,
+        'sessionid' => $session_id,
+        'time' => time(),
+        'message' => addslashes($message),
+    );
+    return insert_record('block_helpmenow_message', $message_rec);
+}
+
+/**
  *     _____ _
  *    / ____| |
  *   | |    | | __ _ ___ ___  ___  ___
@@ -156,7 +215,8 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         if ($privileged) {
             $create_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/create.php");
             $create_url->param('sessionid', required_param('session', PARAM_INT));
-            return link_to_popup_window($create_url->out(), "wiziq", 'Start Voice & Video', 400, 500, null, null, true);
+            return link_to_popup_window($create_url->out(), "wiziq", 'Start Voice & Video', 400, 500, null, null, true)
+                . ' | <a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To Voice & Video</a>';
         }
         return '';
     }
@@ -172,6 +232,14 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
             $user2plugin->insert();
         }
         return true;
+    }
+
+    /**
+     * returns array of valid plugin ajax functions
+     * @return array
+     */
+    public static function get_ajax_functions() {
+        return array('helpmenow_wiziq_ajax_invite');
     }
 }
 

@@ -50,58 +50,10 @@ if (!$user2plugin->verify_active_meeting()) {
     $user2plugin->create_meeting();     # create meeting only if we don't have one
 }
 
-if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
-    $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
-    $method = 'update';
-} else {
-    $s2p = new helpmenow_session2plugin_wiziq(null, (object) array('sessionid' => $session_id));
-    $method = 'insert';
-}
-if (!in_array($user2plugin->class_id, $s2p->classes)) {
-    $s2p->classes[] = $user2plugin->class_id;
-    $s2p->$method();
-}
-
-$join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
-$join_url->param('classid', $user2plugin->class_id);
-$join_url->param('sessionid', $session_id);
-$join_url = $join_url->out();
-
-$message = fullname($USER) . ' has invited you to use voice & video, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
-$message_rec = (object) array(
-    'userid' => get_admin()->id,
-    'sessionid' => $session_id,
-    'time' => time(),
-    'message' => addslashes($message),
-);
-if (!insert_record('block_helpmenow_message', $message_rec)) {
+if (!helpmenow_wiziq_invite($session_id, $user2plugin->class_id)) {
     helpmenow_fatal_error('Could not insert message record');
 }
 
-echo <<<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
-    <head>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-        <script type="text/javascript">
-            $(document).ready(function () {
-                try {
-                    var wiziq_session = window.open("", "wiziq_session");
-                    if (wiziq_session.location == "about:blank") {
-                        wiziq_session.close();
-                        window.name = 'wiziq_session';
-                        window.location.replace("$user2plugin->presenter_url")
-                    }
-                } catch (err) {
-                }
-                close();
-            });
-        </script>
-    </head>
-    <body>
-    </body>
-</html>
-EOF;
+redirect($user2plugin->presenter_url);
 
 ?>
