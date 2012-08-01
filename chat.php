@@ -69,6 +69,7 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname) {
     $plugins_display[] = '<div>'.$plugin_text.'</div>';
 
     # js
+    # todo: update this to avoid js caching issues similar to what we've done with main hmn js files
     if (file_exists("$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/lib.js")) {
         $plugins_js[] = "<script src=\"$CFG->wwwroot/blocks/helpmenow/plugins/$pluginname/lib.js\" type=\"text/javascript\"></script>";
     }
@@ -98,8 +99,8 @@ echo <<<EOF
             var refresh;
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012080100.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012080100.js" type="text/javascript"></script>
         $plugins_js
     </head>
     <body>

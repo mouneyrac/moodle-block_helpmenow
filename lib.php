@@ -297,7 +297,7 @@ EOF;
     }
     $output .= <<<EOF
 <hr />
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012080100.js"></script>
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     helpmenow_block_refresh();
