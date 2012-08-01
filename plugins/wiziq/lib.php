@@ -215,12 +215,12 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         if ($privileged) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
             $connect->param('sessionid', required_param('session', PARAM_INT));
-            $output = link_to_popup_window($create_url->out(), "wiziq", 'Invite to WizIQ', 400, 500, null, null, true);
+            $output = link_to_popup_window($connect->out(), "wiziq", 'Invite to WizIQ', 400, 500, null, null, true);
 
             $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
             if ($user2plugin->verify_active_meeting()) {
                 $connect->param('reopen', 1);
-                $output .= ' | ' . link_to_popup_window($connect->out(), "wiziq", '& Video', 400, 500, null, null, true);
+                $output .= ' | ' . link_to_popup_window($connect->out(), "wiziq_session", 'Re-open WizIQ Window', 400, 500, null, null, true);
             }
             return $output;
         }
@@ -339,10 +339,6 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         );
         $response = helpmenow_wiziq_api('modify', $params);
 
-        if (debugging()) {
-            print_object($response);
-        }
-
         # if we can modify it at all, it's cause it hasn't started
         if ((string) $response['status'] == 'ok') {
             return true;
@@ -355,6 +351,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         case 1017:  # expired
         case 1018:  # deleted
         default:
+            $this->delete_meeting();
             return false;
         }
     }
@@ -364,7 +361,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
      */
     public function delete_meeting() {
         foreach ($this->extra_fields as $attribute) {
-            unset($this->$attribute);
+            $this->$attribute = null;
         }
         return $this->update();
     }

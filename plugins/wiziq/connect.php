@@ -29,6 +29,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 require_login(0, false);
 
 $session_id = required_param('sessionid', PARAM_INT);
+$reopen = optional_param('reopen', 0, PARAM_INT);
 
 # verify sesion
 if (!helpmenow_verify_session($session_id)) {
@@ -46,14 +47,42 @@ if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
     helpmenow_fatal_error('No user2plugin');
 }
 
-if (!$user2plugin->verify_active_meeting()) {
+# if we're not reopening, we need to do this too
+if ($reopen) {
+    redirect($user2plugin->presenter_url);
+}
+
+if ($user2plugin->verify_active_meeting()) {
+    $js = <<<EOF
+                close();
+EOF;
+} else {
     $user2plugin->create_meeting();     # create meeting only if we don't have one
+    $js = <<<EOF
+                window.name = 'wiziq_session';
+                window.location.replace("$user2plugin->presenter_url")
+EOF;
 }
 
 if (!helpmenow_wiziq_invite($session_id, $user2plugin->class_id)) {
     helpmenow_fatal_error('Could not insert message record');
 }
 
-redirect($user2plugin->presenter_url);
+echo <<<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
+    <head>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+$js
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
+EOF;
 
 ?>
