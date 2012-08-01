@@ -25,6 +25,13 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
+$settings->add(new admin_setting_configtext('helpmenow_title',
+        get_string('block_title', 'block_helpmenow'),
+        get_string('block_title_desc', 'block_helpmenow'),
+        '',
+        PARAM_TEXT,
+        50));
+
 $plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));
 foreach ($plugins as $pluginname) {
     $path = "$CFG->dirroot/blocks/helpmenow/plugins/$pluginname/settings.php";

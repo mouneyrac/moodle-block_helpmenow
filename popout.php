@@ -40,8 +40,12 @@ if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid',
 EOF;
 }
 
-//print_header('Help Me Now', '', '', 'inputTextarea');
-print_header('VLACS Communicator', '', '', 'inputTextarea');
+if (!empty($CFG->helpmenow_title)) {
+    $title = $CFG->helpmenow_title;
+} else {
+    $title = get_string('helpmenow', 'block_helpmenow'); 
+}
+print_header($title, '', '', 'inputTextarea');
 
 $output = <<<EOF
 <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">

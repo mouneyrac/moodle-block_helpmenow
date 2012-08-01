@@ -32,8 +32,11 @@ class block_helpmenow extends block_base {
 
     function init() {
         global $CFG;
-        //$this->title = get_string('helpmenow', 'block_helpmenow'); 
-        $this->title = 'VLACS Communicator';
+        if (!empty($CFG->helpmenow_title)) {
+            $this->title = $CFG->helpmenow_title;
+        } else {
+            $this->title = get_string('helpmenow', 'block_helpmenow'); 
+        }
 
         $plugin = new object;
         require(dirname(__FILE__) . "/version.php");
@@ -87,6 +90,11 @@ EOF;
         $this->content->footer .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 400, 250, null, null, true) . '</div>';
 
         return $this->content;
+    }
+
+    function specialization() {
+        global $CFG;
+
     }
 
     function cron() {
