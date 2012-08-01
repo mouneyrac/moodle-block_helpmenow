@@ -213,10 +213,16 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         }
 
         if ($privileged) {
-            $create_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/create.php");
-            $create_url->param('sessionid', required_param('session', PARAM_INT));
-            return link_to_popup_window($create_url->out(), "wiziq", 'Start Voice & Video', 400, 500, null, null, true)
-                . ' | <a href="javascript:void(0)" onclick="helpmenow_wiziq_invite();">Invite To Voice & Video</a>';
+            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
+            $connect->param('sessionid', required_param('session', PARAM_INT));
+            $output = link_to_popup_window($create_url->out(), "wiziq", 'Invite to WizIQ', 400, 500, null, null, true);
+
+            $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
+            if ($user2plugin->verify_active_meeting()) {
+                $connect->param('reopen', 1);
+                $output .= ' | ' . link_to_popup_window($connect->out(), "wiziq", '& Video', 400, 500, null, null, true);
+            }
+            return $output;
         }
         return '';
     }
