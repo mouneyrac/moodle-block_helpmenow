@@ -32,7 +32,8 @@ class block_helpmenow extends block_base {
 
     function init() {
         global $CFG;
-        $this->title = get_string('helpmenow', 'block_helpmenow'); 
+        //$this->title = get_string('helpmenow', 'block_helpmenow'); 
+        $this->title = 'VLACS Communicator';
 
         $plugin = new object;
         require(dirname(__FILE__) . "/version.php");
