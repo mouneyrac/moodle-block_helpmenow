@@ -28,21 +28,28 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
-$session_id = required_param('sessionid', PARAM_INT);
+$session_id = optional_param('sessionid', 0, PARAM_INT);
 $class_id = required_param('classid', PARAM_INT);
 
-# verify sesion
-if (!helpmenow_verify_session($session_id)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
+if (!$session_id) {
+    $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+    if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
+        redirect();
+    }
+} else {
+    # verify sesion
+    if (!helpmenow_verify_session($session_id)) {
+        helpmenow_fatal_error('You do not have permission to view this page.');
+    }
 
-if (!$s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
-    helpmenow_fatal_error('Invalid session.');
-}
-$s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
+    if (!$s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
+        helpmenow_fatal_error('Invalid session.');
+    }
+    $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
 
-if (!in_array($class_id, $s2p->classes)) {
-    helpmenow_fatal_error('Invalid class.');
+    if (!in_array($class_id, $s2p->classes)) {
+        helpmenow_fatal_error('Invalid class.');
+    }
 }
 
 $response = helpmenow_wiziq_add_attendee($class_id);

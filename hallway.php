@@ -34,7 +34,7 @@ require_login(0, false);
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-    redirect($course_url);
+    redirect();
 }
 
 # title, navbar, and a nice box
@@ -52,12 +52,14 @@ $instructors = get_records_sql("
 ");
 
 # start setting up the table
+# todo: plugin abstraction
 $table = (object) array(
     'head' => array(
         get_string('name'),
         'MOTD',
         'Logged In?',
-        'Meeting',
+        'GoToMeeting',
+        'WizIQ',
     ),
     'data' => array(),
 );
@@ -73,21 +75,35 @@ foreach ($instructors as $i) {
     if ($i->isloggedin) {
         $login_status = "Yes";
 
+        # gtm
         if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $i->userid, 'plugin', 'gotomeeting')) {
             $meeting_link = 'Not Found';
         } else {
             $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
             $meeting_link = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
         }
+
+        # wiziq
+        if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $i->userid, 'plugin', 'wiziq')) {
+            $wiziq_meeting_link = 'Not Found';
+        } else {
+            $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
+            $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
+            $join_url->param('classid', $wiziq_u2p->class_id);
+            $join_url = $join_url->out();
+            $wiziq_meeting_link = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
+        }
     } else {
         $login_status = "No";
         $meeting_link = "N/A";
+        $wiziq_meeting_link = "N/A";
     }
     $table->data[] = array(
         fullname($i),
         $i->motd,
         $login_status,
         $meeting_link,
+        $wiziq_meeting_link,
     );
 }
 
