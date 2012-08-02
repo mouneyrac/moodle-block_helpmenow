@@ -88,10 +88,14 @@ foreach ($instructors as $i) {
             $wiziq_meeting_link = 'Not Found';
         } else {
             $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
-            $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
-            $join_url->param('classid', $wiziq_u2p->class_id);
-            $join_url = $join_url->out();
-            $wiziq_meeting_link = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
+            if (isset($wiziq_u2p->class_id)) {
+                $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
+                $join_url->param('classid', $wiziq_u2p->class_id);
+                $join_url = $join_url->out();
+                $wiziq_meeting_link = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
+            } else {
+                $wiziq_meeting_link = 'Not Found';
+            }
         }
     } else {
         $login_status = "No";
