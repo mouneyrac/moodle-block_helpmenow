@@ -324,6 +324,16 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         );
         $response = helpmenow_wiziq_api('create', $params);
 
+        if ((string) $response['status'] == 'fail') {
+            $error = (integer) $response->error['code'];
+            switch ($error) {
+            case 1012:
+                helpmenow_fatal_error('License limit has been reached. Please contact your administrator');
+            default:
+                helpmenow_fatal_error("WizIQ error: $error. Please contact your administrator");
+            }
+        }
+
         $this->class_id = (integer) $response->create->class_details->class_id;
         $this->presenter_url = (string) $response->create->class_details->presenter_list->presenter[0]->presenter_url;
         $this->duration = HELPMENOW_WIZIQ_DURATION * 60;    # we're saving in seconds instead of minutes
@@ -354,7 +364,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
             return true;
         }
 
-        switch ((integer) $response->error['code'] == 1015) {
+        switch ((integer) $response->error['code']) {
         case 1015:  # in-progress
             return true;
         case 1016:  # completed
