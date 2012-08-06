@@ -32,86 +32,56 @@ helpmenow_plugin::get_plugins();
 require_login(0, false);
 
 # contexts and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
+$admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
+if (!($admin or record_exists('block_helpmenow_helper', 'userid', $USER->id))) {
     redirect();
 }
 
 # title, navbar, and a nice box
-$title = "Administrators' Hallway";
-$nav = array(array('name' => $title));
+if (!empty($CFG->helpmenow_title)) {
+    $blockname = $CFG->helpmenow_title;
+} else {
+    $blockname = get_string('helpmenow', 'block_helpmenow'); 
+}
+$title = "Who's Here";
+$nav = array(
+    array('name' => $blockname),
+    array('name' => $title)
+);
 print_header($title, $title, build_navigation($nav));
 print_box_start('generalbox centerpara');
 
-print_heading($title);
-
-$instructors = get_records_sql("
-    SELECT *
-    FROM {$CFG->prefix}block_helpmenow_user hu
-    JOIN {$CFG->prefix}user u ON u.id = hu.userid
-");
-
-# start setting up the table
-# todo: plugin abstraction
-$table = (object) array(
-    'head' => array(
-        get_string('name'),
-        'MOTD',
-        'Logged In?',
-        'GoToMeeting',
-        'WizIQ',
-    ),
-    'data' => array(),
-);
-
-usort($instructors, function($a, $b) {
-    if (!($a->isloggedin xor $b->isloggedin)) {
-        return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+$where = $admin ? '' : "WHERE h.userid = {$USER->id}";
+$sql = "
+    SELECT q.*
+    FROM {$CFG->prefix}block_helpmenow_queue q
+    JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
+    $where
+";
+# helpers see other helpers in the same queue
+if ($queues = get_records_sql($sql)) {
+    foreach ($queues as $q) {
+        print_heading($q->name, '', 3);
+        $helpers = get_records_sql("
+            SELECT *
+            FROM {$CFG->prefix}block_helpmenow_helper h
+            JOIN {$CFG->prefix}user u ON u.id = h.userid
+            WHERE h.queueid = {$q->id}
+        ");
+        helpmenow_print_hallway($helpers);
     }
-    return $a->isloggedin ? -1 : 1;
-});
-
-foreach ($instructors as $i) {
-    if ($i->isloggedin) {
-        $login_status = "Yes";
-
-        # gtm
-        if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $i->userid, 'plugin', 'gotomeeting')) {
-            $meeting_link = 'Not Found';
-        } else {
-            $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
-            $meeting_link = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
-        }
-
-        # wiziq
-        if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $i->userid, 'plugin', 'wiziq')) {
-            $wiziq_meeting_link = 'Not Found';
-        } else {
-            $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
-            if (isset($wiziq_u2p->class_id)) {
-                $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
-                $join_url->param('classid', $wiziq_u2p->class_id);
-                $join_url = $join_url->out();
-                $wiziq_meeting_link = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
-            } else {
-                $wiziq_meeting_link = 'Not Found';
-            }
-        }
-    } else {
-        $login_status = "No";
-        $meeting_link = "N/A";
-        $wiziq_meeting_link = "N/A";
-    }
-    $table->data[] = array(
-        fullname($i),
-        $i->motd,
-        $login_status,
-        $meeting_link,
-        $wiziq_meeting_link,
-    );
 }
 
-print_table($table);
+# admins see all instructors
+if ($admin) {
+    print_heading("Instructors", '', 3);
+    $instructors = get_records_sql("
+        SELECT *
+        FROM {$CFG->prefix}block_helpmenow_user hu
+        JOIN {$CFG->prefix}user u ON u.id = hu.userid
+    ");
+    helpmenow_print_hallway($instructors);
+}
 
 print_box_end();
 

@@ -249,6 +249,87 @@ function helpmenow_autologout_users() {
     return $success;
 }
 
+/**
+ * prints hallway lists
+ * @param array $users array of users
+ */
+function helpmenow_print_hallway($users) {
+    global $CFG;
+    static $admin;
+    if (!isset($admin)) {
+        $admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
+    }
+    # start setting up the table
+    # todo: plugin abstraction
+    $head = array(
+        get_string('name'),
+        'MOTD',
+        'Logged In?',
+    );
+    if ($admin) {
+        $head = array_merge($head, array(
+            'GoToMeeting',
+            'WizIQ',
+        ));
+    };
+    $table = (object) array(
+        'head' => $head,
+        'data' => array(),
+    );
+
+    usort($users, function($a, $b) {
+        if (!($a->isloggedin xor $b->isloggedin)) {
+            return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+        }
+        return $a->isloggedin ? -1 : 1;
+    });
+
+    foreach ($users as $u) {
+        $row = array(
+            fullname($u),
+            isset($u->motd) ? $u->motd : 'N/A',
+        );
+
+        if ($u->isloggedin) {
+            $row[] = "Yes";
+
+            if ($admin) {
+                # gtm
+                if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
+                    $row[] = 'Not Found';
+                } else {
+                    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
+                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
+                }
+
+                # wiziq
+                if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'wiziq')) {
+                    $row[] = 'Not Found';
+                } else {
+                    $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
+                    if (isset($wiziq_u2p->class_id)) {
+                        $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
+                        $join_url->param('classid', $wiziq_u2p->class_id);
+                        $join_url = $join_url->out();
+                        $row[] = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
+                    } else {
+                        $row[] = 'Not Found';
+                    }
+                }
+            }
+        } else {
+            $row[] = "No";
+            if ($admin) {
+                $row[] = "N/A";
+                $row[] = "N/A";
+            }
+        }
+        $table->data[] = $row;
+    }
+
+    print_table($table);
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
