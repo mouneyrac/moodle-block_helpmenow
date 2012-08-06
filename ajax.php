@@ -229,7 +229,7 @@ EOF;
                 if ($session = get_record_sql($sql) or $q->is_open()) {
                     $connect->remove_params('sessionid');
                     $connect->param('queueid', $q->id);
-                    $style = '';
+                    $message = $style = '';
                     if ($session) {
                         $style = ' style="background-color:yellow"';
                         $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
@@ -261,8 +261,16 @@ EOF;
             break 2;
         }
 
+        $cutoff = helpmenow_cutoff();
+
         # get any unseen messages
         foreach ($users as $u) {
+            if ($privilege == 'STUDENT') {
+                $u->online = ($u->isloggedin and ($u->lastaccess > $cutoff));
+            } else {
+                $u->online = true;
+            }
+
             $sql = "
                 SELECT s.*, m.message
                 FROM {$CFG->prefix}block_helpmenow_session2user s2u
@@ -286,8 +294,13 @@ EOF;
         }
 
         # sort by unseen messages, lastname, firstname
-        usort($users, function($a, $b) {
+        usort($users, function($a, $b) use ($privilege)  {
             if (!(isset($a->sessionid) xor isset($b->sessionid))) {
+                if ($privilege == 'STUDENT') {      # students see offline teachers, therefor we should sort online/offline before alphabetical
+                    if (($a->online) xor ($b->online)) {
+                        return ($a->online) ? -1 : 1;
+                    }
+                }
                 return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
             }
             return isset($a->sessionid) ? -1 : 1;
@@ -310,7 +323,7 @@ EOF;
                 $response->pending = true;
             }
             $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-            if ($isloggedin) {
+            if ($isloggedin and ($u->online)) {
                 $link = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
             } else {
                 $link = fullname($u);

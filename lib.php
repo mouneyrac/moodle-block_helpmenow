@@ -88,7 +88,7 @@ function helpmenow_get_instructors() {
     global $CFG, $USER;
     $cutoff = helpmenow_cutoff();
     $sql = "
-        SELECT u.*, hu.motd
+        SELECT u.*, hu.isloggedin, hu.motd
         FROM {$CFG->prefix}classroom_enrolment ce
         JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
         JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
@@ -97,15 +97,15 @@ function helpmenow_get_instructors() {
         AND ce.status_idstr = 'ACTIVE'
         AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
-        AND hu.isloggedin <> 0
-        AND u.lastaccess > $cutoff
+        --AND hu.isloggedin <> 0
+        --AND u.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
 }
 
 function helpmenow_cutoff() {
     global $CFG;
-    if ($CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
+    if (isset($CFG->helpmenow_no_cutoff) and $CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
         return 0;
     }
     return time() - 300;
@@ -290,7 +290,7 @@ EOF;
         break;
     case 'STUDENT':
         $output .= '
-            <div>Online Instructors:</div>
+            <div>Instructors:</div>
             <div id="helpmenow_users_div"></div>
             ';
         break;
