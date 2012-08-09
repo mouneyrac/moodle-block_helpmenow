@@ -52,10 +52,20 @@ if (!$session_id) {
     }
 }
 
+if ($user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
+    if ($user2plugin->class_id == $class_id) {
+        redirect($user2plugin->presenter_url);
+    }
+}
+
 $response = helpmenow_wiziq_add_attendee($class_id);
 
 if (debugging()) {
     print_object($response);
+}
+
+if ((string) $response['status'] == 'fail') {
+    helpmenow_fatal_error('You were unable to join the session. It may no longer be active.');
 }
 
 redirect((string) $response->add_attendees->attendee_list->attendee[0]->attendee_url);

@@ -47,7 +47,6 @@ if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
     helpmenow_fatal_error('No user2plugin');
 }
 
-# if we're not reopening, we need to do this too
 if ($reopen) {
     redirect($user2plugin->presenter_url);
 }

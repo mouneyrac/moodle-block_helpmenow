@@ -107,29 +107,6 @@ function helpmenow_wiziq_hmacsha1($key, $data) {
 }
 
 /**
- * ajax invitation to wiziq session
- *
- * @param object $request ajax request
- * @return object
- */
-function helpmenow_wiziq_ajax_invite($request) {
-    # verify sesion
-    if (!helpmenow_verify_session($request->session)) {
-        throw new Exception('Invalid session');
-    }
-
-    if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
-        throw new Exception('No u2p record');
-    }
-
-    if (!helpmenow_wiziq_invite($request->session, $user2plugin->class_id)) {
-        throw new Exception('Could not insert message record');
-    }
-    
-    return new stdClass;
-}
-
-/**
  * invites user to a wiziq class
  *
  * @param int $session_id helpmenow_session.id
@@ -155,7 +132,7 @@ function helpmenow_wiziq_invite($session_id, $class_id) {
     $join_url->param('sessionid', $session_id);
     $join_url = $join_url->out();
 
-    $message = fullname($USER) . ' has invited you to use voice & video, <a target="_blank" href="'.$join_url.'">click here</a> to join.';
+    $message = fullname($USER) . ' has invited you to use voice & video, <a target="wiziq_session" href="'.$join_url.'">click here</a> to join.';
     $message_rec = (object) array(
         'userid' => get_admin()->id,
         'sessionid' => $session_id,
@@ -239,14 +216,6 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
             $user2plugin->insert();
         }
         return true;
-    }
-
-    /**
-     * returns array of valid plugin ajax functions
-     * @return array
-     */
-    public static function get_ajax_functions() {
-        return array('helpmenow_wiziq_ajax_invite');
     }
 
     /**
