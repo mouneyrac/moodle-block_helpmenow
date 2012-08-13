@@ -67,8 +67,6 @@ class block_helpmenow extends block_base {
             $this->content->text .= "<div><a href='$token_url'>Allow GoToMeeting Access</a></div>";
         }
 
-        $this->content->text .= '<div><a target="_blank" href="https://webdes2.vlacs.org//~eohare1/help_me_now/gtm_install.html">Set Up GoToMeeting</a></div>';
-
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
