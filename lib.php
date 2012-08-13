@@ -263,8 +263,8 @@ function helpmenow_print_hallway($users) {
     # todo: plugin abstraction
     $head = array(
         get_string('name'),
-        'MOTD',
-        'Logged In?',
+        get_string('motd', 'block_helpmenow'),
+        get_string('loggedin', 'block_helpmenow'),
     );
     if ($admin) {
         $head = array_merge($head, array(
@@ -284,44 +284,50 @@ function helpmenow_print_hallway($users) {
         return $a->isloggedin ? -1 : 1;
     });
 
+    $na = get_string('na', 'block_helpmenow');
+    $yes = get_string('yes');
+    $no = get_string('no');
+    $not_found = get_string('not_found', 'block_helpmenow');
+    $wander = get_string('wander', 'block_helpmenow');
+
     foreach ($users as $u) {
         $row = array(
             fullname($u),
-            isset($u->motd) ? $u->motd : 'N/A',
+            isset($u->motd) ? $u->motd : $na,
         );
 
         if ($u->isloggedin) {
-            $row[] = "Yes";
+            $row[] = $yes;
 
             if ($admin) {
                 # gtm
                 if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
-                    $row[] = 'Not Found';
+                    $row[] = $not_found;
                 } else {
                     $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
-                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">Wander In</a>";
+                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">$wander</a>";
                 }
 
                 # wiziq
                 if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'wiziq')) {
-                    $row[] = 'Not Found';
+                    $row[] = $not_found;
                 } else {
                     $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
                     if (isset($wiziq_u2p->class_id)) {
                         $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
                         $join_url->param('classid', $wiziq_u2p->class_id);
                         $join_url = $join_url->out();
-                        $row[] = "<a href=\"$join_url\" target=\"_blank\">Wander In</a>";
+                        $row[] = "<a href=\"$join_url\" target=\"_blank\">$wander</a>";
                     } else {
-                        $row[] = 'Not Found';
+                        $row[] = $not_found;
                     }
                 }
             }
         } else {
-            $row[] = "No";
+            $row[] = $no;
             if ($admin) {
-                $row[] = "N/A";
-                $row[] = "N/A";
+                $row[] = $na;
+                $row[] = $na;
             }
         }
         $table->data[] = $row;
@@ -352,26 +358,30 @@ EOF;
         }
         $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
         $login_url->param('login', 0);
-        $logout = link_to_popup_window($login_url->out(), "login", 'Leave Office', 400, 500, null, null, true);
+        $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
         $login_url->param('login', 1);
-        $login = link_to_popup_window($login_url->out(), "login", 'Enter Office', 400, 500, null, null, true);
+        $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
+        $my_office = get_string('my_office', 'block_helpmenow');
+        $out_of_office = get_string('out_of_office', 'block_helpmenow');
+        $online_students = get_string('online_students', 'block_helpmenow');
+
         $output .= <<<EOF
 <div id="helpmenow_office">
-    <div><b>My Office</b></div>
+    <div><b>$my_office</b></div>
     <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
     <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
     <div style="text-align: center; font-size:small; margin-top:.5em;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
-        <div id="helpmenow_logged_out_div_0" $outstyle>Out of Office | $login</div>
+        <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
     </div>
-    <div style="margin-top:.5em;">Online Students:</div>
+    <div style="margin-top:.5em;">$online_students</div>
     <div id="helpmenow_users_div"></div>
 </div>
 EOF;
         break;
     case 'STUDENT':
         $output .= '
-            <div>Instructors:</div>
+            <div>'.get_string('instructors', 'block_helpmenow').'</div>
             <div id="helpmenow_users_div"></div>
             ';
         break;

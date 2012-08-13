@@ -37,7 +37,7 @@ $chat_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
 if ($sessionid) {
     $session = get_record('block_helpmenow_session', 'id', $sessionid);
     if (!record_exists('block_helpmenow_helper', 'queueid', $session->queueid, 'userid', $USER->id)) {
-        helpmenow_fatal_error('You do not have permission to view this page. You may have been linked here in error.');
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     helpmenow_add_user($USER->id, $session->id);
 } else {

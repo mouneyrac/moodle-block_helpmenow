@@ -23,13 +23,20 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+# settings
+$string['wiziq_settings_heading'] = 'WizIQ';
+$string['wiziq_settings_heading_desc'] = 'Settings for WizIQ plugin.';
+$string['wiziq_settings_enabled'] = 'Enable WizIQ';
+$string['wiziq_settings_enabled_desc'] = 'Enables/disables the WizIQ plugin.';
+
+
 /*
  * todo
 $string['gotomeeting'] = 'GoToMeeting';
 
 # settings
 $string['gotomeeting_settings_heading'] = 'GoToMeeting';
-$string['gotomeeting_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin. ';
+$string['gotomeeting_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin.';
 $string['gotomeeting_settings_admin_key'] = 'Setup admin key.';
 $string['gotomeeting_settings_key'] = 'GoToMeeting API Key';
 $string['gotomeeting_settings_key_desc'] = 'GoToMeeting Application Developer API Key';

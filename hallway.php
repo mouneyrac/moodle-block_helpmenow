@@ -43,7 +43,7 @@ if (!empty($CFG->helpmenow_title)) {
 } else {
     $blockname = get_string('helpmenow', 'block_helpmenow'); 
 }
-$title = "Who's Here";
+$title = get_string('who', 'block_helpmenow');
 $nav = array(
     array('name' => $blockname),
     array('name' => $title)

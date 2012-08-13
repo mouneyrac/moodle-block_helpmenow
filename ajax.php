@@ -138,14 +138,16 @@ try {
                 $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
                 $login_url->param('queueid', $q->id);
                 $login_url->param('login', 0);
-                $logout = link_to_popup_window($login_url->out(), "login", 'Log Out', 400, 500, null, null, true);
+                $logout = link_to_popup_window($login_url->out(), "login", get_string('logout', 'block_helpmenow'), 400, 500, null, null, true);
                 $login_url->param('login', 1);
-                $login = link_to_popup_window($login_url->out(), "login", 'Log In', 400, 500, null, null, true);
+                $login = link_to_popup_window($login_url->out(), "login", get_string('login', 'block_helpmenow'), 400, 500, null, null, true);
+                $logout_status = get_string('logout_status', 'block_helpmenow');
+
                 $response->queues_html .= <<<EOF
 <div>$q->name</div>
 <div style="text-align: center; font-size:small; margin-top:.5em; margin-bottom:.5em;">
     <div id="helpmenow_logged_in_div_$q->id" $instyle>$logout</div>
-    <div id="helpmenow_logged_out_div_$q->id" $outstyle>You're Logged Out | $login</div>
+    <div id="helpmenow_logged_out_div_$q->id" $outstyle>$logout_status | $login</div>
 </div>
 EOF;
 
@@ -359,7 +361,7 @@ EOF;
 } catch (Exception $e) {
     $debugging = ob_get_clean();
     header('HTTP/1.1 400 Bad Request');
-    if ($CFG->debugdisplay) {
+    if (debugging()) {
         $response = new stdClass;
         $response->error = $e->getMessage();
         $response->debugging = $debugging;
@@ -369,7 +371,7 @@ EOF;
 }
 
 $debugging = ob_get_clean();
-if ($CFG->debugdisplay) {
+if (debugging()) {
     $response->debugging = $debugging;
 }
 header('Content-Type: application/json; charset=utf-8');

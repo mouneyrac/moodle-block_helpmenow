@@ -38,12 +38,12 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 $message = '';
 if ($queueid) {     # helper
     if (!$record = get_record('block_helpmenow_helper', 'queueid', $queueid, 'userid', $USER->id)) {
-        helpmenow_fatal_error('You do not have permission to view this page.');
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     $message = "queueid: $queueid, ";
 } else {    # instructor
     if (!$record = get_record('block_helpmenow_user', 'userid', $USER->id)) {
-        helpmenow_fatal_error('You do not have permission to view this page.');
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
 }
 
@@ -85,15 +85,13 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname) {
 }
 
 if (count($redirects) == 0) {
-    helpmenow_fatal_error('You may now close this window', true, true);
+    helpmenow_fatal_error(get_string('may_close', 'block_helpmenow'), true, true);
 }
 if (count($redirects) == 1) {
     redirect(reset($redirects));
 }
 
-$output = <<<EOF
-<p>Multiple plugins require further action. Please follow the links below to finish logging in.</p>
-EOF;
+$output = '<p>'.get_string('multiple_plugins', 'block_helpmenow').'</p>';
 foreach ($redirects as $pluginname => $redirect) {
     $output .= link_to_popup_window($redirect, $pluginname, $pluginname, 400, 500, null, null, true) . "<br />";
 }

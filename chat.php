@@ -31,7 +31,7 @@ require_login(0, false);
 # verify session
 $sessionid = required_param('session', PARAM_INT);
 if (!helpmenow_verify_session($sessionid)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
 # figure out if the user should see plugins
@@ -87,6 +87,8 @@ if (count($plugins_js)) {
     $plugins_js = '';
 }
 
+$textarea_message = get_string('textarea_message', 'block_helpmenow');
+
 echo <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -116,7 +118,7 @@ echo <<<EOF
         $plugins_display
         <div id="chatDiv"></div>
         <div id="inputDiv">
-            <textarea id="inputTextarea" cols="30" rows="3">Type your message here and press the "enter" or "return" key.</textarea>
+            <textarea id="inputTextarea" cols="30" rows="3">$textarea_message</textarea>
         </div>
     </body>
 </html>

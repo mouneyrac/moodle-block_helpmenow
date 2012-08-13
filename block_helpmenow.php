@@ -77,7 +77,8 @@ class block_helpmenow extends block_base {
             $this->content->footer .= "<a href='$admin'>$admin_text</a><br />";
         }
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>Who's Here</a>";
+            $who = get_string('who', 'block_helpmenow');
+            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
 
         $this->content->footer .= <<<EOF
@@ -89,14 +90,10 @@ class block_helpmenow extends block_base {
         </a>
     </div>
 EOF;
-        $this->content->footer .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', 'Popout', 400, 250, null, null, true) . '</div>';
+        $popout = get_string('popout', 'block_helpmenow');
+        $this->content->footer .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', $popout, 400, 250, null, null, true) . '</div>';
 
         return $this->content;
-    }
-
-    function specialization() {
-        global $CFG;
-
     }
 
     function cron() {

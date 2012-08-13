@@ -71,7 +71,7 @@ $string['plugin'] = 'Plugin';
 $string['helpers'] = 'Helpers';
 $string['queue_edit'] = 'Edit Queue';
 $string['global_link'] = 'Manage Global Queues';
-$string['confirm_delete'] = 'Confirm you wish to delete queue ';
+$string['confirm_delete'] = 'Are you sure you wish to delete queue ';
 
 # assign.php
 $string['assign_title'] = 'Assign Helpers';
@@ -106,8 +106,12 @@ $string['click_here'] = 'click here.';
 $string['participants'] = 'Participants:';
 
 # settings
-# $string['settings_heading'] = 'Help Me Now Settings';
-# $string['settings_heading_desc'] = '';
+$string['block_title'] = 'Block title';
+$string['block_title_desc'] = 'Sets the block title';
+
+/*
+$string['settings_heading'] = 'Help Me Now Settings';
+$string['settings_heading_desc'] = '';
 $string['settings_plugin'] = 'Default plugin';
 $string['settings_plugin_desc'] = 'Default plugin queues should use';
 $string['settings_block_message'] = 'Block message';
@@ -130,6 +134,7 @@ $string['settings_helper_activity_timeout'] = 'Helper activity timeout';
 $string['settings_helper_activity_timeout_desc'] = 'Time delay in minutes before logging out a helper who has not answered pending requests';
 $string['settings_helper_activity_warning'] = 'Helper activity warning';
 $string['settings_helper_activity_warning_desc'] = 'Time delay in minutes before warning a helper they will be logged out';
+ */
 
 # caps
 $string['helpmenow:course_queue_answer'] = 'Answer requests in course queues';
@@ -138,5 +143,32 @@ $string['helpmenow:manage_queues'] = 'Manage queue creation and helper assigning
 $string['helpmenow:queue_ask'] = 'Ask for meetings in queues';
 
 $string['permission_error'] = 'You do not have permission to view this page. You may have been linked to it in error.';
+
+$string['logout'] = 'Log Out';
+$string['logout_status'] = "You're Logged Out";
+$string['login'] = 'Log In';
+
+$string['who'] = "Who's Here";
+$string['popout'] = 'Popout';
+
+$string['textarea_message'] = 'Type your message here and press the &quot;enter&quot; or &quot;return&quot; key.';
+
+$string['motd'] = 'MOTD';
+$string['loggedin'] = 'Logged In?';
+
+$string['na'] = 'N/A';
+$string['not_found'] = 'Not Found';
+$string['wander'] = 'Wander In';
+
+$string['enter_office'] = 'Enter Office';
+$string['leave_office'] = 'Leave Office';
+$string['my_office'] = 'My Office';
+$string['out_of_office'] = 'Out of Office';
+$string['online_students'] = 'Online Students:';
+$string['instructors'] = 'Instructors:';
+
+$string['may_close'] = 'You may now close this window';
+$string['multiple_plugins'] = 'Multiple plugins require further action. Please follow the links below to finish logging in.';
+
 
 ?>
