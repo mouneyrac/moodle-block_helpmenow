@@ -208,7 +208,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
         # if they aren't, delete the meeting info from user2plugin record and update the db
         if (!record_exists_sql($sql)) {
             foreach (array('join_url', 'max_participants', 'unique_meetingid', 'meetingid') as $attribute) {
-                unset($user2plugin->$attribute);
+                $user2plugin->$attribute = null;
             }
             return $user2plugin->update();
         }

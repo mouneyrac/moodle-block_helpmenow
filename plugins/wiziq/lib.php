@@ -205,19 +205,6 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         return '';
     }
 
-    public static function on_login() {
-        global $CFG, $USER;
-
-        $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
-        # if we don't have a user2plugin record, we need one
-        if (!$user2plugin) {
-            $user2plugin = new helpmenow_user2plugin_wiziq();
-            $user2plugin->userid = $USER->id;
-            $user2plugin->insert();
-        }
-        return true;
-    }
-
     /**
      * returns array of full url paths to needed javascript libraries
      * @return array
@@ -312,6 +299,23 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         $this->update();
 
         return true;
+    }
+
+    /**
+     * override get_user2plugin to create a record if we don't have one
+     * todo: consider making this the behaviour of the parent class
+     */
+    public static function get_user2plugin($userid = null) {
+        if (!isset($userid)) {
+            global $USER;
+            $userid = $USER->id;
+        }
+        if (!$user2plugin = parent::get_user2plugin($userid)) {
+            $user2plugin = new helpmenow_user2plugin_wiziq();
+            $user2plugin->userid = $USER->id;
+            $user2plugin->insert();
+        }
+        return $user2plugin;
     }
 
     /**

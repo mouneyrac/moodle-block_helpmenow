@@ -135,7 +135,7 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
     } else {
         echo $message;
     }
-    if ($close) {
+    if ($close and !debugging()) {
         echo "<script type=\"text/javascript\">close();</script>";
     }
     die;
