@@ -56,6 +56,18 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
+        $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
+        $this->content->text .= <<<EOF
+<script>
+    try {
+        var popout = window.open('', 'hmn_popout', 'menubar=0,location=0,scrollbars,resizable,width=250,height=400');
+        if (popout.location.href == "about:blank" || typeof popout.location === 'undefined') {
+            popout.location = "$popout_url";
+        }
+    } catch (error) {
+    }
+</script>
+EOF;
         $this->content->text .= helpmenow_block_interface();
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
@@ -89,7 +101,7 @@ class block_helpmenow extends block_base {
     </div>
 EOF;
         $popout = get_string('popout', 'block_helpmenow');
-        $this->content->footer .= link_to_popup_window("$CFG->wwwroot/blocks/helpmenow/popout.php", 'popout', $popout, 400, 250, null, null, true) . '</div>';
+        $this->content->footer .= link_to_popup_window($popout_url, 'hmn_popout', $popout, 400, 250, null, null, true) . '</div>';
 
         return $this->content;
     }
