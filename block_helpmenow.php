@@ -49,7 +49,7 @@ class block_helpmenow extends block_base {
             return $this->content;
         }
 
-        global $CFG, $USER;
+        global $CFG, $USER, $SESSION;
 
         $this->content = (object) array(
             'text' => '',
@@ -57,7 +57,9 @@ class block_helpmenow extends block_base {
         );
 
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
-        $this->content->text .= <<<EOF
+        if (!isset($SESSION->helpmenow_popout)) {
+            $SESSION->helpmenow_popout = true;
+            $this->content->text .= <<<EOF
 <script>
     try {
         var popout = window.open('', 'hmn_popout', 'menubar=0,location=0,scrollbars,resizable,width=250,height=400');
@@ -68,6 +70,7 @@ class block_helpmenow extends block_base {
     }
 </script>
 EOF;
+        }
         $this->content->text .= helpmenow_block_interface();
 
         $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
