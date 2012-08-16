@@ -67,6 +67,10 @@ function helpmenow_wiziq_api($method, $params) {
     $response = curl_exec($ch);
     curl_close($ch);
 
+    if (deubgging()) {
+        print_object($response);
+    }
+
     return new SimpleXMLElement($response);
 }
 
