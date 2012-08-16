@@ -66,7 +66,7 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname) {
     if (!strlen($plugin_text)) {
         continue;
     }
-    $plugins_display[] = '<div>'.$plugin_text.'</div>';
+    $plugins_display[] = "<div id='helpmenow_$pluginname'>$plugin_text</div>";
 
     # js
     $plugin_libs = $class::get_js_libs();
@@ -101,6 +101,7 @@ echo <<<EOF
             var chat_session = $sessionid;
             var last_message = 0;
             var refresh;
+            var plugin_refresh = new Array();
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012080100.js" type="text/javascript"></script>

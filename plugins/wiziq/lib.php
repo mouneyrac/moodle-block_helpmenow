@@ -205,6 +205,12 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         return '';
     }
 
+    public static function on_chat_refresh($request, &$response) {
+        if (helpmenow_check_privileged($request->session)) {
+            $response->wiziq = self::display(true);
+        }
+    }
+
     /**
      * returns array of full url paths to needed javascript libraries
      * @return array

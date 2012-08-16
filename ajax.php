@@ -103,6 +103,11 @@ try {
             $response->html .= "<div>$msg</div>";
             $response->last_message = $m->id;
         }
+
+        foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+            $class = "helpmenow_plugin_$pluginname";
+            $class::on_chat_refresh($request, $response);
+        }
         break;
     case 'block':
         # datetime for debugging

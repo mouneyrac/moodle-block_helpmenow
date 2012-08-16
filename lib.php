@@ -852,6 +852,13 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     /**
+     * Code to be run when the chat makes a refresh call
+     */
+    public static function on_chat_refresh($request, &$response) {
+        return;
+    }
+
+    /**
      * returns array of valid plugin ajax functions
      * @return array
      */

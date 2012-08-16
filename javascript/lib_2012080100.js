@@ -63,6 +63,10 @@ function helpmenow_chat_refresh() {
                 $("#helpmenow_chime")[0].Play();
             }
         }
+
+        $.each(plugin_refresh, function (k, v) {
+            v(response);
+        });
     });
 }
 
