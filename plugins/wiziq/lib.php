@@ -223,7 +223,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     public static function get_js_libs() {
         global $CFG;
 
-        return array("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/lib_2012080100.js");
+        return array("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/lib_2012081700.js");
     }
 }
 
