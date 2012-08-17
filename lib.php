@@ -833,7 +833,7 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      * @param bool $privileged
      * @return string
      */
-    public abstract static function display($privileged = false);
+    public abstract static function display($sessionid, $privileged = false);
 
     /**
      * Code to be run when USER logs in

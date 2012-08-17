@@ -166,7 +166,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
         return true;
     }
 
-    public static function display($privileged = false) {
+    public static function display($sessionid, $privileged = false) {
         if ($privileged) {
             return '<a href="javascript:void(0)" onclick="helpmenow_gotomeeting_invite();">Invite To My GoToMeeting</a>';
         }

@@ -67,7 +67,7 @@ function helpmenow_wiziq_api($method, $params) {
     $response = curl_exec($ch);
     curl_close($ch);
 
-    if (deubgging()) {
+    if (debugging()) {
         print_object($response);
     }
 
@@ -173,7 +173,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         return true;
     }
 
-    public static function display($privileged = false) {
+    public static function display($sessionid, $privileged = false) {
         global $CFG, $USER;
 
         switch ($USER->id) {
@@ -196,11 +196,11 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
 
         if ($privileged) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
-            $connect->param('sessionid', required_param('session', PARAM_INT));
+            $connect->param('sessionid', $sessionid);
             $output = link_to_popup_window($connect->out(), "wiziq", 'Invite to WizIQ', 400, 500, null, null, true);
 
             $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
-            if ($user2plugin->verify_active_meeting()) {
+            if ($user2plugin->verify_active_meeting(true)) {
                 $connect->param('reopen', 1);
                 $output .= ' | ' . link_to_popup_window($connect->out(), "wiziq_session", 'Re-open WizIQ Window', 400, 500, null, null, true);
             }
@@ -210,8 +210,9 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     }
 
     public static function on_chat_refresh($request, &$response) {
-        if (helpmenow_check_privileged($request->session)) {
-            $response->wiziq = self::display(true);
+        $session = get_record('block_helpmenow_session', 'id', $request->session);
+        if (helpmenow_check_privileged($session)) {
+            $response->wiziq = self::display($request->session, true);
         }
     }
 
@@ -239,6 +240,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         'presenter_url',
         'duration',
         'timecreated',
+        'last_updated',
     );
 
     /**
@@ -264,6 +266,12 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
      * @var integer $timecreated
      */
     public $timecreated;
+
+    /**
+     * timestamp of when we last got some word about the meeting
+     * @var last_updated
+     */
+    public $last_updated;
 
     /**
      * plugin
@@ -305,6 +313,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         $this->presenter_url = (string) $response->create->class_details->presenter_list->presenter[0]->presenter_url;
         $this->duration = HELPMENOW_WIZIQ_DURATION * 60;    # we're saving in seconds instead of minutes
         $this->timecreated = time();
+        $this->last_updated = time();
 
         $this->update();
 
@@ -330,10 +339,12 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
 
     /**
      * see if the meeting is still ative
+     * @param $call boolean whether or not to make a call to wiziq for the answer
      * @return bool true = active
      */
-    public function verify_active_meeting() {
+    public function verify_active_meeting($call = false) {
         if (!isset($this->class_id)) { return false; }  # clearly if the class_id isn't set we don't have an active class
+        if (!$call and ($last_updated > time() - 60)) { return true; }  # limit calls to wiziq to once a minute, unless we force it
 
         global $USER;
 
@@ -345,11 +356,15 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
 
         # if we can modify it at all, it's cause it hasn't started
         if ((string) $response['status'] == 'ok') {
+            $this->last_updated = time();
+            $this->update();
             return true;
         }
 
         switch ((integer) $response->error['code']) {
         case 1015:  # in-progress
+            $this->last_updated = time();
+            $this->update();
             return true;
         case 1016:  # completed
         case 1017:  # expired

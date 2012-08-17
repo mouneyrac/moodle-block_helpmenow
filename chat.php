@@ -62,7 +62,7 @@ $plugins_display = $plugins_js = array();
 foreach (helpmenow_plugin::get_plugins() as $pluginname) {
     # display
     $class = "helpmenow_plugin_$pluginname";
-    $plugin_text = $class::display($privileged);
+    $plugin_text = $class::display($sessionid, $privileged);
     if (!strlen($plugin_text)) {
         continue;
     }

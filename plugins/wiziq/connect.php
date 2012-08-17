@@ -51,7 +51,7 @@ if ($reopen) {
     redirect($user2plugin->presenter_url);
 }
 
-if ($user2plugin->verify_active_meeting()) {
+if ($user2plugin->verify_active_meeting(true)) {
     $js = <<<EOF
                 close();
 EOF;
