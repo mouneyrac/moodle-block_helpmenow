@@ -104,6 +104,28 @@ try {
             $response->last_message = $m->id;
         }
 
+        $sql = "
+            SELECT *
+            FROM {$CFG->prefix}block_helpmenow_message
+            WHERE id = (
+                SELECT max(id)
+                FROM {$CFG->prefix}block_helpmenow_message
+                WHERE sessionid = {$request->session}
+        )";
+        if ($last_message = get_record_sql($sql)) {
+            if ($last_message->userid != get_admin()->id and $last_message->time < time() - 30) {
+                date_default_timezone_set('America/New_York');
+                $message = 'Sent: '.date('g:i:s a T', $last_message->time);
+                $message_rec = (object) array(
+                    'userid' => get_admin()->id,
+                    'sessionid' => $request->session,
+                    'time' => time(),
+                    'message' => addslashes($message),
+                );
+                insert_record('block_helpmenow_message', $message_rec);
+            }
+        }
+
         foreach (helpmenow_plugin::get_plugins() as $pluginname) {
             $class = "helpmenow_plugin_$pluginname";
             $class::on_chat_refresh($request, $response);
