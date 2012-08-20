@@ -343,7 +343,7 @@ EOF;
             $connect->param('userid', $u->id);
             $message = '';
             $style = 'margin-left: 1em;';
-            if (isset($u->motd)) {
+            if (isset($u->motd) and $u->online) {
                 $message .= '<div style="font-size: smaller;">' . $u->motd . '</div>';
             }
             if (isset($u->sessionid)) {
