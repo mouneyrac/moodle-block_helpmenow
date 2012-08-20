@@ -114,7 +114,7 @@ try {
         )";
         if ($last_message = get_record_sql($sql)) {
             if ($last_message->userid != get_admin()->id and $last_message->time < time() - 30) {
-                $message = 'Sent: '.userdate($last_message->time);
+                $message = 'Sent: '.userdate($last_message->time, '%r');
                 $message_rec = (object) array(
                     'userid' => get_admin()->id,
                     'sessionid' => $request->session,
@@ -132,7 +132,7 @@ try {
         break;
     case 'block':
         # datetime for debugging
-        $response->last_refresh = 'Updated: '.userdate(time());
+        $response->last_refresh = 'Updated: '.userdate(time(), '%r');
 
         # clean up sessions
         helpmenow_clean_sessions();
