@@ -917,7 +917,13 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
 
         $plugins = array();
         foreach (get_list_of_plugins('plugins', '', dirname(__FILE__)) as $pluginname) {
-            if (($USER->id == 930 or $USER->id == 61406) and $pluginname == 'gotomeeting') { continue; }
+            if (($USER->id == 930 or
+                    $USER->id == 61406 or
+                    $USER->id == 1352 or
+                    $USER->id == 45710 or
+                    $USER->id == 41256 or
+                    $USER->id == 907
+                ) and $pluginname == 'gotomeeting') { continue; }
             $enabled = "helpmenow_{$pluginname}_enabled";
             if (isset($CFG->$enabled) and !$CFG->$enabled) {
                 continue;
