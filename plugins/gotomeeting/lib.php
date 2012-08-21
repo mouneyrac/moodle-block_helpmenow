@@ -129,7 +129,7 @@ function helpmenow_gotomeeting_invite($request) {
 
     $message = fullname($USER) . ' has invited you to GoToMeeting, <a target="_blank" href="'.$user2plugin->join_url.'">click here</a> to join.';
     $message_rec = (object) array(
-        'userid' => get_admin()->id,
+        'userid' => null,
         'sessionid' => $request->session,
         'time' => time(),
         'message' => addslashes($message),
