@@ -313,6 +313,8 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         if ((string) $response['status'] == 'fail') {
             $error = (integer) $response->error['code'];
             $error_msg = (string) $response->error['msg'];
+
+            helpmenow_log($USER->id, 'wiziq_error', addslashes("code: $error; msg: $error_msg"));
             switch ($error) {
             case 1012:
                 helpmenow_fatal_error('License limit has been reached. Please contact your administrator');
