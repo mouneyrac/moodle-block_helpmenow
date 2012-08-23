@@ -930,7 +930,9 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
                     $USER->id == 53531 or
                     $USER->id == 909 or
                     $USER->id == 961 or
-                    $USER->id == 11
+                    $USER->id == 11 or
+                    $USER->id == 41342 or
+                    $USER->id == 43074
                 ) and $pluginname == 'gotomeeting') { continue; }
             $enabled = "helpmenow_{$pluginname}_enabled";
             if (isset($CFG->$enabled) and !$CFG->$enabled) {
