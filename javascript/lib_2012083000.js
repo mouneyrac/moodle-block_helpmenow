@@ -76,30 +76,6 @@ function helpmenow_chime() {
 }
 
 /**
- * Loads chat history and starts refresh cycle
- */
-function helpmenow_load_history() {
-    var params = {
-        "function" : "history",
-        "session" : chat_session,
-    };
-    helpmenow_call(params, function (xmlhttp) {
-        if (xmlhttp.readyState != 4) {
-            return;
-        }
-        if (xmlhttp.status != 200) {
-            helpmenow_load_history();
-            return;
-        }
-        var response = JSON.parse(xmlhttp.responseText);
-        last_message = response.last_message;
-        $("#chatDiv").append(response.html)
-            .scrollTop($('#chatDiv')[0].scrollHeight);
-        refresh = setInterval(helpmenow_chat_refresh, 2000);
-    });
-}
-
-/**
  * toggles motd editing
  *
  * @param bool edit  true indicates edit mode, false is display mode

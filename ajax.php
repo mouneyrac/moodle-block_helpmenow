@@ -41,73 +41,52 @@ try {
     # get the request body
     $request = json_decode(file_get_contents('php://input'));
 
+    # verify session where applicable
+    switch ($request->function) {
+    case 'message':
+    case 'refresh':
+        if (!$session2user = get_record('block_helpmenow_session2user', 'userid', $USER->id, 'sessionid', $request->session)) {
+            throw new Exception('Could not get session2user record');
+        }
+        break;
+    }
+
     # generate response
     $response = new stdClass;
     switch ($request->function) {
     case 'message':
-        # verify sesion
-        if (!helpmenow_verify_session($request->session)) {
-            throw new Exception('Invalid session');
-        }
-
-        $message_rec = (object) array(
-            'userid' => $USER->id,
-            'sessionid' => $request->session,
-            'time' => time(),
-            'message' => addslashes($request->message),
-        );
-        if (!insert_record('block_helpmenow_message', $message_rec)) {
+        if (!helpmenow_message($request->session, $USER->id, $request->message)) {
             throw new Exception('Could insert message record');
         }
         break;
-    case 'history':
-        $sql = '';
-        $request->last_message = -1;
-        $response->last_message = 0;
-        # fall through here
     case 'refresh':
-        # verify sesion
-        if (!helpmenow_verify_session($request->session)) {
-            throw new Exception('Invalid session');
+        # update session2user
+        $session2user->last_refresh = time();
+        $session2user->last_message = $request->last_message;
+        if (!update_record('block_helpmenow_session2user', $session2user)) {
+            throw new Exception('Could not update session2user record');
         }
 
         $response->html = '';
+        $response->beep = false;    # don't beep by default (oh man, could you imagine?)
 
-        set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
+        # send info about users in the session so the client has display names
+        # haven't moved to the client, so we don't need this yet
+        # $response->users = helpmenow_get_session_users($request->session);
 
-        if ($request->function == 'refresh') {
-            $sql = "AND (u.id <> $USER->id OR u.id IS NULL)";
-        }
-        $sql = "
-            SELECT m.*, u.id AS userid, u.firstname, u.lastname
-            FROM {$CFG->prefix}block_helpmenow_message m
-            LEFT JOIN {$CFG->prefix}user u ON m.userid = u.id
-            WHERE m.sessionid = $request->session
-            AND m.id > $request->last_message
-            $sql
-            ORDER BY m.time ASC
-        ";
-        $messages = get_records_sql($sql);
+        # unread messages
+        $messages = helpmenow_get_unread($request->session, $USER->id);
 
-        $response->beep = false;
+        # todo: move this to the client
         if ($messages) {
+            $response->html .= helpmenow_format_messages($messages);
+
+            # determine if we need to beep
             foreach ($messages as $m) {
-                $msg = $m->message;
-                if (is_null($m->userid)) {
-                    $msg = "<i>$msg</i>";
-                } else {
-                    if ($m->userid == $USER->id) {
-                        $name = "Me";               # todo: internationalize
-                    } else {
-                        $name = "$m->firstname $m->lastname";
-                    }
-                    $msg = "<b>$name:</b> $msg";
-                }
-                $response->html .= "<div>$msg</div>";
-                $response->last_message = $m->id;
                 if ($m->notify) {
                     $response->beep = true;
                 }
+                $response->last_message = $m->id;
             }
         } else {
             $sql = "
@@ -137,6 +116,7 @@ try {
             }
         }
 
+        # call subplugin on_chat_refresh methods
         foreach (helpmenow_plugin::get_plugins() as $pluginname) {
             $class = "helpmenow_plugin_$pluginname";
             $class::on_chat_refresh($request, $response);

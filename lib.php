@@ -35,6 +35,12 @@ define('HELPMENOW_QUEUE_HELPER', 'helper');
 define('HELPMENOW_QUEUE_HELPEE', 'helpee');
 define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 
+/**
+ * Defines for email sending. This will probably be settings in the future
+ */
+define('HELPMENOW_EMAIL_EARLYCUTOFF', 30 * 60);     # earliest missed message should be 30+ minutes ago
+define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message should be 10+ minutes ago
+
 function helpmenow_verify_session($session) {
     global $CFG, $USER;
     $sql = "
@@ -459,6 +465,178 @@ function helpmenow_jplayer() {
 EOF;
 
     return $rval;
+}
+
+/**
+ * inserts message into session
+ * @param int $sessionid session.id
+ * @param mixed $userid user.id; null for system messages
+ * @param string $message message
+ * @param int $notify integer boolean indicating if message should cause client beeps
+ * @return boolean success
+ */
+function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
+    $message_rec = (object) array(
+        'userid' => $userid,
+        'sessionid' => $sessionid,
+        'time' => time(),
+        'message' => addslashes($message),
+        'notify' => $notify,
+    );
+    if (!insert_record('block_helpmenow_message', $message_rec)) {
+        return false;
+    }
+    return true;
+}
+
+/**
+ * returns unread messages
+ * @param int $sessionid session.id
+ * @param int $user user.id
+ * @return mixed array of messages or false
+ */
+function helpmenow_get_unread($sessionid, $userid) {
+    global $CFG;
+    $sql = "
+        SELECT *
+        FROM {$CFG->prefix}block_helpmenow_message
+        WHERE sessionid = $sessionid
+        AND id > (
+            SELECT last_message
+            FROM {$CFG->prefix}block_helpmenow_session2user
+            WHERE userid = $userid
+            AND sessionid = $sessionid
+        )
+        AND (
+            userid <> $userid
+            OR userid IS NULL
+        )
+        ORDER BY id ASC
+    ";
+    return get_records_sql($sql);
+}
+
+/**
+ * returns entirety of session messages
+ * @param int $sessionid
+ * @return mixed array of messages or false
+ */
+function helpmenow_get_history($sessionid) {
+    return get_records('block_helpmenow_message', 'sessionid', $sessionid, 'id ASC');
+}
+
+/**
+ * formats messages
+ * todo: move this to the client
+ */
+function helpmenow_format_messages($messages) {
+    global $USER;
+    $users = array();
+    $output = '';
+    foreach ($messages as $m) {
+        $msg = $m->message;
+        if (is_null($m->userid)) {
+            $msg = "<i>$msg</i>";
+        } else {
+            if ($m->userid == $USER->id) {
+                $name = "Me";               # todo: internationalize
+            } else {
+                if (!isset($users[$m->userid])) {
+                    $users[$m->userid] = get_record('user', 'id', $m->userid);
+                }
+                $name = fullname($users[$m->userid]);
+            }
+            $msg = "<b>$name:</b> $msg";
+        }
+        $output .= "<div>$msg</div>";
+    }
+    return $output;
+}
+
+/**
+ * email messages users have missed
+ */
+function helpmenow_email_messages() {
+    global $CFG;
+
+    # find where we need to email messages
+    $earlycutoff = time() - HELPMENOW_EMAIL_EARLYCUTOFF;
+    $latecutoff = time() - HELPMENOW_EMAIL_LATECUTOFF;
+    $sql = "
+        SELECT s2u.id, s2u.userid, s2u.sessionid, (
+            SELECT userid
+            FROM {$CFG->prefix}block_helpmenow_session2user s2u2
+            WHERE s2u2.sessionid = s2u.sessionid
+            AND s2u2.userid <> s2u.userid
+        ) AS fromuserid
+        FROM {$CFG->prefix}block_helpmenow_session2user s2u
+        JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+        WHERE s.queueid IS NULL
+        AND s2u.last_message < (
+            SELECT MAX(id)
+            FROM {$CFG->prefix}block_helpmenow_message m
+            WHERE m.sessionid = s2u.sessionid
+            AND m.userid <> s2u.userid
+            AND m.time < $latecutoff
+        )
+        AND EXISTS (
+            SELECT 1
+            FROM {$CFG->prefix}block_helpmenow_message m2
+            WHERE m2.sessionid = s2u.sessionid
+            AND m2.userid <> s2u.userid
+            AND m2.time < $earlycutoff
+            AND m2.id > s2u.last_message
+        )
+    ";
+    if (!$session2users = get_records_sql($sql)) {
+        return true;    # we got nothin' to do
+    }
+
+    $users = array();
+    if (!empty($CFG->helpmenow_title)) {
+        $blockname = $CFG->helpmenow_title;
+    } else {
+        $blockname = get_string('helpmenow', 'block_helpmenow'); 
+    }
+
+    # get messages, format and send the email
+    foreach ($session2users as $s2u) {
+        $rval = true;
+        if (!isset($users[$s2u->userid])) {
+            $users[$s2u->userid] = get_record('user', 'id', $s2u->userid);
+        }
+        if (!isset($users[$s2u->fromuserid])) {
+            $users[$s2u->fromuserid] = get_record('user', 'id', $s2u->fromuserid);
+        }
+        $messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid);
+
+        $formatted = '';
+        foreach ($messages as $m) {
+            $formatted .= (is_null($m->userid) ?
+                    $m->message :
+                    fullname($users[$m->userid]) . ": $m->message")
+                . "\n";
+            $last_message = $m->id;
+        }
+
+        $subject = get_string('default_emailsubject', 'block_helpmenow');
+        $subject = str_replace('!blockname!', $blockname, $subject);
+        $subject = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $subject);
+
+        $text = get_string('default_emailtext', 'block_helpmenow');
+        $text = str_replace('!username!', fullname($users[$s2u->userid]), $text);
+        $text = str_replace('!blockname!', $blockname, $text);
+        $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
+        $text = str_replace('!messages!', $formatted, $text);
+
+        if (email_to_user($users[$s2u->userid], $blockname, $subject, $text)) { #, $messagehtml);
+            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);
+        } else {
+            echo "\nfailed to email user $s2u->userid";
+        }
+    }
+
+    return true;
 }
 
 /**

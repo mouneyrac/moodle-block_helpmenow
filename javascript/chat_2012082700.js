@@ -21,6 +21,5 @@ $(document).ready(function () {
     // set the chatDiv class depending on if the plugin div exists
     $('#chatDiv').addClass(($('#pluginDiv').length > 0) ? 'plugins' : 'noPlugins');
 
-    // loads history and starts refresh cycle
-    helpmenow_load_history();
+    refresh = setInterval(helpmenow_chat_refresh, 2000);
 });

@@ -170,5 +170,15 @@ $string['instructors'] = 'Instructors:';
 $string['may_close'] = 'You may now close this window';
 $string['multiple_plugins'] = 'Multiple plugins require further action. Please follow the links below to finish logging in.';
 
+$string['default_emailtext'] = <<<EOF
+Hello !username!,
+
+You may have missed these messages in !blockname! from !fromusername! while you were offline:
+
+!messages!
+EOF;
+$string['default_emailhtml'] = '';
+$string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
+
 
 ?>

@@ -90,6 +90,16 @@ if (count($plugins_js)) {
 $textarea_message = get_string('textarea_message', 'block_helpmenow');
 $jplayer = helpmenow_jplayer();
 
+if ($history = helpmenow_get_history($sessionid)) {
+    $messages = helpmenow_format_messages($history);
+    foreach ($history as $m) {
+        $last_message = $m->id;
+    }
+} else {
+    $messages = '';
+    $last_message = 0;
+}
+
 echo <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -100,20 +110,20 @@ echo <<<EOF
         <script type="text/javascript">
             var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
             var chat_session = $sessionid;
-            var last_message = 0;
+            var last_message = $last_message;
             var refresh;
             var plugin_refresh = new Array();
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         $jplayer
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012083000.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012080100.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012082700.js" type="text/javascript"></script>
         $plugins_js
     </head>
     <body>
         <div id="helpmenow_chime"></div>
         $plugins_display
-        <div id="chatDiv"></div>
+        <div id="chatDiv">$messages</div>
         <div id="inputDiv">
             <textarea id="inputTextarea" cols="30" rows="3">$textarea_message</textarea>
         </div>

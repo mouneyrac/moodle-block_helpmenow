@@ -18,6 +18,17 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && set_field('block_helpmenow_message', 'userid', null, 'userid', get_admin()->id);
     }
 
+    if ($result && $oldversion < 2012082400) {
+
+    /// Define field last_message to be added to block_helpmenow_session2user
+        $table = new XMLDBTable('block_helpmenow_session2user');
+        $field = new XMLDBField('last_message');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, null, 'last_refresh');
+
+    /// Launch add field last_message
+        $result = $result && add_field($table, $field);
+    }
+
     return $result;
 }
 ?>
