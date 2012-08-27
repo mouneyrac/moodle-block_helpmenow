@@ -59,7 +59,7 @@ function helpmenow_chat_refresh() {
             last_message = response.last_message;
             $("#chatDiv").append(response.html)
                 .scrollTop($('#chatDiv')[0].scrollHeight);
-            if (!$(document)[0].hasFocus()) {
+            if (response.beep && !$(document)[0].hasFocus()) {
                 $("#helpmenow_chime")[0].Play();
             }
         }

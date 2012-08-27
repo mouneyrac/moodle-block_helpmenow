@@ -71,15 +71,17 @@ try {
             throw new Exception('Invalid session');
         }
 
+        $response->html = '';
+
         set_field('block_helpmenow_session2user', 'last_refresh', time(), 'sessionid', $request->session, 'userid', $USER->id);
 
         if ($request->function == 'refresh') {
-            $sql = "AND u.id <> $USER->id";
+            $sql = "AND (u.id <> $USER->id OR u.id IS NULL)";
         }
         $sql = "
             SELECT m.*, u.id AS userid, u.firstname, u.lastname
             FROM {$CFG->prefix}block_helpmenow_message m
-            JOIN {$CFG->prefix}user u ON m.userid = u.id
+            LEFT JOIN {$CFG->prefix}user u ON m.userid = u.id
             WHERE m.sessionid = $request->session
             AND m.id > $request->last_message
             $sql
@@ -87,41 +89,51 @@ try {
         ";
         $messages = get_records_sql($sql);
 
-        $response->html = '';
-        foreach ($messages as $m) {
-            $msg = $m->message;
-            if ($m->userid == get_admin()->id) {
-                $msg = "<i>$msg</i>";
-            } else {
-                if ($m->userid == $USER->id) {
-                    $name = "Me";
+        $response->beep = false;
+        if ($messages) {
+            foreach ($messages as $m) {
+                $msg = $m->message;
+                if (is_null($m->userid)) {
+                    $msg = "<i>$msg</i>";
                 } else {
-                    $name = "$m->firstname $m->lastname";
+                    if ($m->userid == $USER->id) {
+                        $name = "Me";               # todo: internationalize
+                    } else {
+                        $name = "$m->firstname $m->lastname";
+                    }
+                    $msg = "<b>$name:</b> $msg";
                 }
-                $msg = "<b>$name:</b> $msg";
+                $response->html .= "<div>$msg</div>";
+                $response->last_message = $m->id;
+                if ($m->notify) {
+                    $response->beep = true;
+                }
             }
-            $response->html .= "<div>$msg</div>";
-            $response->last_message = $m->id;
-        }
-
-        $sql = "
-            SELECT *
-            FROM {$CFG->prefix}block_helpmenow_message
-            WHERE id = (
-                SELECT max(id)
+        } else {
+            $sql = "
+                SELECT *
                 FROM {$CFG->prefix}block_helpmenow_message
-                WHERE sessionid = {$request->session}
-        )";
-        if ($last_message = get_record_sql($sql)) {
-            if ($last_message->userid != get_admin()->id and $last_message->time < time() - 30) {
-                $message = 'Sent: '.userdate($last_message->time, '%r');
-                $message_rec = (object) array(
-                    'userid' => get_admin()->id,
-                    'sessionid' => $request->session,
-                    'time' => time(),
-                    'message' => addslashes($message),
-                );
-                insert_record('block_helpmenow_message', $message_rec);
+                WHERE id = (
+                    SELECT max(id)
+                    FROM {$CFG->prefix}block_helpmenow_message
+                    WHERE sessionid = {$request->session}
+            )";
+            if ($last_message = get_record_sql($sql)) {
+                if (!is_null($last_message->userid) and $last_message->time < time() - 30) {
+                    $message = 'Sent: '.userdate($last_message->time, '%r');    # todo: internationalize
+                    $message_rec = (object) array(
+                        'userid' => null,
+                        'sessionid' => $request->session,
+                        'time' => time(),
+                        'message' => addslashes($message),
+                        'notify' => 0,
+                    );
+                    if (!$id = insert_record('block_helpmenow_message', $message_rec)) {
+                        debugging("Failed to insert \"sent: _time_\" message.");
+                    }
+                    $response->html .= "<div>$message</div>";
+                    $response->last_message = $id;
+                }
             }
         }
 

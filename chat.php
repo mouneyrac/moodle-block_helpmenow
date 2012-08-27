@@ -104,7 +104,7 @@ echo <<<EOF
             var plugin_refresh = new Array();
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012081700.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082100.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012080100.js" type="text/javascript"></script>
         $plugins_js
     </head>
