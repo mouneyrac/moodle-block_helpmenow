@@ -60,7 +60,7 @@ function helpmenow_chat_refresh() {
             $("#chatDiv").append(response.html)
                 .scrollTop($('#chatDiv')[0].scrollHeight);
             if (response.beep && !$(document)[0].hasFocus()) {
-                $("#helpmenow_chime")[0].Play();
+                helpmenow_chime();
             }
         }
 
@@ -68,6 +68,11 @@ function helpmenow_chat_refresh() {
             v(response);
         });
     });
+}
+
+function helpmenow_chime() {
+    $("#helpmenow_chime").jPlayer("play");
+    return;
 }
 
 /**
@@ -197,8 +202,7 @@ function helpmenow_block_refresh() {
                 last_refresh_div.innerHTML = response.last_refresh;
 
                 if (response.pending) {
-                    var helpmenow_chime = document.getElementById("helpmenow_chime");
-                    helpmenow_chime.Play();
+                    helpmenow_chime();
                 }
 
                 if (typeof response.isloggedin !== "undefined") {

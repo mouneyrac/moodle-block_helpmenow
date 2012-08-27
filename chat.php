@@ -88,6 +88,7 @@ if (count($plugins_js)) {
 }
 
 $textarea_message = get_string('textarea_message', 'block_helpmenow');
+$jplayer = helpmenow_jplayer();
 
 echo <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -104,18 +105,13 @@ echo <<<EOF
             var plugin_refresh = new Array();
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082100.js" type="text/javascript"></script>
+        $jplayer
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082700.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012080100.js" type="text/javascript"></script>
         $plugins_js
     </head>
     <body>
-        <div>
-            <object id="helpmenow_chime" type="audio/x-wav" data="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" width="0" height="1">
-              <param name="src" value="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" />
-              <param name="autoplay" value="false" />
-              <param name="autoStart" value="0" />
-            </object>
-        </div>
+        <div id="helpmenow_chime"></div>
         $plugins_display
         <div id="chatDiv"></div>
         <div id="inputDiv">

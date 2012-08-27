@@ -386,15 +386,18 @@ EOF;
             ';
         break;
     }
+    $jplayer = helpmenow_jplayer();
     $output .= <<<EOF
 <hr />
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082100.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+$jplayer
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082700.js"></script>
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     helpmenow_block_refresh();
     var chat_t = setInterval(helpmenow_block_refresh, 10000);
 </script>
-<embed id="helpmenow_chime" src="$CFG->wwwroot/blocks/helpmenow/media/cowbell.wav" autostart="false" width="0" height="1" enablejavascript="true" style="position:absolute; left:0px; right:0px; z-index:-1;" />
+<div id="helpmenow_chime"></div>
 EOF;
 
     return $output;
@@ -410,6 +413,31 @@ function helpmenow_notify_once($messageid) {
         return true;
     }
     return false;
+}
+
+function helpmenow_jplayer() {
+    global $CFG;
+    $root = preg_replace('#^https?://.*?(/|$)#', '\1', $CFG->wwwroot);
+    $rval = <<<EOF
+<script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.jplayer.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#helpmenow_chime").jPlayer({
+            ready: function () {
+                $(this).jPlayer("setMedia", {
+                    oga: "$root/blocks/helpmenow/media/cowbell.ogg",
+                    mp3: "$root/blocks/helpmenow/media/cowbell.mp3"
+                });
+            },
+            swfPath: "$root/blocks/helpmenow/javascript/Jplayer.swf",
+            solution: "html,flash",
+            supplied: "mp3,oga"
+        });
+    });
+</script>
+EOF;
+
+    return $rval;
 }
 
 /**
