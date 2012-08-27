@@ -255,7 +255,7 @@ EOF;
                 break;
             case HELPMENOW_QUEUE_HELPEE:
                 $sql = "
-                    SELECT s.*, m.message, m.messageid
+                    SELECT s.*, m.message, m.id AS messageid
                     FROM {$CFG->prefix}block_helpmenow_session s
                     JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
                     JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
