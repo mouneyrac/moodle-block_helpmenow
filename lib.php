@@ -400,6 +400,18 @@ EOF;
     return $output;
 }
 
+function helpmenow_notify_once($messageid) {
+    global $SESSION;
+    if (!isset($SESSION->helpmenow_notifications)) {
+        $SESSION->helpmenow_notifications = array();
+    }
+    if (!isset($SESSION->helpmenow_notifications[$messageid])) {
+        $SESSION->helpmenow_notifications[$messageid] = true;
+        return true;
+    }
+    return false;
+}
+
 /**
  *     _____ _
  *    / ____| |

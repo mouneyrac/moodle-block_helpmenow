@@ -190,7 +190,7 @@ EOF;
 
                 # sessions
                 $sql = "
-                    SELECT u.*, s.id AS sessionid, m.message
+                    SELECT u.*, s.id AS sessionid, m.message, m.time, m.id AS messageid
                     FROM {$CFG->prefix}block_helpmenow_session s
                     JOIN {$CFG->prefix}user u ON u.id = s.createdby
                     JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
@@ -244,7 +244,9 @@ EOF;
                         $style = ' style="background-color:yellow"';
                         $message = '<div style="margin-left: 1em;">' . $s->message . '</div>';
                         if ($q->helpers[$USER->id]->isloggedin) {
-                            $response->pending = true;
+                            if (helpmenow_notify_once($s->messageid)) {
+                                $response->pending = true;
+                            }
                         }
                     }
                     $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
@@ -253,7 +255,7 @@ EOF;
                 break;
             case HELPMENOW_QUEUE_HELPEE:
                 $sql = "
-                    SELECT s.*, m.message
+                    SELECT s.*, m.message, m.messageid
                     FROM {$CFG->prefix}block_helpmenow_session s
                     JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
                     JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
@@ -272,7 +274,9 @@ EOF;
                     if ($session) {
                         $style = ' style="background-color:yellow"';
                         $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
-                        $response->pending = true;
+                        if (helpmenow_notify_once($s->messageid)) {
+                            $response->pending = true;
+                        }
                     }
                     $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
                 } else {
@@ -311,7 +315,7 @@ EOF;
             }
 
             $sql = "
-                SELECT s.*, m.message
+                SELECT s.*, m.message, m.id AS messageid
                 FROM {$CFG->prefix}block_helpmenow_session2user s2u
                 JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
                 JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
@@ -364,7 +368,9 @@ EOF;
             if (isset($u->sessionid)) {
                 $style .= 'background-color:yellow;';
                 $message .= '<div>' . $u->message . '</div>';
-                $response->pending = true;
+                if (helpmenow_notify_once($s->messageid)) {
+                    $response->pending = true;
+                }
             }
             $message = '<div style="margin-left: 1em;">'.$message.'</div>';
             if ($isloggedin and ($u->online)) {
