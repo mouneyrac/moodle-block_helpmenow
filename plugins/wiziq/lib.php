@@ -176,46 +176,6 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     public static function display($sessionid, $privileged = false) {
         global $CFG, $USER;
 
-        switch ($USER->id) {
-        case 5:
-        case 56385:
-        case 919:
-        case 52650:
-        case 37479:
-        case 57885:
-        case 56528:
-        case 8712:
-        case 11:
-        case 56895:
-        case 930:
-        case 61406:
-        case 1352:
-        case 45710:
-        case 41256:
-        case 907:
-        case 29:
-        case 41252:
-        case 1347:
-        case 41005:
-        case 53531:
-        case 909:
-        case 961:
-        case 11:
-        case 41342:
-        case 43074:
-        case 24:
-        case 43072:
-        case 41255:
-        case 38:
-        case 56463:
-        case 45713:
-        case 43022:
-        case 42170:
-            break;
-        default:
-            return '';
-        }
-
         if ($privileged) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
             $connect->param('sessionid', $sessionid);
