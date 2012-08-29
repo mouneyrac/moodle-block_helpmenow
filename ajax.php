@@ -293,6 +293,9 @@ EOF;
         switch ($privilege) {
         case 'TEACHER':
             $users = helpmenow_get_students();
+            if ($admins = helpmenow_get_admins()) {
+                $users = array_merge($users, $admins);
+            }
             $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
             $response->isloggedin = $isloggedin ? true : false;
             break;
@@ -354,6 +357,13 @@ EOF;
         $connect->remove_params('queueid');
         $connect->remove_params('sessionid');
         foreach ($users as $u) {
+            if ($privilege == 'TEACHER') {
+                if (isset($u->isadmin) and $u->isadmin) {
+                    if (!isset($u->sessionid)) {
+                        continue;
+                    }
+                }
+            }
             $connect->param('userid', $u->id);
             $message = '';
             $style = 'margin-left: 1em;';

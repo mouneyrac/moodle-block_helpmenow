@@ -63,6 +63,8 @@ function helpmenow_check_privileged($session) {
         }
     } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {    #todo: change this to a capability
         return true;
+    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'ADMIN') {    #todo: change this to a capability
+        return true;
     }
     return false;
 }
@@ -79,6 +81,19 @@ function helpmenow_get_students() {
         AND ce.status_idstr = 'ACTIVE'
         AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
+        AND u.lastaccess > $cutoff
+    ";
+    return get_records_sql($sql);
+}
+
+function helpmenow_get_admins() {
+    global $CFG, $USER;
+    $cutoff = helpmenow_cutoff();
+    $sql = "
+        SELECT u.*, 1 AS isadmin
+        FROM {$CFG->prefix}sis_user su
+        JOIN {$CFG->prefix}user u ON u.idnumber = su.sis_user_idstr
+        WHERE su.privilege = 'ADMIN'
         AND u.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
@@ -291,8 +306,14 @@ function helpmenow_print_hallway($users) {
     $wander = get_string('wander', 'block_helpmenow');
 
     foreach ($users as $u) {
+        $name = fullname($u);
+        if ($admin and $u->isloggedin) {
+            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+            $connect->param('userid', $u->id);
+            $name = link_to_popup_window($connect->out(), $u->id, $name, 400, 500, null, null, true);
+        }
         $row = array(
-            fullname($u),
+            $name,
             isset($u->motd) ? $u->motd : $na,
         );
 
