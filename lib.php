@@ -321,13 +321,13 @@ function helpmenow_print_hallway($users) {
             $row[] = $yes;
 
             if ($admin) {
-                # gtm
-                if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
-                    $row[] = $not_found;
-                } else {
-                    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
-                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">$wander</a>";
-                }
+#                # gtm
+#                if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
+#                    $row[] = $not_found;
+#                } else {
+#                    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
+#                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">$wander</a>";
+#                }
 
                 # wiziq
                 if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'wiziq')) {
