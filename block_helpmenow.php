@@ -73,15 +73,6 @@ EOF;
         }
         $this->content->text .= helpmenow_block_interface();
 
-        $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
-        if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-            $this->content->text .= '<div id="helpmenow_meetingid_div"></div><hr />';
-            $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
-            $token_url->param('redirect', qualified_me());
-            $token_url = $token_url->out();
-            $this->content->text .= "<div><a href='$token_url'>Allow GoToMeeting Access</a></div>";
-        }
-
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {

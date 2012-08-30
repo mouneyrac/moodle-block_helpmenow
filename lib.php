@@ -412,7 +412,7 @@ EOF;
 <hr />
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012082700.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012083000.js"></script>
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     helpmenow_block_refresh();

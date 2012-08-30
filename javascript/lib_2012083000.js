@@ -209,13 +209,6 @@ function helpmenow_block_refresh() {
                     helpmenow_toggle_login_display(response.isloggedin);
                 }
 
-                if (typeof response.meetingid !== "undefined") {
-                    var meetingid_div = document.getElementById("helpmenow_meetingid_div");
-                    if (meetingid_div) {
-                        meetingid_div.innerHTML = "Meeting ID #" + response.meetingid;
-                    }
-                }
-
                 if (typeof response.users_html !== "undefined") {
                     var users_div = document.getElementById("helpmenow_users_div");
                     users_div.innerHTML = response.users_html;

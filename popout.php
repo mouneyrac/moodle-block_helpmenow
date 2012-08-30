@@ -28,34 +28,23 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
-$meetingid_div = '';
-$bottom = '1em';
-$privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
-if ($privilege == 'TEACHER' or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-    $bottom = '4em';
-    $meetingid_div = <<<EOF
-<div style="position: absolute; bottom: 1em; left: 1em; right: 1em; height: 2em; padding-left: .5em; border: 1px solid black;">
-    <div id="helpmenow_meetingid_div" style="margin-top: .5em;"></div>
-</div>
-EOF;
-}
-
 if (!empty($CFG->helpmenow_title)) {
     $title = $CFG->helpmenow_title;
 } else {
     $title = get_string('helpmenow', 'block_helpmenow'); 
 }
-print_header($title, '', '', 'inputTextarea');
+print_header($title);
 
 $output = <<<EOF
 <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
-<div id="chatDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; bottom: $bottom; padding: .5em; overflow: auto; border: 1px solid black;">
+<div id="chatDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; bottom: 1em; padding: .5em; overflow: auto; border: 1px solid black;">
 EOF;
 
 $output .= helpmenow_block_interface();
-$output .= '<div id="helpmenow_last_refresh_div" style="font-size:small;"></div>';
-
-$output .= "</div>$meetingid_div</div></div></body></html>";
+$output .= <<<EOF
+<div id="helpmenow_last_refresh_div" style="font-size:small;"></div> 
+</div></div></div></body></html>
+EOF;
 
 echo $output;
 
