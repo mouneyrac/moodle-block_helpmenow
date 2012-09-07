@@ -61,6 +61,11 @@ function helpmenow_chat_refresh() {
                 .scrollTop($('#chatDiv')[0].scrollHeight);
             if (response.beep && !$(document)[0].hasFocus()) {
                 helpmenow_chime();
+                if (typeof response.title_flash !== "undefined") {
+                    $.titleAlert('"' + response.title_flash + '"', {
+                        interval:1000
+                    });
+                }
             }
         }
 

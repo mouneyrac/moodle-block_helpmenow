@@ -116,7 +116,8 @@ echo <<<EOF
         </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         $jplayer
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012083000.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012090500.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012082700.js" type="text/javascript"></script>
         $plugins_js
     </head>

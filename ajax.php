@@ -84,6 +84,7 @@ try {
             # determine if we need to beep
             foreach ($messages as $m) {
                 if ($m->notify) {
+                    $response->title_flash = format_string($m->message);
                     $response->beep = true;
                 }
                 $response->last_message = $m->id;
