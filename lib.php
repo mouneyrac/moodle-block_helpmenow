@@ -483,9 +483,10 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         'message' => addslashes($message),
         'notify' => $notify,
     );
-    if (!insert_record('block_helpmenow_message', $message_rec)) {
+    if (!$last_message = insert_record('block_helpmenow_message', $message_rec)) {
         return false;
     }
+    set_field('block_helpmenow_session', 'last_message', $last_message, 'id', $sessionid);
     return true;
 }
 
@@ -559,6 +560,8 @@ function helpmenow_format_messages($messages) {
 function helpmenow_email_messages() {
     global $CFG;
 
+    echo "\n";
+
     # find where we need to email messages
     $earlycutoff = time() - HELPMENOW_EMAIL_EARLYCUTOFF;
     $latecutoff = time() - HELPMENOW_EMAIL_LATECUTOFF;
@@ -572,23 +575,23 @@ function helpmenow_email_messages() {
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
         WHERE s.queueid IS NULL
-        AND s2u.last_message < (
-            SELECT MAX(id)
+
+        AND s2u.last_message < s.last_message
+        AND $latecutoff > (
+            SELECT m.time
             FROM {$CFG->prefix}block_helpmenow_message m
-            WHERE m.sessionid = s2u.sessionid
-            AND m.userid <> s2u.userid
-            AND m.time < $latecutoff
+            WHERE m.id = s.last_message
         )
-        AND EXISTS (
-            SELECT 1
+        AND $earlycutoff > (
+            SELECT min(m2.time)
             FROM {$CFG->prefix}block_helpmenow_message m2
             WHERE m2.sessionid = s2u.sessionid
-            AND m2.userid <> s2u.userid
-            AND m2.time < $earlycutoff
             AND m2.id > s2u.last_message
         )
     ";
+    echo $sql . "\n";
     if (!$session2users = get_records_sql($sql)) {
+        echo "we don't have any users to email\n";
         return true;    # we got nothin' to do
     }
 
@@ -630,9 +633,10 @@ function helpmenow_email_messages() {
         $text = str_replace('!messages!', $formatted, $text);
 
         if (email_to_user($users[$s2u->userid], $blockname, $subject, $text)) { #, $messagehtml);
+            echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text;
             set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);
         } else {
-            echo "\nfailed to email user $s2u->userid";
+            echo "failed to email user $s2u->userid\n";
         }
     }
 

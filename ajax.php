@@ -87,7 +87,6 @@ try {
                     $response->title_flash = format_string($m->message);
                     $response->beep = true;
                 }
-                $response->last_message = $m->id;
             }
         } else {
             $sql = "
@@ -112,10 +111,12 @@ try {
                         debugging("Failed to insert \"sent: _time_\" message.");
                     }
                     $response->html .= "<div>$message</div>";
-                    $response->last_message = $id;
                 }
             }
         }
+        $response->last_message = get_field_sql("
+            SELECT max(id) FROM {$CFG->prefix}block_helpmenow_message WHERE sessionid = $request->session
+        ");
 
         # call subplugin on_chat_refresh methods
         foreach (helpmenow_plugin::get_plugins() as $pluginname) {
