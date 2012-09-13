@@ -196,19 +196,44 @@ function helpmenow_log($userid, $action, $details) {
     insert_record('block_helpmenow_log', $new_record);
 }
 
-function helpmenow_clean_sessions() {
+function helpmenow_clean_sessions($all = false) {
     global $CFG, $USER;
 
+    $sql = "";
+    if (!$all) {
+        $sql = "JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id";
+    }
     $sql = "
         SELECT s.*
         FROM {$CFG->prefix}block_helpmenow_session s
-        JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id
+        $sql
         WHERE s.iscurrent = 1
         ";
     if ($sessions = get_records_sql($sql)) {
         foreach ($sessions as $s) {
+            if (!is_null($s->queueid)) {    # queue specific
+                # if there are any messages that no helpers have seen, this isn't old
+                $sql = "
+                    SELECT 1
+                    FROM {$CFG->prefix}block_helpmenow_message m
+                    WHERE sessionid = $s->id
+                    AND notify = 1
+                    AND time > (
+                        SELECT max(last_refresh)
+                        FROM {$CFG->prefix}block_helpmenow_session2user
+                        WHERE sessionid = $s->id
+                        AND userid <> $s->createdby
+                    )
+                ";
+                if (record_exists_sql($sql)) {
+                    continue;
+                }
+            }
             $session_users = get_records('block_helpmenow_session2user', 'sessionid', $s->id);
             foreach ($session_users as $su) {
+                if (!is_null($s->queueid) and $s->createdby == $su->userid and count($session_users) > 1) {
+                    continue;
+                }
                 if (($su->last_refresh + 60) > time()) {
                     continue 2;
                 }
@@ -486,7 +511,12 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
     if (!$last_message = insert_record('block_helpmenow_message', $message_rec)) {
         return false;
     }
-    set_field('block_helpmenow_session', 'last_message', $last_message, 'id', $sessionid);
+
+    $session = get_record('block_helpmenow_session', 'id', $sessionid);
+    $session->last_message = $last_message;
+    $session->iscurrent = 1;
+    update_record('block_helpmenow_session', $session);
+
     return true;
 }
 

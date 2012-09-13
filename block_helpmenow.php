@@ -105,6 +105,7 @@ EOF;
         $success = $success and helpmenow_autologout_helpers();
         $success = $success and helpmenow_autologout_users();
         $success = $success and helpmenow_email_messages();
+        $success = $success and helpmenow_clean_sessions(true);
         return $success;
     }
 }
