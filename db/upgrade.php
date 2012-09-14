@@ -40,6 +40,25 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2012091400) {
+
+    /// Changing the default of field last_message on table block_helpmenow_session2user to 0
+        $table = new XMLDBTable('block_helpmenow_session2user');
+        $field = new XMLDBField('last_message');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, '0', 'last_refresh');
+
+    /// Launch change of default for field last_message
+        $result = $result && change_field_default($table, $field);
+
+    /// Changing the default of field last_message on table block_helpmenow_session to 0
+        $table = new XMLDBTable('block_helpmenow_session');
+        $field = new XMLDBField('last_message');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, '0', 'timecreated');
+
+    /// Launch change of default for field last_message
+        $result = $result && change_field_default($table, $field);
+    }
+
     return $result;
 }
 ?>

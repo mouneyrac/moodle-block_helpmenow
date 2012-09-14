@@ -605,7 +605,7 @@ function helpmenow_email_messages() {
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
         WHERE s.queueid IS NULL
-
+        AND s.last_message <> 0
         AND s2u.last_message < s.last_message
         AND $latecutoff > (
             SELECT m.time
