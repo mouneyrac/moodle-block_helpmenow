@@ -55,7 +55,7 @@ try {
     $response = new stdClass;
     switch ($request->function) {
     case 'message':
-        if (!helpmenow_message($request->session, $USER->id, $request->message)) {
+        if (!helpmenow_message($request->session, $USER->id, clean_param($request->message, PARAM_TEXT))) {
             throw new Exception('Could insert message record');
         }
         break;
