@@ -190,13 +190,18 @@ EOF;
                     ";
                     $s->helpers = get_records_sql($sql);
                     foreach ($s->helpers as $h) {
-                        if (($h->last_refresh + 20) > time()) {
-                            $s->pending = false;
-                            continue 2;
+                        if ($s->pending) {
+                            if (($h->last_refresh + 20) > time()) {
+                                $s->pending = false;
+                            }
+                            if (($h->last_refresh > $s->time)) {
+                                $s->pending = false;
+                            }
                         }
-                        if (($h->last_refresh > $s->time)) {
-                            $s->pending = false;
-                            continue 2;
+                        if (!isset($s->helper_names)) {
+                            $s->helper_names = fullname($h);
+                        } else {
+                            $s->helper_names .= ', ' . fullname($h);
                         }
                     }
                 }
@@ -217,13 +222,17 @@ EOF;
                     $message = $style = '';
                     if ($s->pending) {
                         $style = ' style="background-color:yellow"';
-                        $message = '<div style="margin-left: 1em;">' . $s->message . '</div>';
+                        $message .= '"'.$s->message.'"<br />';
                         if ($q->helpers[$USER->id]->isloggedin) {
                             if (helpmenow_notify_once($s->messageid)) {
                                 $response->pending = true;
                             }
                         }
                     }
+                    if (isset($s->helper_names)) {
+                        $message .= '<small>'.$s->helper_names.'</small><br />';
+                    }
+                    $message = '<div style="margin-left: 1em;">'.$message.'</div>';
                     $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
                 }
                 $response->queues_html .= '</div>';
