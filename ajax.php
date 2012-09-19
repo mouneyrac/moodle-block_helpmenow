@@ -35,7 +35,7 @@ if (!isloggedin()) {
     die;
 }
 
-require_login(0, false);
+require_login(SITEID, false);
 
 try {
     # get the request body
