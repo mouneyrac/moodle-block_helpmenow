@@ -28,13 +28,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
-$session_id = required_param('sessionid', PARAM_INT);
-$reopen = optional_param('reopen', 0, PARAM_INT);
-
-# verify sesion
-if (!helpmenow_verify_session($session_id)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
+$test = optional_param('test', 0, PARAM_INT);
 
 # make sure user is instructor or helper
 $user = get_record('block_helpmenow_user', 'userid', $USER->id);
@@ -46,6 +40,22 @@ if (!$user and !$helper) {
 if (!$user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin()) {
     helpmenow_fatal_error('No user2plugin');
 }
+
+if ($test) {
+    if (!$user2plugin->verify_active_meeting(true)) {
+        $user2plugin->create_meeting();     # create meeting only if we don't have one
+    }
+    redirect($user2plugin->presenter_url);
+}
+
+$session_id = required_param('sessionid', PARAM_INT);
+$reopen = optional_param('reopen', 0, PARAM_INT);
+
+# verify sesion
+if (!helpmenow_verify_session($session_id)) {
+    helpmenow_fatal_error('You do not have permission to view this page.');
+}
+
 
 if ($reopen) {
     redirect($user2plugin->presenter_url);
