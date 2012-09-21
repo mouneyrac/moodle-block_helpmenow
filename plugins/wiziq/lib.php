@@ -136,7 +136,7 @@ function helpmenow_wiziq_invite($session_id, $class_id) {
     $join_url->param('sessionid', $session_id);
     $join_url = $join_url->out();
 
-    $message = fullname($USER) . ' has invited you to use voice & video, <a target="wiziq_session" href="'.$join_url.'">click here</a> to join.';
+    $message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="wiziq_session" href="'.$join_url.'">click here</a> to join.';
     $message_rec = (object) array(
         'userid' => null,
         'sessionid' => $session_id,
