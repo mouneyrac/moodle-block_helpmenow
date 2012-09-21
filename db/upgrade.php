@@ -59,6 +59,17 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && change_field_default($table, $field);
     }
 
+    if ($result && $oldversion < 2012092100) {
+
+    /// Define field lastaccess to be added to block_helpmenow_user
+        $table = new XMLDBTable('block_helpmenow_user');
+        $field = new XMLDBField('lastaccess');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, null, 'motd');
+
+    /// Launch add field lastaccess
+        $result = $result && add_field($table, $field);
+    }
+
     return $result;
 }
 ?>
