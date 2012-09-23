@@ -79,15 +79,16 @@ function helpmenow_get_students() {
     global $CFG, $USER;
     $cutoff = helpmenow_cutoff();
     $sql = "
-        SELECT u.*
+        SELECT u.*, hu.lastaccess AS hmn_lastaccess
         FROM {$CFG->prefix}classroom c
         JOIN {$CFG->prefix}classroom_enrolment ce ON ce.classroom_idstr = c.classroom_idstr
         JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
+        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
         WHERE c.sis_user_idstr = '$USER->idnumber'
         AND ce.status_idstr = 'ACTIVE'
         AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
-        AND u.lastaccess > $cutoff
+        AND hu.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
 }
@@ -96,11 +97,12 @@ function helpmenow_get_admins() {
     global $CFG, $USER;
     $cutoff = helpmenow_cutoff();
     $sql = "
-        SELECT u.*, 1 AS isadmin
+        SELECT u.*, 1 AS isadmin, hu.lastaccess AS hmn_lastaccess
         FROM {$CFG->prefix}sis_user su
         JOIN {$CFG->prefix}user u ON u.idnumber = su.sis_user_idstr
+        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
         WHERE su.privilege = 'ADMIN'
-        AND u.lastaccess > $cutoff
+        AND hu.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
 }
@@ -109,7 +111,7 @@ function helpmenow_get_instructors() {
     global $CFG, $USER;
     $cutoff = helpmenow_cutoff();
     $sql = "
-        SELECT u.*, hu.isloggedin, hu.motd
+        SELECT u.*, hu.isloggedin, hu.motd, hu.lastaccess AS hmn_lastaccess
         FROM {$CFG->prefix}classroom_enrolment ce
         JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
         JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
@@ -118,8 +120,6 @@ function helpmenow_get_instructors() {
         AND ce.status_idstr = 'ACTIVE'
         AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
         AND ce.iscurrent = 1
-        --AND hu.isloggedin <> 0
-        --AND u.lastaccess > $cutoff
     ";
     return get_records_sql($sql);
 }
@@ -163,7 +163,7 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
 }
 
 /**
- * ensures our instructors have a helpmenow_user record
+ * ensures users have a helpmenow_user record
  */
 function helpmenow_ensure_user_exists() {
     global $USER;
@@ -250,9 +250,9 @@ function helpmenow_autologout_helpers() {
     $sql = "
         SELECT h.*
         FROM {$CFG->prefix}block_helpmenow_helper h
-        JOIN {$CFG->prefix}user u ON u.id = h.userid
+        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = h.userid
         WHERE h.isloggedin <> 0
-        AND u.lastaccess < $cutoff
+        AND hu.lastaccess < $cutoff
         ";
     if (!$helpers = get_records_sql($sql)) {
         return true;
@@ -276,9 +276,8 @@ function helpmenow_autologout_users() {
     $sql = "
         SELECT hu.*
         FROM {$CFG->prefix}block_helpmenow_user hu
-        JOIN {$CFG->prefix}user u ON u.id = hu.userid
         WHERE hu.isloggedin <> 0
-        AND u.lastaccess < $cutoff
+        AND hu.lastaccess < $cutoff
         ";
     if (!$users = get_records_sql($sql)) {
         return true;
@@ -391,6 +390,8 @@ function helpmenow_print_hallway($users) {
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
+    helpmenow_ensure_user_exists();
+
     $output = '';
 
     $output .= <<<EOF
@@ -400,7 +401,6 @@ EOF;
     $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
     switch ($privilege) {
     case 'TEACHER':
-        helpmenow_ensure_user_exists();
         $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
         $instyle = $outstyle = '';
         if ($helpmenow_user->isloggedin) {

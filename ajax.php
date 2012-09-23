@@ -35,8 +35,6 @@ if (!isloggedin()) {
     die;
 }
 
-require_login(SITEID, false);
-
 try {
     # get the request body
     $request = json_decode(file_get_contents('php://input'));
@@ -125,6 +123,9 @@ try {
         }
         break;
     case 'block':
+        # update our user lastaccess
+        set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);
+
         # datetime for debugging
         $response->last_refresh = 'Updated: '.userdate(time(), '%r');
 
@@ -296,7 +297,7 @@ EOF;
         # get any unseen messages
         foreach ($users as $u) {
             if ($privilege == 'STUDENT') {
-                $u->online = ($u->isloggedin and ($u->lastaccess > $cutoff));
+                $u->online = ($u->isloggedin and ($u->hmn_lastaccess > $cutoff));
             } else {
                 $u->online = true;
             }
