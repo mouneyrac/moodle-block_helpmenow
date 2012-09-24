@@ -644,12 +644,19 @@ function helpmenow_email_messages() {
         $messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid);
 
         $formatted = '';
+        $content = false;
         foreach ($messages as $m) {
+            if (!is_null($m->userid)) { $content = true; }
             $formatted .= (is_null($m->userid) ?
                     $m->message :
                     fullname($users[$m->userid]) . ": $m->message")
                 . "\n";
             $last_message = $m->id;
+        }
+
+        if (!$content) {    # missed messages are only system messages, don't email
+            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+            continue;
         }
 
         $subject = get_string('default_emailsubject', 'block_helpmenow');
