@@ -73,21 +73,34 @@ EOF;
         }
         $this->content->text .= helpmenow_block_interface();
 
+        $break = false;
+
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = "$CFG->wwwroot/blocks/helpmenow/admin.php";
             $admin_text = get_string('admin_link', 'block_helpmenow');
             $this->content->footer .= "<a href='$admin'>$admin_text</a>";
+            $break = true;
         }
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $who = get_string('who', 'block_helpmenow');
-            $this->content->footer .= "<br /><a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
+            if ($break) {
+                $this->content->footer .= "<br />";
+            } else {
+                $break = true;
+            }
+            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
-        if (has_capability('moodle/site:doanything', $sitecontext) or $USER->id == 909) {
+        if (has_capability('moodle/site:doanything', $sitecontext) or get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
             $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
             $test->param('test', 1);
-            $this->content->footer .= '<br />' . link_to_popup_window($test->out(), "wiziq", 'Test WizIQ', 800, 900, null, null, true);
+            if ($break) {
+                $this->content->footer .= "<br />";
+            } else {
+                $break = true;
+            }
+            $this->content->footer .= link_to_popup_window($test->out(), "wiziq", 'Test WizIQ', 800, 900, null, null, true);
         }
 
         $this->content->footer .= <<<EOF
