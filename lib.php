@@ -248,7 +248,7 @@ function helpmenow_autologout_helpers() {
 
     $cutoff = helpmenow_cutoff();
     $sql = "
-        SELECT h.*
+        SELECT h.*, hu.lastaccess AS lastaccess
         FROM {$CFG->prefix}block_helpmenow_helper h
         JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = h.userid
         WHERE h.isloggedin <> 0
@@ -261,9 +261,11 @@ function helpmenow_autologout_helpers() {
     $success = true;
     foreach ($helpers as $h) {
         $duration = time() - $h->isloggedin;
-        helpmenow_log($h->userid, 'auto_logged_out', "queueid: $h->queueid, duration: $duration seconds");
+        helpmenow_log($h->userid, 'maybe_auto_logged_out', "queueid: $h->queueid, duration: $duration, cutoff: $cutoff, lastaccess: {$h->lastaccess}");
+        /*
         $h->isloggedin = 0;
         $success = $success and update_record('block_helpmenow_helper', $h);
+         */
     }
 
     return $success;
@@ -286,9 +288,11 @@ function helpmenow_autologout_users() {
     $success = true;
     foreach ($users as $u) {
         $duration = time() - $u->isloggedin;
-        helpmenow_log($u->userid, 'auto_logged_out', "duration: $duration seconds");
+        helpmenow_log($u->userid, 'maybe_auto_logged_out', "duration: $duration, cutoff: $cutoff, lastaccess: {$u->lastaccess}");
+        /*
         $u->isloggedin = 0;
         $success = $success and update_record('block_helpmenow_user', addslashes_recursive($u));
+         */
     }
 
     return $success;
