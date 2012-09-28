@@ -141,7 +141,41 @@ try {
         foreach ($queues as $q) {
             $response->queues_html .= '<div>';
             switch ($q->get_privilege()) {
+            case HELPMENOW_QUEUE_HELPEE:
             case HELPMENOW_QUEUE_HELPER:
+                $sql = "
+                    SELECT s.*, m.message, m.id AS messageid
+                    FROM {$CFG->prefix}block_helpmenow_session s
+                    JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
+                    JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                        SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
+                    )
+                    WHERE s.iscurrent = 1
+                    AND s.createdby = $USER->id
+                    AND s.queueid = $q->id
+                    AND (s2u.last_refresh + 20) < ".time()."
+                    AND s2u.last_refresh < m.time
+                ";
+                if ($session = get_record_sql($sql) or $q->is_open()) {
+                    $connect->remove_params('sessionid');
+                    $connect->param('queueid', $q->id);
+                    $message = $style = '';
+                    if ($session) {
+                        $style = ' style="background-color:yellow"';
+                        $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
+                        if (helpmenow_notify_once($s->messageid)) {
+                            $response->pending = true;
+                        }
+                    }
+                    $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
+                } else {
+                    $response->queues_html .= "<div>$q->name</div>$message";
+                }
+
+                if ($q->get_privilege() == HELPMENOW_QUEUE_HELPEE) {
+                    break;
+                }
+
                 $instyle = $outstyle = '';
                 if ($q->helpers[$USER->id]->isloggedin) {
                     $outstyle = 'style="display: none;"';
@@ -157,7 +191,6 @@ try {
                 $logout_status = get_string('logout_status', 'block_helpmenow');
 
                 $response->queues_html .= <<<EOF
-<div>$q->name</div>
 <div style="text-align: center; font-size:small; margin-top:.5em; margin-bottom:.5em;">
     <div id="helpmenow_logged_in_div_$q->id" $instyle>$logout</div>
     <div id="helpmenow_logged_out_div_$q->id" $outstyle>$logout_status | $login</div>
@@ -237,36 +270,6 @@ EOF;
                     $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
                 }
                 $response->queues_html .= '</div>';
-                break;
-            case HELPMENOW_QUEUE_HELPEE:
-                $sql = "
-                    SELECT s.*, m.message, m.id AS messageid
-                    FROM {$CFG->prefix}block_helpmenow_session s
-                    JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
-                    JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-                        SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
-                    )
-                    WHERE s.iscurrent = 1
-                    AND s.createdby = $USER->id
-                    AND s.queueid = $q->id
-                    AND (s2u.last_refresh + 20) < ".time()."
-                    AND s2u.last_refresh < m.time
-                ";
-                if ($session = get_record_sql($sql) or $q->is_open()) {
-                    $connect->remove_params('sessionid');
-                    $connect->param('queueid', $q->id);
-                    $message = $style = '';
-                    if ($session) {
-                        $style = ' style="background-color:yellow"';
-                        $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
-                        if (helpmenow_notify_once($s->messageid)) {
-                            $response->pending = true;
-                        }
-                    }
-                    $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
-                } else {
-                    $response->queues_html .= "<div>$q->name</div>$message";
-                }
                 break;
             }
             $desc_message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
