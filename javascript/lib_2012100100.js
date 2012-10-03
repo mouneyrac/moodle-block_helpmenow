@@ -182,7 +182,13 @@ function helpmenow_block_refresh() {
                 var last_refresh_div = document.getElementById("helpmenow_last_refresh_div");
                 last_refresh_div.innerHTML = response.last_refresh;
 
-                if (response.pending) {
+                if (response.pending && !$(document)[0].hasFocus()) {
+                    //$.titleAlert('"' + response.title_flash + '"', {
+                    $.titleAlert('(' + response.pending + ') VLACS Communicator', {
+                        interval:1000
+                    });
+                }
+                if (response.alert) {
                     helpmenow_chime();
                 }
 

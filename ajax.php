@@ -132,7 +132,8 @@ try {
         # clean up sessions
         helpmenow_clean_sessions();
 
-        $response->pending = false;
+        $response->pending = 0;
+        $response->alert = false;
 
         # queues
         $response->queues_html = '';
@@ -161,10 +162,11 @@ try {
                     $connect->param('queueid', $q->id);
                     $message = $style = '';
                     if ($session) {
+                        $response->pending++;
                         $style = ' style="background-color:yellow"';
                         $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
                         if (helpmenow_notify_once($s->messageid)) {
-                            $response->pending = true;
+                            $response->alert = true;
                         }
                     }
                     $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
@@ -255,11 +257,12 @@ EOF;
                     $connect->param('sessionid', $s->sessionid);
                     $message = $style = '';
                     if ($s->pending) {
+                        $response->pending++;
                         $style = ' style="background-color:yellow"';
                         $message .= '"'.$s->message.'"<br />';
                         if ($q->helpers[$USER->id]->isloggedin) {
                             if (helpmenow_notify_once($s->messageid)) {
-                                $response->pending = true;
+                                $response->alert = true;
                             }
                         }
                     }
@@ -364,10 +367,11 @@ EOF;
                 $message .= '<div style="font-size: smaller;">' . $motd . '</div>';
             }
             if (isset($u->sessionid)) {
+                $response->pending++;
                 $style .= 'background-color:yellow;';
                 $message .= '<div>' . $u->message . '</div>';
                 if (helpmenow_notify_once($s->messageid)) {
-                    $response->pending = true;
+                    $response->alert = true;
                 }
             }
             $message = '<div style="margin-left: 1em;">'.$message.'</div>';
