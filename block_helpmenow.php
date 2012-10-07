@@ -107,7 +107,7 @@ EOF;
 <div id="helpmenow_last_refresh_div"></div>
 <div style="text-align:right;">
     <div style="float:left;">
-        <a href="javascript:void(0)" onclick="helpmenow_chime();">
+        <a href="javascript:void(0)" onclick="helpmenow.chime();">
             <img src="$CFG->wwwroot/blocks/helpmenow/media/Bell.png" />
         </a>
     </div>

@@ -107,18 +107,18 @@ echo <<<EOF
     <head>
         <title>$title</title>
         <link rel="stylesheet" type="text/css" href="$CFG->wwwroot/blocks/helpmenow/style/chat.css" />
-        <script type="text/javascript">
-            var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-            var chat_session = $sessionid;
-            var last_message = $last_message;
-            var refresh;
-            var plugin_refresh = new Array();
-        </script>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         $jplayer
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012100100.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012082700.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.enhanced.cookie.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012111100.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012111100.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
+            helpmenowChat.setLastMessage($last_message);
+            helpmenowChat.setSessionId($sessionid);
+            var plugin_refresh = new Array();
+        </script>
         $plugins_js
     </head>
     <body>

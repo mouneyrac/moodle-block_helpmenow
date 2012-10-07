@@ -1,4 +1,4 @@
-plugin_refresh.push(function (response) {
+helpmenowChat.addPluginRefresh(function (response) {
     if (typeof response.wiziq !== "undefined") {
         $('#helpmenow_wiziq').html(response.wiziq);
     }
@@ -7,20 +7,16 @@ plugin_refresh.push(function (response) {
 /**
  * Function to invite user to wiziq
  */
-function helpmenow_wiziq_invite() {
+/*
+helpmenowChat.wiziqInvite = function () {
     var params = {
         "function" : "plugin",
         "plugin" : "wiziq",
         "plugin_function" : "helpmenow_wiziq_ajax_invite",
         "session" : chat_session,
     };
-    helpmenow_call(params, function (xmlhttp) {
-        if (xmlhttp.readyState != 4) {
-            return;
-        }
-        if (xmlhttp.status != 200) {
-            helpmenow_wiziq_invite();
-            return;
-        }
+    helpmenow.addRequest(params, function (response) {
+        return;
     });
 }
+*/

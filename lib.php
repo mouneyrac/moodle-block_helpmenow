@@ -424,8 +424,8 @@ EOF;
         $output .= <<<EOF
 <div id="helpmenow_office">
     <div><b>$my_office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenow_toggle_motd(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow_motd_textarea(event);" onblur="helpmenow_toggle_motd(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+    <div id="helpmenow_motd" onclick="helpmenowBlock.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenowBlock.keypressMOTD(event);" onblur="helpmenowBlock.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
     <div style="text-align: center; font-size:small; margin-top:.5em;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
         <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
@@ -448,11 +448,11 @@ EOF;
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
 <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012100100.js"></script>
+<script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.enhanced.cookie.js" type="text/javascript"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012111100.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block_2012111100.js"></script>
 <script type="text/javascript">
-    var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-    helpmenow_block_refresh();
-    var chat_t = setInterval(helpmenow_block_refresh, 30000);
+    helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
 </script>
 <div id="helpmenow_chime"></div>
 EOF;

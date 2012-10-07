@@ -168,7 +168,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
 
     public static function display($sessionid, $privileged = false) {
         if ($privileged) {
-            return '<a href="javascript:void(0)" onclick="helpmenow_gotomeeting_invite();">Invite To My GoToMeeting</a>';
+            return '<a href="javascript:void(0)" onclick="helpmenowChat.gotomeetingInvite();">Invite To My GoToMeeting</a>';
         }
         return '';
     }
@@ -226,7 +226,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     public static function get_js_libs() {
         global $CFG;
 
-        return array("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/lib_2012080100.js");
+        return array("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/lib_2012111100.js");
     }
 }
 
