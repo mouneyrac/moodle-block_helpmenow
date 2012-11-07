@@ -452,7 +452,7 @@ $jplayer
 <script type="text/javascript">
     var helpmenow_url = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
     helpmenow_block_refresh();
-    var chat_t = setInterval(helpmenow_block_refresh, 10000);
+    var chat_t = setInterval(helpmenow_block_refresh, 30000);
 </script>
 <div id="helpmenow_chime"></div>
 EOF;
