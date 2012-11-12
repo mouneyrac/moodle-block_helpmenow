@@ -49,6 +49,7 @@ var helpmenow = (function () {
      */
     function loadStorage() {
         sharedData = JSON.parse($.cookie('helpmenow'));
+        //console.debug(sharedData);
         if (sharedData === null) {
             sharedData = {
                 instances: {},
@@ -139,6 +140,11 @@ var helpmenow = (function () {
             var cutoff = new Date().getTime() - INSTANCE_TIMEOUT;
             for (var key in sharedData.instances) {
                 if (sharedData.instances[key].lastUpdate < cutoff) {
+                    for (var requestKey in sharedData.requests) {
+                        if (sharedData.requests[requestKey].instanceId === sharedData.instances[key].id) {
+                            delete sharedData.requests[requestKey];
+                        }
+                    }
                     delete sharedData.instances[key];
                     saveStorage();
                     continue;
@@ -187,7 +193,7 @@ var helpmenow = (function () {
             id = new Date().getTime();          // generate an id for ourself
             loadStorage();
             for (var key in sharedData.instances) {
-                if (key == id) {
+                if (key === id.toString) {
                     setTimeout(function () { helpmenow.init(); }, 1);
                     return;
                 }
