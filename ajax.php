@@ -42,7 +42,8 @@ foreach ($requests->requests as $request) {
     ob_start();
     try {
         $response = (object) array(
-            'id' => $request->id
+            'id' => $request->id,
+            'instanceId' => $request->instanceId
         );
 
         # verify session where applicable

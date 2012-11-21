@@ -23,13 +23,13 @@ var helpmenowBlock = (function () {
      * refresh block
      */
     function refresh() {
-        response = helpmenow.getBlockData();
+        var response = helpmenow.getBlockData();
         if (typeof response == "undefined") {               // don't have block data yet
             setTimeout(function () { refresh(); }, 500);
             return;
         }
-        if (response.lastUpdate > lastUpdate) {
-            lastUpdate = response.lastUpdate;
+        if (response.time > lastUpdate) {
+            lastUpdate = response.time;
             var queue_div = document.getElementById("helpmenow_queue_div");
             queue_div.innerHTML = response.queues_html;
 
@@ -64,7 +64,7 @@ var helpmenowBlock = (function () {
     function submitMOTD(motd) {
         var params = {
             "function" : "motd",
-            "motd" : motd,
+            "motd" : motd
         };
         helpmenow.addRequest(params, function(response) {
             var edit_element = document.getElementById("helpmenow_motd_edit");
@@ -128,8 +128,7 @@ var helpmenowBlock = (function () {
             }
 
             return true;
-        },
-
+        }
     };
 }) ();
 
