@@ -170,6 +170,11 @@ var helpmenow = (function () {
                 for (var i = 0; i < responses.length; i++) {
                     if (responses[i].instanceId === id) {
                         processResponse(responses[i]);
+                        if (noEvents) {
+                            // if we don't do this we have request records that
+                            // don't get deleted when the master changes
+                            localStorage.removeItem(PREFIX + responses[i].id);
+                        }
                         delete requests[responses[i].id];
                     } else {
                         responses[i].type = 'response';
@@ -211,7 +216,9 @@ var helpmenow = (function () {
             if (doBlockUpdates) {
                 setTimeout(function () { blockUpdate(); }, 0);
             }
-            getRequests();  // there might be some requests in localStorage
+            if (!noEvents) {
+                getRequests();  // there might be some requests in localStorage
+            }
             setTimeout(function () { getUpdates(); }, 0);
         } else {
             takeOverTimer = setTimeout(function () { takeOver(); }, TAKEOVER_DELAY);
