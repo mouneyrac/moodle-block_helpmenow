@@ -166,7 +166,7 @@ foreach ($requests->requests as $request) {
                     if ($session = get_record_sql($sql) or $q->is_open()) {
                         $connect->remove_params('sessionid');
                         $connect->param('queueid', $q->id);
-                        $message = $style = '';
+                        $style = '';
                         if ($session) {
                             $response->pending++;
                             $style = ' style="background-color:yellow"';
@@ -177,7 +177,7 @@ foreach ($requests->requests as $request) {
                         }
                         $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
                     } else {
-                        $response->queues_html .= "<div>$q->name</div>$message";
+                        $response->queues_html .= "<div>$q->name</div>";
                     }
 
                     if ($q->get_privilege() == HELPMENOW_QUEUE_HELPEE) {
