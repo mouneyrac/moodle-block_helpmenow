@@ -5,11 +5,6 @@ var helpmenow = (function () {
     var id;
 
     /**
-     * server url
-     */
-    var serverURL;
-
-    /**
      * prefix
      */
     var PREFIX = 'helpmenow20121121_';
@@ -38,6 +33,16 @@ var helpmenow = (function () {
      * period for cleaning up
      */
     var CLEANUP_FREQ = 60000;
+
+    /**
+     * max number for the random portion of the id
+     */
+    var SOME_LARGE_NUMBER = Math.pow(2,40);
+
+    /**
+     * server url
+     */
+    var serverURL;
 
     /**
      * local copy of our shared data
@@ -340,16 +345,10 @@ var helpmenow = (function () {
      */
     return {
         init: function () {
-            id = new Date().getTime().toString();          // generate an id for ourself
-            instances = getInstances();
-            if (instances !== null) {
-                for (var key in instances) {
-                    if (instances[key].id === id) {
-                        setTimeout(function () { helpmenow.init(); }, 0);
-                        return;
-                    }
-                }
-            }
+            // start by generating an id that is a combination of the current time and some large random number
+            id = new Date().getTime().toString() + (Math.floor(Math.random() * SOME_LARGE_NUMBER)).toString();
+
+            // start cleanup, checkin, and takeover timers
             setTimeout(function () { cleanUp(); }, 0);
             setTimeout(function () { checkIn(); }, 0);
             takeOverTimer = setTimeout(function () { takeOver(); }, 0);
@@ -387,6 +386,10 @@ var helpmenow = (function () {
             if ((typeof block === 'undefined') || block === null) return;
 
             block = JSON.parse(block);
+
+            if (block.time < ((new Date().getTime()) - CLEANUP_FREQ)) {
+                return;
+            }
 
             if (block.alert) {
                 var instances = getInstances();

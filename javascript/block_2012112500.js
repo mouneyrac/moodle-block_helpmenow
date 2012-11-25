@@ -46,13 +46,18 @@ var helpmenowBlock = (function () {
                 helpmenow.chime();
             }
 
-            if (typeof response.isloggedin !== "undefined") {
-                toggleLoginDisplay(response.isloggedin);
-            }
+            // if we don't try-catch here we break when coming back
+            // from being logged in as an instructor
+            try {
+                if (typeof response.isloggedin !== "undefined") {
+                    toggleLoginDisplay(response.isloggedin);
+                }
 
-            if (typeof response.users_html !== "undefined") {
-                var users_div = document.getElementById("helpmenow_users_div");
-                users_div.innerHTML = response.users_html;
+                if (typeof response.users_html !== "undefined") {
+                    var users_div = document.getElementById("helpmenow_users_div");
+                    users_div.innerHTML = response.users_html;
+                }
+            } catch (e) {
             }
         }
         setTimeout(function () { refresh(); }, 500);

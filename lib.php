@@ -449,8 +449,8 @@ EOF;
 $jplayer
 <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
 <script src="$CFG->wwwroot/blocks/helpmenow/javascript/json2.js" type="text/javascript"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012112100.js"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block_2012112100.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012112500.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block_2012112500.js"></script>
 <script type="text/javascript">
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
 </script>
