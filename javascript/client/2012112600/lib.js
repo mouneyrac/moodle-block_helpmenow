@@ -351,7 +351,7 @@ var helpmenow = (function () {
             // start cleanup, checkin, and takeover timers
             setTimeout(function () { cleanUp(); }, 0);
             setTimeout(function () { checkIn(); }, 0);
-            takeOverTimer = setTimeout(function () { takeOver(); }, 0);
+            takeOverTimer = setTimeout(function () { takeOver(); }, 100);   // wait a short time here
         },
         setServerURL: function (newServerURL) {
             serverURL = newServerURL;

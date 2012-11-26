@@ -41,6 +41,11 @@ define('HELPMENOW_NOT_PRIVILEGED', 'notprivileged');
 define('HELPMENOW_EMAIL_EARLYCUTOFF', 30 * 60);     # earliest missed message should be 30+ minutes ago
 define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message should be 10+ minutes ago
 
+/**
+ * defines for our javascript client version, so we only have to change one thing
+ */
+define('HELPMENOW_CLIENT_VERSION', 2012112600);
+
 function helpmenow_verify_session($session) {
     global $CFG, $USER;
     $sql = "
@@ -443,14 +448,16 @@ EOF;
         break;
     }
     $jplayer = helpmenow_jplayer();
+    $version = HELPMENOW_CLIENT_VERSION;
+
     $output .= <<<EOF
 <hr />
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
-<script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
-<script src="$CFG->wwwroot/blocks/helpmenow/javascript/json2.js" type="text/javascript"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012112500.js"></script>
-<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/block_2012112500.js"></script>
+<script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/jquery.titlealert.js" type="text/javascript"></script>
+<script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/json2.js" type="text/javascript"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/lib.js"></script>
+<script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/block.js"></script>
 <script type="text/javascript">
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
 </script>
@@ -476,7 +483,7 @@ function helpmenow_jplayer() {
     global $CFG;
     $root = preg_replace('#^https?://.*?(/|$)#', '\1', $CFG->wwwroot);
     $rval = <<<EOF
-<script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.jplayer.min.js" type="text/javascript"></script>
+<script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/jquery.jplayer.min.js" type="text/javascript"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         $("#helpmenow_chime").jPlayer({
@@ -486,7 +493,7 @@ function helpmenow_jplayer() {
                     mp3: "$root/blocks/helpmenow/media/cowbell.mp3"
                 });
             },
-            swfPath: "$root/blocks/helpmenow/javascript/Jplayer.swf",
+            swfPath: "$root/blocks/helpmenow/javascript/lib/Jplayer.swf",
             solution: "html,flash",
             supplied: "mp3,oga"
         });

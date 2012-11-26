@@ -89,6 +89,7 @@ if (count($plugins_js)) {
 
 $textarea_message = get_string('textarea_message', 'block_helpmenow');
 $jplayer = helpmenow_jplayer();
+$version = HELPMENOW_CLIENT_VERSION;
 
 if ($history = helpmenow_get_history($sessionid)) {
     $messages = helpmenow_format_messages($history);
@@ -109,10 +110,10 @@ echo <<<EOF
         <link rel="stylesheet" type="text/css" href="$CFG->wwwroot/blocks/helpmenow/style/chat.css" />
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
         $jplayer
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/jquery.titlealert.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/json2.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib_2012112500.js" type="text/javascript"></script>
-        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/chat_2012111100.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/jquery.titlealert.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/json2.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/lib.js" type="text/javascript"></script>
+        <script src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/chat.js" type="text/javascript"></script>
         <script type="text/javascript">
             helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
             helpmenowChat.setLastMessage($last_message);
