@@ -17,7 +17,7 @@ var helpmenow = (function () {
     /**
      * period at which we send all requests to server
      */
-    var REQUEST_FREQ = 1000;
+    var REQUEST_FREQ = 2000;
 
     /**
      * period at which we checkIn
@@ -27,7 +27,7 @@ var helpmenow = (function () {
     /**
      * period at which we get block stuff
      */
-    var BLOCK_UPDATE_FREQ = 5000;
+    var BLOCK_UPDATE_FREQ = 10000;
 
     /**
      * period for cleaning up
