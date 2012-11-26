@@ -166,7 +166,7 @@ foreach ($requests->requests as $request) {
                     if ($session = get_record_sql($sql) or $q->is_open()) {
                         $connect->remove_params('sessionid');
                         $connect->param('queueid', $q->id);
-                        $style = '';
+                        $message = $style = '';
                         if ($session) {
                             $response->pending++;
                             $style = ' style="background-color:yellow"';
