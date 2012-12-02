@@ -74,7 +74,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         if ($privileged) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/connect.php");
             $connect->param('sessionid', $sessionid);
-            return link_to_popup_window($connect->out(), "adobe_connect", 'Invite to Adobe Conect', 400, 500, null, null, true);
+            return link_to_popup_window($connect->out(), "adobe_connect", 'Invite to Adobe Connect', 400, 500, null, null, true);
         }
         return '';
     }
