@@ -137,11 +137,27 @@ function helpmenow_cutoff() {
     return time() - 300;
 }
 
+/**
+ * adds user to a session
+ * @param int $userid user to add
+ * @param int $sessionid session.id
+ * @param int $last_refresh timestamp
+ */
 function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
+    global $CFG;
+    $sql = "
+        SELECT *
+        FROM {$CFG->prefix}block_helpmenow_message
+        WHERE sessionid = $sessionid
+        ORDER BY id ASC
+    ";
+    $messages = get_records_sql($sql);
+
     $session2user_rec = (object) array(
         'sessionid' => $sessionid,
         'userid' => $userid,
         'last_refresh' => $last_refresh,
+        'new_messages' => addslashes(helpmenow_format_messages($messages)),
     );
     return insert_record('block_helpmenow_session2user', $session2user_rec);
 }
@@ -505,7 +521,8 @@ EOF;
 }
 
 /**
- * inserts message into session
+ * inserts message into session and updates session2user records
+ *
  * @param int $sessionid session.id
  * @param mixed $userid user.id; null for system messages
  * @param string $message message
@@ -513,6 +530,8 @@ EOF;
  * @return boolean success
  */
 function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
+    global $CFG;
+
     $message_rec = (object) array(
         'userid' => $userid,
         'sessionid' => $sessionid,
@@ -529,6 +548,27 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
     $session->iscurrent = 1;
     update_record('block_helpmenow_session', $session);
 
+    $sql = "
+        SELECT *
+        FROM {$CFG->prefix}block_helpmenow_session2user
+        WHERE sessionid = $sessionid
+    "; 
+    if (isset($userid)) {
+        $sql .= "AND userid <> $userid";
+    }
+    foreach (get_records_sql($sql) as $s2u) {
+        $message = helpmenow_format_message($message_rec, $s2u->userid);
+        $cache = json_decode($s2u->cache);
+        $cache->last_message = $last_message;
+        if ($notify) {
+            $cache->beep = true;
+            $cache->title_flash = format_string($message);
+        }
+        $cache->html = $cache->html . $message;
+        $s2u->cache = json_encode($cache);
+        update_record('block_helpmenow_session2user', addslashes_recursive($s2u));
+    }
+
     return true;
 }
 
@@ -538,18 +578,23 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
  * @param int $user user.id
  * @return mixed array of messages or false
  */
-function helpmenow_get_unread($sessionid, $userid) {
+function helpmenow_get_unread($sessionid, $userid, $last_message = null) {
     global $CFG;
-    $sql = "
-        SELECT *
-        FROM {$CFG->prefix}block_helpmenow_message
-        WHERE sessionid = $sessionid
-        AND id > (
+
+    if (!is_int($last_message)) {
+        $last_message = "(
             SELECT last_message
             FROM {$CFG->prefix}block_helpmenow_session2user
             WHERE userid = $userid
             AND sessionid = $sessionid
-        )
+        )";
+    }
+
+    $sql = "
+        SELECT *
+        FROM {$CFG->prefix}block_helpmenow_message
+        WHERE sessionid = $sessionid
+        AND id > $last_message
         AND (
             userid <> $userid
             OR userid IS NULL
@@ -569,31 +614,46 @@ function helpmenow_get_history($sessionid) {
 }
 
 /**
- * formats messages
+ * formats array of messages
  * todo: move this to the client
  */
 function helpmenow_format_messages($messages) {
-    global $USER;
-    $users = array();
     $output = '';
     foreach ($messages as $m) {
-        $msg = $m->message;
-        if (is_null($m->userid)) {
-            $msg = "<i>$msg</i>";
-        } else {
-            if ($m->userid == $USER->id) {
-                $name = "Me";               # todo: internationalize
-            } else {
-                if (!isset($users[$m->userid])) {
-                    $users[$m->userid] = get_record('user', 'id', $m->userid);
-                }
-                $name = fullname($users[$m->userid]);
-            }
-            $msg = "<b>$name:</b> $msg";
-        }
-        $output .= "<div>$msg</div>";
+        $output .= helpmenow_format_message($m);
     }
     return $output;
+}
+
+/**
+ * formats message
+ */
+function helpmenow_format_message($m, $userid = null) {
+    if (!isset($userid)) {
+        global $USER;
+        $userid = $USER->id;
+    }
+
+    static $users;
+    if (!isset($users)) {
+        $users = array();
+    }
+
+    $msg = $m->message;
+    if (is_null($m->userid)) {
+        $msg = "<i>$msg</i>";
+    } else {
+        if ($m->userid == $userid) {
+            $name = "Me";               # todo: internationalize
+        } else {
+            if (!isset($users[$m->userid])) {
+                $users[$m->userid] = get_record('user', 'id', $m->userid);
+            }
+            $name = fullname($users[$m->userid]);
+        }
+        $msg = "<b>$name:</b> $msg";
+    }
+    return "<div>$msg</div>";
 }
 
 /**
@@ -690,6 +750,446 @@ function helpmenow_email_messages() {
     }
 
     return true;
+}
+
+/**
+ * gets s2u recs, with caching
+ *
+ * @param int $sessionid s2u.sessionid
+ * @param int $userid s2u.userid if non given assumes USER.id
+ * @return mixed object if success, false if fail
+ */
+function helpmenow_get_s2u($sessionid, $userid = null) {
+    static $s2u_cache;
+    if (!isset($s2u_cache)) {
+        $s2u_cache = array();
+    }
+
+    if (!is_int($userid)) {
+        global $USER;
+        $userid = $USER->id;
+    }
+
+    if (isset($s2u_cache[$sessionid . $userid])) {
+        return $s2u_cache[$sessionid . $userid];
+    }
+    if ($s2u = get_record('block_helpmenow_session2user', 'userid', $userid, 'sessionid', $sessionid)) {
+        $s2u_cache[$sessionid . $userid] = $s2u;
+        return $s2u;
+    }
+    return false;
+}
+
+function helpmenow_is_tester() {
+    global $USER;
+    switch ($USER->id) {
+    case 52650:
+        return true;
+    default:
+        return false;
+    }
+}
+
+/**
+ * chat messages
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_message($request, &$response) {
+    global $USER;
+
+    if (!helpmenow_message($request->session, $USER->id, htmlspecialchars($request->message))) {
+        throw new Exception('Could insert message record');
+    }
+}
+
+/**
+ * chat refresh
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_refresh($request, &$response) {
+    global $USER, $CFG;
+
+    $session2user = helpmenow_get_s2u($request->session);
+
+    # unless something has gone wrong, we should already have a response ready:
+    if ($request->last_message == $session2user->optimistic_last_message and (helpmenow_is_tester())) {     // just test users for now, please
+        $response_cache = json_decode($session2user->cache);
+        $response = (object) array_merge((array) $response, (array) $response_cache);
+    } else {
+        # unread messages
+        $messages = helpmenow_get_unread($request->session, $USER->id);
+
+        # todo: move this to the client
+        if ($messages) {
+            $response->html .= helpmenow_format_messages($messages);
+
+            # determine if we need to beep
+            foreach ($messages as $m) {
+                if ($m->notify) {
+                    $response->title_flash = format_string($m->message);
+                    $response->beep = true;
+                }
+                $response->last_message = $m->id;
+            }
+        } else {
+            $response->last_message = $request->last_message;
+        }
+    }
+
+    /**
+     * if there aren't any new messages check to see if we should add a "sent: _time_" message
+     *
+     * yes, it sucks, it's one of the many things todo: move to client
+     * -dzaharee
+     */
+    if ($response->last_message == $request->last_message) {
+        $sql = "
+            SELECT *
+            FROM {$CFG->prefix}block_helpmenow_message
+            WHERE id = (
+                SELECT max(id)
+                FROM {$CFG->prefix}block_helpmenow_message
+                WHERE sessionid = {$request->session}
+            )";
+        if ($last_message = get_record_sql($sql)) {
+            if (!is_null($last_message->userid) and $last_message->time < time() - 30) {
+                $message = 'Sent: '.userdate($last_message->time, '%r');    # todo: internationalize
+                helpmenow_message($request->session, null, $message, 0);
+            }
+        }
+    }
+
+    # update session2user
+    $session2user->last_message = $request->last_message;
+    $session2user->optimistic_last_message = $response->last_message;
+    $session2user->last_refresh = time();
+    $session2user->cache = json_encode((object) array(
+        'last_message' => $request->last_message,
+    ));
+    if (!update_record('block_helpmenow_session2user', $session2user)) {
+        $response->html = '';
+        $response->beep = false;
+        $response->last_message = $request->last_message;
+        throw new Exception('Could not update session2user record');
+    }
+
+    # call subplugin on_chat_refresh methods
+    foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+        $class = "helpmenow_plugin_$pluginname";
+        $class::on_chat_refresh($request, $response);
+    }
+}
+
+/**
+ * chat block
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_block($request, &$response) {
+    global $USER, $CFG;
+
+    # update our user lastaccess
+    set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);
+
+    # datetime for debugging
+    $response->last_refresh = 'Updated: '.userdate(time(), '%r');
+
+    # clean up sessions
+    helpmenow_clean_sessions();
+
+    $response->pending = 0;
+    $response->alert = false;
+
+    # queues
+    $response->queues_html = '';
+    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+    $queues = helpmenow_queue::get_queues();
+    foreach ($queues as $q) {
+        $response->queues_html .= '<div>';
+        switch ($q->get_privilege()) {
+        case HELPMENOW_QUEUE_HELPEE:
+        case HELPMENOW_QUEUE_HELPER:
+            $sql = "
+                SELECT s.*, m.message, m.id AS messageid
+                FROM {$CFG->prefix}block_helpmenow_session s
+                JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
+                JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
+                )
+                WHERE s.iscurrent = 1
+                AND s.createdby = $USER->id
+                AND s.queueid = $q->id
+                AND (s2u.last_refresh + 20) < ".time()."
+                AND s2u.last_refresh < m.time
+                ";
+            if ($session = get_record_sql($sql) or $q->is_open()) {
+                $connect->remove_params('sessionid');
+                $connect->param('queueid', $q->id);
+                $message = $style = '';
+                if ($session) {
+                    $response->pending++;
+                    $style = ' style="background-color:yellow"';
+                    $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
+                    if (helpmenow_notify_once($s->messageid)) {
+                        $response->alert = true;
+                    }
+                }
+                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
+            } else {
+                $response->queues_html .= "<div>$q->name</div>";
+            }
+
+            if ($q->get_privilege() == HELPMENOW_QUEUE_HELPEE) {
+                break;
+            }
+
+            $instyle = $outstyle = '';
+            if ($q->helpers[$USER->id]->isloggedin) {
+                $outstyle = 'style="display: none;"';
+            } else {
+                $instyle = 'style="display: none;"';
+            }
+            $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+            $login_url->param('queueid', $q->id);
+            $login_url->param('login', 0);
+            $logout = link_to_popup_window($login_url->out(), "login", get_string('logout', 'block_helpmenow'), 400, 500, null, null, true);
+            $login_url->param('login', 1);
+            $login = link_to_popup_window($login_url->out(), "login", get_string('login', 'block_helpmenow'), 400, 500, null, null, true);
+            $logout_status = get_string('logout_status', 'block_helpmenow');
+
+            $response->queues_html .= <<<EOF
+    <div style="text-align: center; font-size:small; margin-top:.5em; margin-bottom:.5em;">
+        <div id="helpmenow_logged_in_div_$q->id" $instyle>$logout</div>
+        <div id="helpmenow_logged_out_div_$q->id" $outstyle>$logout_status | $login</div>
+    </div>
+EOF;
+
+            # sessions
+            $sql = "
+                SELECT u.*, s.id AS sessionid, m.message, m.time, m.id AS messageid
+                FROM {$CFG->prefix}block_helpmenow_session s
+                JOIN {$CFG->prefix}user u ON u.id = s.createdby
+                JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid = s.createdby
+                )
+                WHERE s.queueid = $q->id
+                AND s.iscurrent = 1
+                ";
+            if (!$sessions = get_records_sql($sql)) {
+                break;
+            }
+            $response->queues_html .= '<div style="margin-left: 1em;">';
+
+            foreach ($sessions as &$s) {
+                $s->pending = true;
+                $sql = "
+                    SELECT *
+                    FROM {$CFG->prefix}block_helpmenow_session2user s2u
+                    JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+                    WHERE s2u.sessionid = $s->sessionid
+                    AND s2u.userid <> $s->id
+                    ";
+                $s->helpers = get_records_sql($sql);
+                foreach ($s->helpers as $h) {
+                    if ($s->pending) {
+                        if (($h->last_refresh + 20) > time()) {
+                            $s->pending = false;
+                        }
+                        if (($h->last_refresh > $s->time)) {
+                            $s->pending = false;
+                        }
+                    }
+                    if (!isset($s->helper_names)) {
+                        $s->helper_names = fullname($h);
+                    } else {
+                        $s->helper_names .= ', ' . fullname($h);
+                    }
+                }
+            }
+
+            unset($s);
+
+            # sort by unseen messages, lastname, firstname
+            usort($sessions, function($a, $b) {
+                if (!($a->pending xor $b->pending)) {
+                    return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+                }
+                return $a->pending ? -1 : 1;
+            });
+
+            foreach ($sessions as $s) {
+                $connect->remove_params('queueid');
+                $connect->param('sessionid', $s->sessionid);
+                $message = $style = '';
+                if ($s->pending) {
+                    $response->pending++;
+                    $style = ' style="background-color:yellow"';
+                    $message .= '"'.$s->message.'"<br />';
+                    if ($q->helpers[$USER->id]->isloggedin) {
+                        if (helpmenow_notify_once($s->messageid)) {
+                            $response->alert = true;
+                        }
+                    }
+                }
+                if (isset($s->helper_names)) {
+                    $message .= '<small>'.$s->helper_names.'</small><br />';
+                }
+                $message = '<div style="margin-left: 1em;">'.$message.'</div>';
+                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
+            }
+            $response->queues_html .= '</div>';
+            break;
+        }
+        $desc_message = '<div style="margin-left: 1em; font-size: smaller;">' . $q->description . '</div>';
+        $response->queues_html .= '</div>' . $desc_message . '<hr />';
+    }
+
+    # user lists for students and instructors
+    $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
+    switch ($privilege) {
+    case 'TEACHER':
+        $users = helpmenow_get_students();
+        if ($admins = helpmenow_get_admins()) {
+            $users = array_merge($users, $admins);
+        }
+        $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
+        $response->isloggedin = $isloggedin ? true : false;
+        break;
+    case 'STUDENT':
+        $users = helpmenow_get_instructors();
+        $isloggedin = true;
+        break;
+    default:
+        return;
+    }
+
+    $cutoff = helpmenow_cutoff();
+
+    # get any unseen messages
+    foreach ($users as $u) {
+        if ($privilege == 'STUDENT') {
+            $u->online = ($u->isloggedin and ($u->hmn_lastaccess > $cutoff));
+        } else {
+            $u->online = true;
+        }
+
+        $sql = "
+            SELECT s.*, m.message, m.id AS messageid
+            FROM {$CFG->prefix}block_helpmenow_session2user s2u
+            JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+            JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
+            JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+                SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s2u.userid
+            )
+            WHERE s2u.userid = $USER->id
+            AND s.iscurrent = 1
+            AND s2u2.userid = $u->id
+            AND s.queueid IS NULL
+            AND (s2u.last_refresh + 20) < ".time()."
+            AND s2u.last_refresh < m.time
+            ";
+        if (!$session = get_record_sql($sql)) {
+            continue;
+        }
+        $u->sessionid = $session->id;
+        $u->message = $session->message;
+    }
+
+    # sort by unseen messages, lastname, firstname
+    usort($users, function($a, $b) use ($privilege)  {
+        if (!(isset($a->sessionid) xor isset($b->sessionid))) {
+            if ($privilege == 'STUDENT') {      # students see offline teachers, therefor we should sort online/offline before alphabetical
+                if (($a->online) xor ($b->online)) {
+                    return ($a->online) ? -1 : 1;
+                }
+            }
+            return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+        }
+        return isset($a->sessionid) ? -1 : 1;
+    });
+
+    # build the list
+    $response->users_html = '';
+    $connect->remove_params('queueid');
+    $connect->remove_params('sessionid');
+    foreach ($users as $u) {
+        if ($privilege == 'TEACHER') {
+            if (isset($u->isadmin) and $u->isadmin) {
+                if (!isset($u->sessionid)) {
+                    continue;
+                }
+            }
+        }
+        $connect->param('userid', $u->id);
+        $message = '';
+        $style = 'margin-left: 1em;';
+        if (isset($u->motd)) {
+            if ($u->online) {
+                $motd = $u->motd;
+            } else {
+                $motd = "(Offline)";
+            }
+            $message .= '<div style="font-size: smaller;">' . $motd . '</div>';
+        }
+        if (isset($u->sessionid)) {
+            $response->pending++;
+            $style .= 'background-color:yellow;';
+            $message .= '<div>' . $u->message . '</div>';
+            if (helpmenow_notify_once($s->messageid)) {
+                $response->alert = true;
+            }
+        }
+        $message = '<div style="margin-left: 1em;">'.$message.'</div>';
+        if ($isloggedin and ($u->online)) {
+            $link = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+        } else {
+            $link = fullname($u);
+        }
+        $response->users_html .= "<div style=\"$style\">".$link.$message."</div>";
+    }
+}
+
+/**
+ * chat motd
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_motd($request, &$response) {
+    global $USER;
+
+    if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {
+        throw new Exception('No helpmenow_user record');
+    }
+    $helpmenow_user->motd = addslashes($request->motd);
+    if (!update_record('block_helpmenow_user', $helpmenow_user)) {
+        throw new Exception('Could not update user record');
+    }
+    $response->motd = $request->motd;
+}
+
+/**
+ * plugin functions
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_plugin($request, &$response) {
+    $plugin = $request->plugin;
+    $class = "helpmenow_plugin_$plugin";
+    $plugin_function = $request->plugin_function;
+    if (!in_array($plugin, helpmenow_plugin::get_plugins())) {
+        throw new Exception('Unknown plugin');
+    }
+    if (!in_array($plugin_function, $class::get_ajax_functions())) {
+        throw new Exception('Unknown function');
+    }
+    $response = (object) array_merge((array) $response, (array) $plugin_function($request));
 }
 
 /**
