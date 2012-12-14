@@ -59,7 +59,7 @@ foreach ($requests->requests as $request) {
         # generate response
         switch ($request->function) {
         case 'message':
-            if (!helpmenow_message($request->session, $USER->id, stripslashes(clean_param($request->message, PARAM_TEXT)))) {
+            if (!helpmenow_message($request->session, $USER->id, htmlspecialchars($request->message))) {
                 throw new Exception('Could insert message record');
             }
             break;
