@@ -816,7 +816,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
     $session2user = helpmenow_get_s2u($request->session);
 
     # unless something has gone wrong, we should already have a response ready:
-    if ($request->last_message == $session2user->optimistic_last_message and (helpmenow_is_tester())) {     // just test users for now, please
+    if (helpmenow_is_tester() and $request->last_message == $session2user->optimistic_last_message) {     // just test users for now, please
         $response_cache = json_decode($session2user->cache);
         $response = (object) array_merge((array) $response, (array) $response_cache);
     } else {
