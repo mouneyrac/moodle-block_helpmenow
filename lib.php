@@ -44,7 +44,7 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2012112600);
+define('HELPMENOW_CLIENT_VERSION', 2012122700);
 
 function helpmenow_verify_session($session) {
     global $CFG, $USER;
@@ -158,6 +158,11 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
         'userid' => $userid,
         'last_refresh' => $last_refresh,
         'new_messages' => addslashes(helpmenow_format_messages($messages)),
+        'cache' => json_encode((object) array(
+            'html' => '',
+            'beep' => false,
+            'last_message' => 0,
+        )),
     );
     return insert_record('block_helpmenow_session2user', $session2user_rec);
 }
@@ -868,6 +873,8 @@ function helpmenow_serverfunc_refresh($request, &$response) {
     $session2user->optimistic_last_message = $response->last_message;
     $session2user->last_refresh = time();
     $session2user->cache = json_encode((object) array(
+        'html' => '',
+        'beep' => false,
         'last_message' => $request->last_message,
     ));
     if (!update_record('block_helpmenow_session2user', $session2user)) {
@@ -1190,6 +1197,19 @@ function helpmenow_serverfunc_plugin($request, &$response) {
         throw new Exception('Unknown function');
     }
     $response = (object) array_merge((array) $response, (array) $plugin_function($request));
+}
+
+/**
+ * log error from the client
+ */
+function helpmenow_log_error($error) {
+    $new_record = (object) array(
+        'error' => addslashes($error->error),
+        'details' => addslashes($error->details),
+        'timecreated' => time(),
+    );
+    insert_record('block_helpmenow_error_log', $new_record);
+
 }
 
 /**

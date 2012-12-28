@@ -7,7 +7,7 @@ var helpmenow = (function () {
     /**
      * prefix
      */
-    var PREFIX = 'helpmenow20121121_';
+    var PREFIX = 'helpmenow_2012122700_';
 
     /**
      * takeOver timeout in milliseconds
@@ -169,30 +169,51 @@ var helpmenow = (function () {
             if (xmlhttp.status != 200) {
                 setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
             }
-            var responses = JSON.parse(xmlhttp.responseText);
-            if (typeof responses !== "undefined") {
-                var now = new Date().getTime();
-                for (var i = 0; i < responses.length; i++) {
-                    if (responses[i].instanceId === id) {
-                        processResponse(responses[i]);
-                        if (noEvents) {
-                            // if we don't do this we have request records that
-                            // don't get deleted when the master changes
+            try {
+                var responses = JSON.parse(xmlhttp.responseText);
+                if (typeof responses !== "undefined") {
+                    var now = new Date().getTime();
+                    for (var i = 0; i < responses.length; i++) {
+                        if (responses[i].instanceId === id) {
+                            processResponse(responses[i]);
+                            if (noEvents) {
+                                // if we don't do this we have request records that
+                                // don't get deleted when the master changes
+                                localStorage.removeItem(PREFIX + responses[i].id);
+                            }
+                            delete requests[responses[i].id];
+                        } else {
+                            responses[i].type = 'response';
+                            responses[i].time = now;
+                            localStorage.setItem(PREFIX + responses[i].id + '_response', JSON.stringify(responses[i]));
                             localStorage.removeItem(PREFIX + responses[i].id);
+                            delete requests[responses[i].id];
                         }
-                        delete requests[responses[i].id];
-                    } else {
-                        responses[i].type = 'response';
-                        responses[i].time = now;
-                        localStorage.setItem(PREFIX + responses[i].id + '_response', JSON.stringify(responses[i]));
-                        localStorage.removeItem(PREFIX + responses[i].id);
-                        delete requests[responses[i].id];
                     }
                 }
+                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
+            } catch (e) {
+                sendError(e.message, xmlhttp.responseText);
             }
-            setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
         }
+        xmlhttp.open("POST", serverURL, true);
+        xmlhttp.setRequestHeader("Accept", "application/json");
+        xmlhttp.setRequestHeader("Content-type", "application/json");
+        xmlhttp.send(params);
+    }
 
+    /**
+     * send error to the server so we can debug those pesky intermittent client issues
+     */
+    function sendError(errorMessage, errorDetails) {
+        var params = {
+            'error': errorMessage,
+            'details': errorDetails,
+        };
+        params = JSON.stringify(params);
+
+        var xmlhttp;
+        xmlhttp = new XMLHttpRequest();
         xmlhttp.open("POST", serverURL, true);
         xmlhttp.setRequestHeader("Accept", "application/json");
         xmlhttp.setRequestHeader("Content-type", "application/json");

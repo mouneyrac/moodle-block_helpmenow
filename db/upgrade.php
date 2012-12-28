@@ -84,6 +84,24 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2012122700) {
+
+    /// Define table block_helpmenow_error_log to be created
+        $table = new XMLDBTable('block_helpmenow_error_log');
+
+    /// Adding fields to table block_helpmenow_error_log
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('error', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null, null, null);
+        $table->addFieldInfo('details', XMLDB_TYPE_TEXT, 'big', null, XMLDB_NOTNULL, null, null, null, null);
+        $table->addFieldInfo('timecreated', XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, null);
+
+    /// Adding keys to table block_helpmenow_error_log
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+    /// Launch create table for block_helpmenow_error_log
+        $result = $result && create_table($table);
+    }
+
     return $result;
 }
 ?>

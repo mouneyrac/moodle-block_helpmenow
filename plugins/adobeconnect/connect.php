@@ -48,7 +48,9 @@ if (!helpmenow_verify_session($sessionid)) {
     helpmenow_fatal_error('You do not have permission to view this page.');
 }
 
-$url = "http://interact.vlacs.org/$USER->username";
+$username = preg_replace('/admin$/', '', $USER->username);
+
+$url = "http://interact.vlacs.org/$username";
 $message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
 helpmenow_message($sessionid, null, $message);
 

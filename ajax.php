@@ -30,14 +30,17 @@ require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
 if (!isloggedin()) {
-    ob_end_clean();
     header('HTTP/1.1 401 Unauthorized');
     die;
 }
 
 $requests = json_decode(file_get_contents('php://input'));
+if (isset($requests->error)) {
+    helpmenow_log_error($requests);
+    header('HTTP/1.1 200 OK');
+    die;
+}
 $responses = array();
-ob_end_clean();
 foreach ($requests->requests as $request) {
     ob_start();
     try {
