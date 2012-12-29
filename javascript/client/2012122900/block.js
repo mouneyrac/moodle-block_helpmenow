@@ -72,11 +72,13 @@ var helpmenowBlock = (function () {
             "motd" : motd
         };
         helpmenow.addRequest(params, function(response) {
-            var edit_element = document.getElementById("helpmenow_motd_edit");
-            var motd_element = document.getElementById("helpmenow_motd");
-            edit_element.value = response.motd;
-            motd_element.innerHTML = response.motd;
-            helpmenowBlock.toggleMOTD(false);
+            if (typeof response.error === 'undefined') {
+                var edit_element = document.getElementById("helpmenow_motd_edit");
+                var motd_element = document.getElementById("helpmenow_motd");
+                edit_element.value = response.motd;
+                motd_element.innerHTML = response.motd;
+                helpmenowBlock.toggleMOTD(false);
+            }
         });
     }
 

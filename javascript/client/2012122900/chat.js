@@ -24,24 +24,25 @@ var helpmenowChat = (function () {
             "last_message": lastMessage,
         };
         helpmenow.addRequest(params, function (response) {
-            if (response.last_message > lastMessage) {
-                lastMessage = response.last_message;
-                $("#chatDiv").append(response.html)
-                    .scrollTop($('#chatDiv')[0].scrollHeight);
-                if (response.beep && !$(document)[0].hasFocus()) {
-                    helpmenow.chime();
-                    if (typeof response.title_flash !== "undefined") {
-                        $.titleAlert('"' + response.title_flash + '"', {
-                            interval:1000
-                        });
+            if (typeof response.error === 'undefined') {
+                if (response.last_message > lastMessage) {
+                    lastMessage = response.last_message;
+                    $("#chatDiv").append(response.html)
+                        .scrollTop($('#chatDiv')[0].scrollHeight);
+                    if (response.beep && !$(document)[0].hasFocus()) {
+                        helpmenow.chime();
+                        if (typeof response.title_flash !== "undefined") {
+                            $.titleAlert('"' + response.title_flash + '"', {
+                                interval:1000
+                            });
+                        }
                     }
                 }
+
+                $.each(pluginRefresh, function (k, v) {
+                    v(response);
+                });
             }
-
-            $.each(pluginRefresh, function (k, v) {
-                v(response);
-            });
-
             setTimeout(function () { refresh(); }, 1000);
         });
     }
@@ -67,8 +68,13 @@ var helpmenowChat = (function () {
                 session: sessionId,
             };
             helpmenow.addRequest(params, function (response) {
-                $("#chatDiv").append("<div><b>Me:</b> " + message + "</div>")   // todo: use language string here
-                    .scrollTop($('#chatDiv')[0].scrollHeight);
+                if (typeof response.error === 'undefined') {
+                    $("#chatDiv").append("<div><b>Me:</b> " + message + "</div>")   // todo: use language string here
+                        .scrollTop($('#chatDiv')[0].scrollHeight);
+                } else {
+                    $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")   // todo: and here
+                        .scrollTop($('#chatDiv')[0].scrollHeight);
+                }
             });
         },
         addPluginRefresh: function (callback) {

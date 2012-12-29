@@ -7,7 +7,7 @@ var helpmenow = (function () {
     /**
      * prefix
      */
-    var PREFIX = 'helpmenow_2012122700_';
+    var PREFIX = 'helpmenow_2012122900_';
 
     /**
      * takeOver timeout in milliseconds
@@ -256,9 +256,11 @@ var helpmenow = (function () {
             "function" : "block"
         };
         helpmenow.addRequest(params, function(response) {
-            response.time = new Date().getTime();
-            response.type = 'block';
-            localStorage.setItem(PREFIX + 'block', JSON.stringify(response));
+            if (typeof response.error === 'undefined') {
+                response.time = new Date().getTime();
+                response.type = 'block';
+                localStorage.setItem(PREFIX + 'block', JSON.stringify(response));
+            }
             setTimeout(function () { blockUpdate(); }, BLOCK_UPDATE_FREQ);
         });
     }
