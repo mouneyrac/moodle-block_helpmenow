@@ -5,9 +5,22 @@ var helpmenow = (function () {
     var id;
 
     /**
+     * client name
+     */
+    var NAME = 'helpmenow';
+
+    /**
+     * versioning storage
+     *
+     * this is not the same as client version, and only needs to be changed
+     * when/if changes to the request/response storage would break the client
+     */
+    var STORAGE_VERSION = '2012122900';
+
+    /**
      * prefix
      */
-    var PREFIX = 'helpmenow_2012122900_';
+    var PREFIX = NAME + '_' + STORAGE_VERSION + '_';
 
     /**
      * takeOver timeout in milliseconds
@@ -168,6 +181,7 @@ var helpmenow = (function () {
             }
             if (xmlhttp.status != 200) {
                 setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
+                return;
             }
             try {
                 var responses = JSON.parse(xmlhttp.responseText);
@@ -208,7 +222,7 @@ var helpmenow = (function () {
     function sendError(errorMessage, errorDetails) {
         var params = {
             'error': errorMessage,
-            'details': errorDetails,
+            'details': errorDetails
         };
         params = JSON.stringify(params);
 
@@ -327,13 +341,15 @@ var helpmenow = (function () {
         var cutoff = new Date().getTime() - CLEANUP_FREQ;
         for (var i = 0; i < localStorage.length; i++) {
             var key = localStorage.key(i);
-            if (key.indexOf(PREFIX) !== 0) continue;
+            if (key.indexOf(NAME) !== 0) continue;
 
             var item = localStorage.getItem(key);
             if (item === null) localStorage.removeItem(key);
 
             item = JSON.parse(item);
-            if (item.time < cutoff) localStorage.removeItem(key);
+            if (typeof item.time === 'undefined' || item.time === null || item.time < cutoff) {
+                localStorage.removeItem(key);
+            }
         }
 
         setTimeout(function () { cleanUp(); }, CLEANUP_FREQ);
@@ -368,11 +384,13 @@ var helpmenow = (function () {
      */
     return {
         init: function () {
+            // cleanup immediately so we don't hit the quota
+            cleanUp();
+
             // start by generating an id that is a combination of the current time and some large random number
             id = new Date().getTime().toString() + (Math.floor(Math.random() * SOME_LARGE_NUMBER)).toString();
 
-            // start cleanup, checkin, and takeover timers
-            setTimeout(function () { cleanUp(); }, 0);
+            // start checkin, and takeover timers
             setTimeout(function () { checkIn(); }, 0);
             takeOverTimer = setTimeout(function () { takeOver(); }, 100);   // wait a short time here
         },
