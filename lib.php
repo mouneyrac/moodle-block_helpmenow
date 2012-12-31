@@ -1203,10 +1203,12 @@ function helpmenow_serverfunc_plugin($request, &$response) {
  * log error from the client
  */
 function helpmenow_log_error($error) {
+    global $USER;
     $new_record = (object) array(
         'error' => addslashes($error->error),
         'details' => addslashes($error->details),
         'timecreated' => time(),
+        'userid' => $USER->id,
     );
     insert_record('block_helpmenow_error_log', $new_record);
 
