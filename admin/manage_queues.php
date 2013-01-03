@@ -23,16 +23,16 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+require_once(dirname(dirname(__FILE__)) . '/lib.php');
 
 # require login
 require_login(0, false);
 
 # assign.php and edit.php urls
-$assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/assign_helper.php");
-$edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/edit_queue.php");
-$delete = new moodle_url("$CFG->wwwroot/blocks/helpmenow/delete_queue.php");
+$assign = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/assign_helper.php");
+$edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/edit_queue.php");
+$delete = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/delete_queue.php");
 
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);

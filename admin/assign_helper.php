@@ -23,8 +23,8 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+require_once(dirname(dirname(__FILE__)) . '/lib.php');
 
 # require login
 require_login(0, false);
@@ -35,14 +35,14 @@ $userid = optional_param('userid', 0, PARAM_INT);
 $assign = optional_param('assign', 0, PARAM_INT);
 
 # urls
-$admin_url = "$CFG->wwwroot/blocks/helpmenow/admin.php";
+$admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
 $this_url = new moodle_url();
 $this_url->param('queueid', $queueid); 
 
 # sitecontext and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-    redirect($course_url);
+    redirect();
 }
 
 $queue = new helpmenow_queue($queueid);

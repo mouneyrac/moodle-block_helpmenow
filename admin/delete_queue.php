@@ -24,8 +24,8 @@
  */
 
 # moodle stuff
-require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
-require_once(dirname(__FILE__) . '/lib.php');
+require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
+require_once(dirname(dirname(__FILE__)) . '/lib.php');
 
 # require login
 require_login(0, false);
@@ -34,7 +34,7 @@ require_login(0, false);
 $queueid = optional_param('queueid', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
 
-$admin_url = "$CFG->wwwroot/blocks/helpmenow/admin.php";
+$admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
 
 # contexts and cap check
 $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
