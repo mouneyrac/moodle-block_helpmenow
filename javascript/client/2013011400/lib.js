@@ -15,7 +15,7 @@ var helpmenow = (function () {
      * this is not the same as client version, and only needs to be changed
      * when/if changes to the request/response storage would break the client
      */
-    var STORAGE_VERSION = '2012122900';
+    var STORAGE_VERSION = '2013011400';
 
     /**
      * prefix
@@ -99,22 +99,21 @@ var helpmenow = (function () {
     var requests = {};
 
     /**
-     * do we have events?
-     */
-    var noEvents = false;
-
-    /**
      * updates time on our cookie so other instances know we're still here
      */
     function checkIn() {
-        localStorage.setItem(PREFIX + id, JSON.stringify({
+        storage.set(PREFIX + id, {
             'id': id,
             time: new Date().getTime(),
             'type': 'instance',
             'isBlock': isBlock
-        }));
+        });
 
-        if (noEvents) {
+        /**
+         * clients without events will need to periodically check for responses
+         * so this seems like as good a time as any
+         */
+        if (!storage.haveEvents()) {
             getResponses();
         }
 
@@ -125,11 +124,11 @@ var helpmenow = (function () {
      * get responses from localStorage
      */
     function getResponses() {
-        var responses = getStorage('response');
+        var responses = storage.getType('response');
         for (var key in responses) {
             if (responses[key].instanceId !== id) continue;
             processResponse(responses[key]);
-            localStorage.removeItem(PREFIX + responses[key].id + '_response');
+            storage.remove(PREFIX + responses[key].id + '_response');
         }
     }
 
@@ -137,12 +136,15 @@ var helpmenow = (function () {
      * get requests in localStorage and put them in requests
      */
     function getRequests() {
-        var records = getStorage('request');
+        var records = storage.getType('request');
 
         // filter out requests that have responses
         for (var key in records) {
-            var item = localStorage.getItem(PREFIX + records[key].id + '_response');
+            var item = storage.get(PREFIX + records[key].id + '_response');
             if (item === null) {
+                if (records[key].instanceId === id) {
+                    storage.remove(PREFIX + records[key].id);
+                }
                 requests[records[key].id] = records[key];
             }
         }
@@ -152,9 +154,7 @@ var helpmenow = (function () {
      * makes ajax call to fill requests
      */
     function getUpdates() {
-        if (noEvents) {
-            getRequests();
-        }
+        if (!storage.haveEvents()) getRequests();   // if we don't have events we need to get all the requests now
 
         var params = {
             'requests': {}
@@ -190,17 +190,12 @@ var helpmenow = (function () {
                     for (var i = 0; i < responses.length; i++) {
                         if (responses[i].instanceId === id) {
                             processResponse(responses[i]);
-                            if (noEvents) {
-                                // if we don't do this we have request records that
-                                // don't get deleted when the master changes
-                                localStorage.removeItem(PREFIX + responses[i].id);
-                            }
                             delete requests[responses[i].id];
                         } else {
                             responses[i].type = 'response';
                             responses[i].time = now;
-                            localStorage.setItem(PREFIX + responses[i].id + '_response', JSON.stringify(responses[i]));
-                            localStorage.removeItem(PREFIX + responses[i].id);
+                            storage.set(PREFIX + responses[i].id + '_response', responses[i]);
+                            storage.remove(PREFIX + responses[i].id);
                             delete requests[responses[i].id];
                         }
                     }
@@ -237,32 +232,37 @@ var helpmenow = (function () {
     /**
      * see if we need to take over
      */
-    function takeOver() {
+    function checkTakeOver() {
         var cutoff = new Date().getTime() - TAKEOVER_DELAY;
-        var instances = getInstances();
-        var doIt = true;
+        var instances = storage.getType('instance');
+        var doTakeOver = true;
         for (var key in instances) {
             if (instances[key].time < cutoff) {
-                localStorage.removeItem(PREFIX + instances[key].id);
+                storage.remove(PREFIX + instances[key].id);
                 continue;
             }
             if (instances[key].id < id) {
-                doIt = false;
+                doTakeOver = false;
                 break;
             }
         }
-        if (doIt) {
-            isMaster = true;
-            if (doBlockUpdates) {
-                setTimeout(function () { blockUpdate(); }, 0);
-            }
-            if (!noEvents) {
-                getRequests();  // there might be some requests in localStorage
-            }
-            setTimeout(function () { getUpdates(); }, 0);
+        if (doTakeOver) {
+            takeOver();
         } else {
-            takeOverTimer = setTimeout(function () { takeOver(); }, TAKEOVER_DELAY);
+            takeOverTimer = setTimeout(function () { checkTakeOver(); }, TAKEOVER_DELAY);
         }
+    }
+
+    /**
+     * perform takeover
+     */
+    function takeOver() {
+        isMaster = true;
+        if (doBlockUpdates) {
+            setTimeout(function () { blockUpdate(); }, 0);
+        }
+        getRequests();  // there might be some requests in localStorage
+        setTimeout(function () { getUpdates(); }, 0);
     }
 
     function blockUpdate() {
@@ -273,111 +273,174 @@ var helpmenow = (function () {
             if (typeof response.error === 'undefined') {
                 response.time = new Date().getTime();
                 response.type = 'block';
-                localStorage.setItem(PREFIX + 'block', JSON.stringify(response));
+                storage.set(PREFIX + 'block', response);
             }
             setTimeout(function () { blockUpdate(); }, BLOCK_UPDATE_FREQ);
         });
     }
 
     /**
-     * get instance objects from storage
-     */
-    function getInstances() {
-        return getStorage('instance');
-    }
-
-    function getStorage(type) {
-        if (localStorage.length === 0) return;
-        var records = {};
-        for (var i = 0; i < localStorage.length; i++) {
-            var key = localStorage.key(i);
-            if (key.indexOf(PREFIX) !== 0) continue;
-
-            var item = localStorage.getItem(key);
-            if (item === null) continue;
-
-            item = JSON.parse(item);
-            if (item.type === type) records[item.id] = item;
-        }
-        return records;
-    }
-
-    /**
-     * storage event handler
-     */
-    function handleStorageEvent(e) {
-        if (!e) e = window.event;
-        if (e.key.indexOf(PREFIX) !== 0) return;
-        if (e.newValue === null) return;
-        var item = JSON.parse(e.newValue);
-        if (item.type === 'instance') {
-            if (item.id < id) {
-                clearTimeout(takeOverTimer);
-                takeOverTimer = setTimeout(function () { takeOver(); }, TAKEOVER_DELAY);
-            }
-        } else if (item.type === 'response') {
-            if (item.instanceId !== id) return;
-            processResponse(item);
-            localStorage.removeItem(e.key);
-        } else if (isMaster && item.type === 'request') {
-            requests[item.id] = item;
-        }
-    }
-
-    /**
      * process responses to our requests
      */
     function processResponse(response) {
-        requestCallbacks[response.id](response);
+        try {
+            requestCallbacks[response.id](response);
+        } catch (e) {
+            /**
+             * we'll want to know when these errors occur so we can work to
+             * eliminate them, but we don't need to blow up completely
+             */
+            sendError(e.message, JSON.stringify(response));
+        }
         delete requestCallbacks[response.id];
     }
 
     /**
-     * clean up old records
+     * storage object
      */
-    function cleanUp() {
-        if (localStorage.length === 0) return;
-        var records = {};
-        var cutoff = new Date().getTime() - CLEANUP_FREQ;
-        for (var i = 0; i < localStorage.length; i++) {
-            var key = localStorage.key(i);
-            if (key.indexOf(NAME) !== 0) continue;
+    var storage = (function () {
+        /**
+         * do we have events?
+         */
+        var events = true;
 
-            var item = localStorage.getItem(key);
-            if (item === null) localStorage.removeItem(key);
+        /**
+         * are we faking localstorage?
+         */
+        var fakingStorage = false;
 
-            item = JSON.parse(item);
-            if (typeof item.time === 'undefined' || item.time === null || item.time < cutoff) {
-                localStorage.removeItem(key);
+        /**
+         * storage event handler
+         */
+        function handleStorageEvent(eventObject) {
+            if (!eventObject) eventObject = window.event;
+            if (eventObject.key.indexOf(PREFIX) !== 0) return;    // not our stuff
+            if (!eventObject.newValue) return;    // no need to handle deletes right now
+            var storageItem = JSON.parse(eventObject.newValue);
+            if (storageItem.type === 'instance') {
+                if (storageItem.id < id) {
+                    clearTimeout(takeOverTimer);
+                    takeOverTimer = setTimeout(function () { checkTakeOver(); }, TAKEOVER_DELAY);
+                }
+            } else if (storageItem.type === 'response') {
+                if (storageItem.instanceId !== id) return;     // not a response for us
+                processResponse(storageItem);
+                storage.remove(eventObject.key);
+            } else if (isMaster && storageItem.type === 'request') {
+                requests[storageItem.id] = storageItem;
             }
         }
 
-        setTimeout(function () { cleanUp(); }, CLEANUP_FREQ);
-    }
+        function fakeStorage() {
+            fakingStorage = true;
 
-    /**
-     * Handle non-modern browsers
-     */
-    if (!('localStorage' in window)) {
-        window.localStorage = {     // emulate localStorage api
-            _data       : {},
-            setItem     : function(id, val) { return this._data[id] = String(val); },
-            getItem     : function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : undefined; },
-            removeItem  : function(id) { return delete this._data[id]; },
-            clear       : function() { return this._data = {}; }
+            window.localStorage = {     // emulate localStorage api
+                _data       : {},
+                setItem     : function(id, val) { return this._data[id] = String(val); },
+                getItem     : function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : undefined; },
+                removeItem  : function(id) { return delete this._data[id]; },
+                clear       : function() { return this._data = {}; }
+            };
+
+            /**
+             * because clients won't be sharing data, lets only update the
+             * block if we have to, and with a longer period
+             */
+            BLOCK_UPDATE_FREQ = 30000;
+            doBlockUpdates = false;
+
+            if (id != null) {
+                takeOver();
+            }
+        }
+
+        /**
+         * Handle non-modern browsers (fake localstorage)
+         */
+        if (!('localStorage' in window)) fakeStorage();
+
+        /**
+         * use events where (well) supported
+         */
+        if (window.addEventListener) {
+            window.addEventListener("storage", handleStorageEvent, false);
+        } else {
+            events = false;
         };
 
-        // do some things a little differently...
-        BLOCK_UPDATE_FREQ = 30000;  // longer delay, as multiple clients will not be sharing blockupdates
-        doBlockUpdates = false;
-        // todo: there might be more here depending on what else we change...
-    }
+        /**
+         * storage interface
+         */
+        return {
+            set: function (id, obj) {
+                try {
+                    if (!fakingStorage) localStorage.removeItem(id);
+                    localStorage.setItem(id, JSON.stringify(obj));
+                } catch (e) {
+                    if (!fakingStorage) {
+                        fakeStorage();
+                        localStorage.setItem(id, JSON.stringify(obj));
+                    }
+                }
+            },
+            get: function (id) {
+                var item;
+                try {
+                    item = localStorage.getItem(id);
+                    if (item !== null) item = JSON.parse(item);
+                } catch (e) {
+                    if (!fakingStorage) fakeStorage();
+                    item = null;
+                }
+                return item;
+            },
+            getType: function (type) {
+                try {
+                    var records = {};
+                    for (var i = 0; i < localStorage.length; i++) {
+                        var key = localStorage.key(i);
+                        if (key.indexOf(PREFIX) !== 0) continue;
 
-    if (window.addEventListener) {
-        window.addEventListener("storage", handleStorageEvent, false);
-    } else {
-        noEvents = true;    // ie8 storage events plain don't work
-    };
+                        var item = storage.get(key);
+                        if (item.type === type) records[item.id] = item;
+                    }
+                } catch (e) {
+                    if (!fakingStorage) fakeStorage();
+                    var records = {};
+                }
+                return records;
+            },
+            remove: function (id) {
+                try {
+                    localStorage.removeItem(id);
+                } catch (e) {
+                    if (!fakingStorage) fakeStorage();
+                }
+            },
+            haveEvents: function () {
+                return events;
+            },
+            cleanUp: function () {
+                if (fakingStorage) return;  // if we're faking we don't need to clean up now or ever
+                if (localStorage.length !== 0) {
+                    var records = {};
+                    var cutoff = new Date().getTime() - CLEANUP_FREQ;
+                    for (var i = 0; i < localStorage.length; i++) {
+                        var key = localStorage.key(i);
+                        if (key.indexOf(NAME) !== 0) continue;
+
+                        var item = storage.get(key);
+                        if (item === null) storage.remove(key);
+
+                        if (typeof item.time === 'undefined' || item.time === null || item.time < cutoff) {
+                            storage.remove(key);
+                        }
+                    }
+                }
+                setTimeout(function () { storage.cleanUp(); }, CLEANUP_FREQ);
+            }
+        };
+    }) ();
 
     /**
      * public interface
@@ -385,31 +448,32 @@ var helpmenow = (function () {
     return {
         init: function () {
             // cleanup immediately so we don't hit the quota
-            cleanUp();
+            storage.cleanUp();
 
             // start by generating an id that is a combination of the current time and some large random number
             id = new Date().getTime().toString() + (Math.floor(Math.random() * SOME_LARGE_NUMBER)).toString();
 
             // start checkin, and takeover timers
             setTimeout(function () { checkIn(); }, 0);
-            takeOverTimer = setTimeout(function () { takeOver(); }, 100);   // wait a short time here
+            if (!isMaster) {
+                takeOverTimer = setTimeout(function () { checkTakeOver(); }, 100);   // wait a short time here
+            }
         },
         setServerURL: function (newServerURL) {
             serverURL = newServerURL;
         },
         addRequest: function (requestBody, callback) {
-            requestId = id + (requestCount++).toString();
+            requestId = id + '_' + (requestCount++).toString();
             requestCallbacks[requestId] = callback;
 
             requestBody.id = requestId;
             requestBody.instanceId = id;
 
-            if (isMaster) {
-                requests[requestBody.id] = requestBody;
-            } else {
+            requests[requestBody.id] = requestBody;
+            if (!isMaster) {
                 requestBody.time = new Date().getTime();
                 requestBody.type = 'request';
-                localStorage.setItem(PREFIX + requestId, JSON.stringify(requestBody));
+                storage.set(PREFIX + requestId, requestBody);
             }
         },
         chime: function () {
@@ -423,17 +487,15 @@ var helpmenow = (function () {
                 setTimeout(function () { blockUpdate(); }, 0);
             }
 
-            var block = localStorage.getItem(PREFIX + 'block');
+            var block = storage.get(PREFIX + 'block');
             if ((typeof block === 'undefined') || block === null) return;
-
-            block = JSON.parse(block);
 
             if (block.time < ((new Date().getTime()) - CLEANUP_FREQ)) {
                 return;
             }
 
             if (block.alert) {
-                var instances = getInstances();
+                var instances = storage.getType('instance');
                 for (var key in instances) {
                     if (instances[key].isBlock && instances[key].id < id) {
                         block.alert = false;

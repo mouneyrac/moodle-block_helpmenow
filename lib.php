@@ -44,7 +44,7 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2012123100);
+define('HELPMENOW_CLIENT_VERSION', 2013011400);
 
 function helpmenow_verify_session($session) {
     global $CFG, $USER;
