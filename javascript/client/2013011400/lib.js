@@ -286,11 +286,7 @@ var helpmenow = (function () {
         try {
             requestCallbacks[response.id](response);
         } catch (e) {
-            /**
-             * we'll want to know when these errors occur so we can work to
-             * eliminate them, but we don't need to blow up completely
-             */
-            sendError(e.message, JSON.stringify(response));
+            // sendError(e.message, JSON.stringify(response));
         }
         delete requestCallbacks[response.id];
     }
