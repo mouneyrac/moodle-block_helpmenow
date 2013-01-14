@@ -34,16 +34,22 @@ if (!isloggedin()) {
     die;
 }
 
+# requests are sent as JSON object from the client
 $requests = json_decode(file_get_contents('php://input'));
+
+# special case for logging errors
 if (isset($requests->error)) {
     helpmenow_log_error($requests);
     header('HTTP/1.1 200 OK');
     die;
 }
+
+# iterate through the requests and create responses
 $responses = array();
 foreach ($requests->requests as $request) {
     ob_start();
     try {
+        # all responses need id of the request and client instance
         $response = (object) array(
             'id' => $request->id,
             'instanceId' => $request->instanceId
