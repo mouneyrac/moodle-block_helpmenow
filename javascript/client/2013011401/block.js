@@ -1,8 +1,7 @@
 var helpmenowBlock = (function () {
-    /**
-     * last time we got block data
-     */
-    var lastUpdate = 0;
+    "use strict";
+
+    var lastUpdate = 0;     // last time we got block data
 
     /**
      * toggles logged in status display
@@ -24,7 +23,7 @@ var helpmenowBlock = (function () {
      */
     function refresh() {
         var response = helpmenow.getBlockData();
-        if (typeof response == "undefined") {               // don't have block data yet
+        if (typeof response === "undefined") {               // don't have block data yet
             setTimeout(function () { refresh(); }, 500);
             return;
         }
@@ -140,5 +139,6 @@ var helpmenowBlock = (function () {
 }) ();
 
 $(document).ready(function () {
+    "use strict";
     helpmenowBlock.init();
 });

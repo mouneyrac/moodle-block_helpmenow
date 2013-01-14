@@ -1,102 +1,28 @@
 var helpmenow = (function () {
-    /**
-     * unique id
-     */
-    var id;
+    "use strict";
 
     /**
-     * client name
+     * the first half here are "defines", the second half are regular variables
      */
-    var NAME = 'helpmenow';
+    var NAME = 'helpmenow',                     // client name for storage
+        STORAGE_VERSION = '2013011400',         // versioning storage
+        PREFIX = NAME + '_' + STORAGE_VERSION + '_',
+        TAKEOVER_DELAY = 5000,                  // takeOver timeout in milliseconds
+        REQUEST_FREQ = 2000,                    // period at which we send all requests to server
+        CHECKIN_FREQ = 500,                     // period at which we checkIn
+        BLOCK_UPDATE_FREQ = 10000,              // period at which we get block stuff
+        CLEANUP_FREQ = 60000,                   // period for cleaning up
+        SOME_LARGE_NUMBER = Math.pow(2, 40),    // max number for the random portion of the id
 
-    /**
-     * versioning storage
-     *
-     * this is not the same as client version, and only needs to be changed
-     * when/if changes to the request/response storage would break the client
-     */
-    var STORAGE_VERSION = '2013011400';
-
-    /**
-     * prefix
-     */
-    var PREFIX = NAME + '_' + STORAGE_VERSION + '_';
-
-    /**
-     * takeOver timeout in milliseconds
-     */
-    var TAKEOVER_DELAY = 5000;
-
-    /**
-     * period at which we send all requests to server
-     */
-    var REQUEST_FREQ = 2000;
-
-    /**
-     * period at which we checkIn
-     */
-    var CHECKIN_FREQ = 500;
-
-    /**
-     * period at which we get block stuff
-     */
-    var BLOCK_UPDATE_FREQ = 10000;
-
-    /**
-     * period for cleaning up
-     */
-    var CLEANUP_FREQ = 60000;
-
-    /**
-     * max number for the random portion of the id
-     */
-    var SOME_LARGE_NUMBER = Math.pow(2,40);
-
-    /**
-     * server url
-     */
-    var serverURL;
-
-    /**
-     * local copy of our shared data
-     */
-    var sharedData = {};
-
-    /**
-     * count of requests
-     */
-    var requestCount = 0;
-
-    /**
-     * holds our requests
-     */
-    var requestCallbacks = {};
-
-    /**
-     * whether or not we are in charge of updates
-     */
-    var isMaster = false;
-
-    /**
-     * whether or not to get block updates, this really only matters for when
-     * we don't have localStorage support
-     */
-    var doBlockUpdates = true;
-
-    /**
-     * if we're a block
-     */
-    var isBlock = false;
-
-    /**
-     * setTimeout for seeing if we need to takeover
-     */
-    var takeOverTimer;
-
-    /**
-     * array of requests to send to the server
-     */
-    var requests = {};
+        id,                                     // unique id
+        serverURL,                              // server url
+        requestCount = 0,                       // count of requests, used to id requests
+        requestCallbacks = {},                  // holds our requests
+        isMaster = false,                       // whether or not we are in charge of updates
+        doBlockUpdates = true,                  // whether or not to get block updates
+        isBlock = false,                        // if we're a block
+        takeOverTimer,                          // setTimeout for seeing if we need to takeover
+        requests = {};                          // array of requests to send to the server
 
     /**
      * updates time on our cookie so other instances know we're still here
@@ -126,9 +52,11 @@ var helpmenow = (function () {
     function getResponses() {
         var responses = storage.getType('response');
         for (var key in responses) {
-            if (responses[key].instanceId !== id) continue;
-            processResponse(responses[key]);
-            storage.remove(PREFIX + responses[key].id + '_response');
+            if (responses.hasOwnProperty(key)) {
+                if (responses[key].instanceId !== id) { continue; }
+                processResponse(responses[key]);
+                storage.remove(PREFIX + responses[key].id + '_response');
+            }
         }
     }
 
@@ -137,15 +65,15 @@ var helpmenow = (function () {
      */
     function getRequests() {
         var records = storage.getType('request');
-
-        // filter out requests that have responses
-        for (var key in records) {
-            var item = storage.get(PREFIX + records[key].id + '_response');
-            if (item === null) {
-                if (records[key].instanceId === id) {
-                    storage.remove(PREFIX + records[key].id);
+        for (var key in records) {  // filter out requests that have responses
+            if (records.hasOwnProperty(key)) {
+                var item = storage.get(PREFIX + records[key].id + '_response');
+                if (item === null) {
+                    if (records[key].instanceId === id) {
+                        storage.remove(PREFIX + records[key].id);
+                    }
+                    requests[records[key].id] = records[key];
                 }
-                requests[records[key].id] = records[key];
             }
         }
     }
@@ -154,7 +82,7 @@ var helpmenow = (function () {
      * makes ajax call to fill requests
      */
     function getUpdates() {
-        if (!storage.haveEvents()) getRequests();   // if we don't have events we need to get all the requests now
+        if (!storage.haveEvents()) { getRequests(); }   // if we don't have events we need to get all the requests now
 
         var params = {
             'requests': {}
@@ -162,10 +90,11 @@ var helpmenow = (function () {
 
         var haveRequests = false;
         for (var key in requests) {
-            params.requests[key] = requests[key];
-            haveRequests = true;
+            if (requests.hasOwnProperty(key)) {
+                params.requests[key] = requests[key];
+                haveRequests = true;
+            }
         }
-
         if (!haveRequests) {
             setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
             return;
@@ -176,10 +105,10 @@ var helpmenow = (function () {
         var xmlhttp;
         xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState != 4) {
+            if (xmlhttp.readyState !== 4) {
                 return;
             }
-            if (xmlhttp.status != 200) {
+            if (xmlhttp.status !== 200) {
                 setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
                 return;
             }
@@ -190,7 +119,6 @@ var helpmenow = (function () {
                     for (var i = 0; i < responses.length; i++) {
                         if (responses[i].instanceId === id) {
                             processResponse(responses[i]);
-                            delete requests[responses[i].id];
                         } else {
                             responses[i].type = 'response';
                             responses[i].time = now;
@@ -204,7 +132,7 @@ var helpmenow = (function () {
             } catch (e) {
                 sendError(e.message, xmlhttp.responseText);
             }
-        }
+        };
         xmlhttp.open("POST", serverURL, true);
         xmlhttp.setRequestHeader("Accept", "application/json");
         xmlhttp.setRequestHeader("Content-type", "application/json");
@@ -237,13 +165,15 @@ var helpmenow = (function () {
         var instances = storage.getType('instance');
         var doTakeOver = true;
         for (var key in instances) {
-            if (instances[key].time < cutoff) {
-                storage.remove(PREFIX + instances[key].id);
-                continue;
-            }
-            if (instances[key].id < id) {
-                doTakeOver = false;
-                break;
+            if (instances.hasOwnProperty(key)) {
+                if (instances[key].time < cutoff) {
+                    storage.remove(PREFIX + instances[key].id);
+                    continue;
+                }
+                if (instances[key].id < id) {
+                    doTakeOver = false;
+                    break;
+                }
             }
         }
         if (doTakeOver) {
@@ -288,6 +218,7 @@ var helpmenow = (function () {
         } catch (e) {
             // sendError(e.message, JSON.stringify(response));
         }
+        delete requests[response.id];
         delete requestCallbacks[response.id];
     }
 
@@ -309,9 +240,9 @@ var helpmenow = (function () {
          * storage event handler
          */
         function handleStorageEvent(eventObject) {
-            if (!eventObject) eventObject = window.event;
-            if (eventObject.key.indexOf(PREFIX) !== 0) return;    // not our stuff
-            if (!eventObject.newValue) return;    // no need to handle deletes right now
+            if (!eventObject) { eventObject = window.event; }
+            if (eventObject.key.indexOf(PREFIX) !== 0) { return; }  // not our stuff
+            if (!eventObject.newValue) { return; }  // no need to handle deletes right now
             var storageItem = JSON.parse(eventObject.newValue);
             if (storageItem.type === 'instance') {
                 if (storageItem.id < id) {
@@ -319,7 +250,7 @@ var helpmenow = (function () {
                     takeOverTimer = setTimeout(function () { checkTakeOver(); }, TAKEOVER_DELAY);
                 }
             } else if (storageItem.type === 'response') {
-                if (storageItem.instanceId !== id) return;     // not a response for us
+                if (storageItem.instanceId !== id) { return; }      // not a response for us
                 processResponse(storageItem);
                 storage.remove(eventObject.key);
             } else if (isMaster && storageItem.type === 'request') {
@@ -345,7 +276,7 @@ var helpmenow = (function () {
             BLOCK_UPDATE_FREQ = 30000;
             doBlockUpdates = false;
 
-            if (id != null) {
+            if (typeof id === 'undefined') {
                 takeOver();
             }
         }
@@ -353,7 +284,7 @@ var helpmenow = (function () {
         /**
          * Handle non-modern browsers (fake localstorage)
          */
-        if (!('localStorage' in window)) fakeStorage();
+        if (!('localStorage' in window)) { fakeStorage(); }
 
         /**
          * use events where (well) supported
@@ -362,7 +293,7 @@ var helpmenow = (function () {
             window.addEventListener("storage", handleStorageEvent, false);
         } else {
             events = false;
-        };
+        }
 
         /**
          * storage interface
@@ -370,7 +301,7 @@ var helpmenow = (function () {
         return {
             set: function (id, obj) {
                 try {
-                    if (!fakingStorage) localStorage.removeItem(id);
+                    if (!fakingStorage) { localStorage.removeItem(id); }
                     localStorage.setItem(id, JSON.stringify(obj));
                 } catch (e) {
                     if (!fakingStorage) {
@@ -383,26 +314,27 @@ var helpmenow = (function () {
                 var item;
                 try {
                     item = localStorage.getItem(id);
-                    if (item !== null) item = JSON.parse(item);
+                    if (item !== null) { item = JSON.parse(item); }
                 } catch (e) {
-                    if (!fakingStorage) fakeStorage();
+                    if (!fakingStorage) { fakeStorage(); }
                     item = null;
                 }
                 return item;
             },
             getType: function (type) {
+                var records = {};
                 try {
-                    var records = {};
+                    records = {};
                     for (var i = 0; i < localStorage.length; i++) {
                         var key = localStorage.key(i);
-                        if (key.indexOf(PREFIX) !== 0) continue;
+                        if (key.indexOf(PREFIX) !== 0) { continue; }
 
                         var item = storage.get(key);
-                        if (item.type === type) records[item.id] = item;
+                        if (item.type === type) { records[item.id] = item; }
                     }
                 } catch (e) {
-                    if (!fakingStorage) fakeStorage();
-                    var records = {};
+                    if (!fakingStorage) { fakeStorage(); }
+                    records = {};
                 }
                 return records;
             },
@@ -410,23 +342,22 @@ var helpmenow = (function () {
                 try {
                     localStorage.removeItem(id);
                 } catch (e) {
-                    if (!fakingStorage) fakeStorage();
+                    if (!fakingStorage) { fakeStorage(); }
                 }
             },
             haveEvents: function () {
                 return events;
             },
             cleanUp: function () {
-                if (fakingStorage) return;  // if we're faking we don't need to clean up now or ever
+                if (fakingStorage) { return; }  // if we're faking we don't need to clean up now or ever
                 if (localStorage.length !== 0) {
-                    var records = {};
                     var cutoff = new Date().getTime() - CLEANUP_FREQ;
                     for (var i = 0; i < localStorage.length; i++) {
                         var key = localStorage.key(i);
-                        if (key.indexOf(NAME) !== 0) continue;
+                        if (key.indexOf(NAME) !== 0) { continue; }
 
                         var item = storage.get(key);
-                        if (item === null) storage.remove(key);
+                        if (item === null) { storage.remove(key); }
 
                         if (typeof item.time === 'undefined' || item.time === null || item.time < cutoff) {
                             storage.remove(key);
@@ -459,7 +390,7 @@ var helpmenow = (function () {
             serverURL = newServerURL;
         },
         addRequest: function (requestBody, callback) {
-            requestId = id + '_' + (requestCount++).toString();
+            var requestId = id + '_' + (requestCount++).toString();
             requestCallbacks[requestId] = callback;
 
             requestBody.id = requestId;
@@ -484,7 +415,7 @@ var helpmenow = (function () {
             }
 
             var block = storage.get(PREFIX + 'block');
-            if ((typeof block === 'undefined') || block === null) return;
+            if ((typeof block === 'undefined') || block === null) { return; }
 
             if (block.time < ((new Date().getTime()) - CLEANUP_FREQ)) {
                 return;
@@ -493,9 +424,11 @@ var helpmenow = (function () {
             if (block.alert) {
                 var instances = storage.getType('instance');
                 for (var key in instances) {
-                    if (instances[key].isBlock && instances[key].id < id) {
-                        block.alert = false;
-                        break;
+                    if (instances.hasOwnProperty(key)) {
+                        if (instances[key].isBlock && instances[key].id < id) {
+                            block.alert = false;
+                            break;
+                        }
                     }
                 }
             }

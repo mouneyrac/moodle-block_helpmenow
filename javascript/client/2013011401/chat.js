@@ -1,18 +1,9 @@
 var helpmenowChat = (function () {
-    /**
-     * session.id
-     */
-    var sessionId;
+    "use strict";
 
-    /**
-     * last received message
-     */
-    var lastMessage;
-
-    /**
-     * plugin refresh callbacks
-     */
-    var pluginRefresh = [];
+    var sessionId,              // session.id
+        lastMessage,            // last received message
+        pluginRefresh = [];     // plugin refresh callbacks
 
     /**
      * get new messages
@@ -21,7 +12,7 @@ var helpmenowChat = (function () {
         var params = {
             "function": "refresh",
             session: sessionId,
-            "last_message": lastMessage,
+            "last_message": lastMessage
         };
         helpmenow.addRequest(params, function (response) {
             if (typeof response.error === 'undefined') {
@@ -65,7 +56,7 @@ var helpmenowChat = (function () {
             var params = {
                 "function": "message",
                 message: message,
-                session: sessionId,
+                session: sessionId
             };
             helpmenow.addRequest(params, function (response) {
                 if (typeof response.error === 'undefined') {
@@ -85,10 +76,12 @@ var helpmenowChat = (function () {
 
 
 $(document).ready(function () {
+    "use strict";
+
     $('#inputTextarea').keypress(function (e) {  // textarea keypress handler
             if (e.keyCode === 13 && !e.ctrlKey) {
                 var message = $(this).val();
-                if (message.length == 0) {
+                if (message.length === 0) {
                     return false;
                 }
                 helpmenowChat.submitMessage(message);
