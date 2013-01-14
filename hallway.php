@@ -18,6 +18,8 @@
  * This script is a quick 'n' dirty list of Instructor queues, who's online,
  * and meeting links.
  *
+ * todo: make this work with the plugin system
+ *
  * @package     block_helpmenow
  * @copyright   2012 VLACS
  * @author      David Zaharee <dzaharee@vlacs.org>
