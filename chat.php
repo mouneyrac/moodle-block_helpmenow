@@ -87,8 +87,8 @@ if (count($plugins_js)) {
     $plugins_js = '';
 }
 
-$textarea_message = get_string('textarea_message', 'block_helpmenow');
-$jplayer = helpmenow_jplayer();
+$textarea_message = get_string('textarea_message', 'block_helpmenow');  # default text in chat input box
+$jplayer = helpmenow_jplayer();     # jquery plugin for bell sound
 $version = HELPMENOW_CLIENT_VERSION;
 
 if ($history = helpmenow_get_history($sessionid)) {

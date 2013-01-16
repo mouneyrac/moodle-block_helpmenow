@@ -34,14 +34,14 @@ $sessionid = optional_param('sessionid', 0, PARAM_INT);
 
 $chat_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
 
-if ($sessionid) {
+if ($sessionid) {   # if we get a session id make sure a user is allowed to join that session and then do it
     $session = get_record('block_helpmenow_session', 'id', $sessionid);
     if (!record_exists('block_helpmenow_helper', 'queueid', $session->queueid, 'userid', $USER->id)) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     helpmenow_add_user($USER->id, $session->id);
 } else {
-    # build sql to check for existing sesssions
+    # check for existing sesssions
     $sql = "
         SELECT s.*
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
@@ -55,7 +55,7 @@ if ($sessionid) {
     } else if ($queueid) {
         $sql .= " WHERE s.queueid = $queueid ";
     } else {
-        # todo: error: wat
+        helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     $sql .= "
         AND s2u.userid = $USER->id
@@ -81,6 +81,7 @@ if ($sessionid) {
     }
 }
 
+# redirect to chat session
 $chat_url->param('session', $session->id);
 redirect($chat_url->out());
 

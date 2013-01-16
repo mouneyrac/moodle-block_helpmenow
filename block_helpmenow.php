@@ -56,6 +56,7 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
+        # the first time a user loads the block this session try to popout
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
         if (!isset($SESSION->helpmenow_popout)) {
             $SESSION->helpmenow_popout = true;
@@ -71,8 +72,8 @@ class block_helpmenow extends block_base {
 </script>
 EOF;
         }
-        $this->content->text .= helpmenow_block_interface();
 
+        $this->content->text .= helpmenow_block_interface();
         $break = false;
 
         # admin link
@@ -83,6 +84,8 @@ EOF;
             $this->content->footer .= "<a href='$admin'>$admin_text</a>";
             $break = true;
         }
+
+        # "hallway" link
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
             $who = get_string('who', 'block_helpmenow');
             if ($break) {
@@ -92,6 +95,9 @@ EOF;
             }
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
+
+        # link for testing wiziq
+        # todo: make the plugin system be able to add stuff to the block and move this to the wiziq plugin
         if (has_capability('moodle/site:doanything', $sitecontext) or get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
             $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
             $test->param('test', 1);
