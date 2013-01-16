@@ -36,6 +36,14 @@ foreach ($plugins as $pluginname) {
         require($path);
     }
 }
+# contact list plugin strings
+$plugins = get_list_of_plugins('contact_list', '', dirname(dirname(dirname(__FILE__))));
+foreach ($plugins as $pluginname) {
+    $path = dirname(dirname(dirname(__FILE__))) . "/contact_list/$pluginname/lang/en_utf8.php";
+    if (file_exists($path)) {
+        require($path);
+    }
+}
 
 # block
 $string['noscript'] = "<div style='background-color:yellow;'>JavaScript is currently disabled. To use this block, please enable JavaScript</div>";
@@ -48,6 +56,7 @@ $string['in_office'] = '';
 $string['out_office'] = 'Out of Office |';
 $string['enter_office'] = 'Enter Office';
 $string['leave_office'] = 'Leave Office';
+$string['offline'] = '(Offline)';
 
 # new_request.php
 $string['new_request_heading'] = 'New Request';
@@ -109,6 +118,8 @@ $string['participants'] = 'Participants:';
 # settings
 $string['block_title'] = 'Block title';
 $string['block_title_desc'] = 'Sets the block title';
+$string['settings_contact_list'] = 'Contact list plugin';
+$string['settings_contact_list_desc'] = 'Which contact list plugin to use to manage contacts';
 
 /*
 $string['settings_heading'] = 'Help Me Now Settings';

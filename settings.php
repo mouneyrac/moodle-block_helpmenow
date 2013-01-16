@@ -26,11 +26,12 @@
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
 $settings->add(new admin_setting_configtext('helpmenow_title',
-        get_string('block_title', 'block_helpmenow'),
-        get_string('block_title_desc', 'block_helpmenow'),
-        '',
-        PARAM_TEXT,
-        50));
+    get_string('block_title', 'block_helpmenow'),
+    get_string('block_title_desc', 'block_helpmenow'),
+    '',
+    PARAM_TEXT,
+    50
+));
 
 $plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));
 foreach ($plugins as $pluginname) {
@@ -50,5 +51,17 @@ foreach ($plugins as $pluginname) {
         require($path);
     }
 }
+
+$plugins = get_list_of_plugins('contact_list', '', dirname(__FILE__));
+$options = array();
+foreach ($plugins as $pluginname) {
+    $options[$pluginname] = get_string("{$pluginname}_name", 'block_helpmenow');
+}
+$settings->add(new admin_setting_configselect('helpmenow_contact_list',
+    get_string('settings_contact_list', 'block_helpmenow'),
+    get_string('settings_contact_list_desc', 'block_helpmenow'),
+    'native',
+    $options
+));
 
 ?>

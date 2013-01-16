@@ -113,6 +113,27 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2013011800) {
+
+    /// Define table block_helpmenow_contact to be created
+        $table = new XMLDBTable('block_helpmenow_contact');
+
+    /// Adding fields to table block_helpmenow_contact
+        $table->addFieldInfo('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null, null, null);
+        $table->addFieldInfo('userid', XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, null);
+        $table->addFieldInfo('contact_userid', XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, null);
+        $table->addFieldInfo('timecreated', XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, null, null);
+
+    /// Adding keys to table block_helpmenow_contact
+        $table->addKeyInfo('primary', XMLDB_KEY_PRIMARY, array('id'));
+
+    /// Adding indexes to table block_helpmenow_contact
+        $table->addIndexInfo('block_helpmenow_contact_userid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+
+    /// Launch create table for block_helpmenow_contact
+        $result = $result && create_table($table);
+    }
+
     return $result;
 }
 ?>

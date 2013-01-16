@@ -46,6 +46,8 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
  */
 define('HELPMENOW_CLIENT_VERSION', 2013012200);
 
+define('HELPMENOW_BLOCK_ALERT_DELAY', 5);   # delay so the block isn't alerting when the user is already in the chat
+
 function helpmenow_verify_session($session) {
     global $CFG, $USER;
     $sql = "
@@ -199,7 +201,6 @@ function helpmenow_ensure_user_exists() {
 
     $helpmenow_user = (object) array(
         'userid' => $USER->id,
-        'isloggedin' => 0,
         'motd' => '',
     );
 
@@ -900,19 +901,14 @@ function helpmenow_serverfunc_refresh($request, &$response) {
 function helpmenow_serverfunc_block($request, &$response) {
     global $USER, $CFG;
 
-    # update our user lastaccess
-    set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);
-
-    # datetime for debugging
-    $response->last_refresh = 'Updated: '.userdate(time(), '%r');
-
-    # clean up sessions
-    helpmenow_clean_sessions();
-
+    set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);   # update our user lastaccess
+    $response->last_refresh = 'Updated: '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
     $response->alert = false;
 
-    # queues
+    /**
+     * queues
+     */
     $response->queues_html = '';
     $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     $queues = helpmenow_queue::get_queues();
@@ -1056,108 +1052,96 @@ EOF;
         $response->queues_html .= '</div>' . $desc_message . '<hr />';
     }
 
-    # user lists for students and instructors
-    $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
-    switch ($privilege) {
-    case 'TEACHER':
-        $users = helpmenow_get_students();
-        if ($admins = helpmenow_get_admins()) {
-            $users = array_merge($users, $admins);
-        }
-        $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
+    # show the correct login state for instructors
+    $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
+    if (!is_null($isloggedin)) {
         $response->isloggedin = $isloggedin ? true : false;
-        break;
-    case 'STUDENT':
-        $users = helpmenow_get_instructors();
-        $isloggedin = true;
-        break;
-    default:
+    }
+
+    # build contact list
+    $response->users_html = '';
+    $sql = "
+        SELECT u.*, hu.isloggedin, hu.motd, hu.lastaccess AS hmn_lastaccess
+        FROM {$CFG->prefix}block_helpmenow_contact c
+        JOIN {$CFG->prefix}user u ON u.id = c.contact_userid
+        JOIN {$CFG->prefix}block_helpmenow_user hu ON c.contact_userid = hu.userid
+        WHERE c.userid = $USER->id
+    ";
+    $contacts = get_records_sql($sql);
+    if (!$contacts) {
         return;
     }
 
+    $sql = "
+        SELECT s.id, m.message
+        FROM {$CFG->prefix}block_helpmenow_session2user s2u
+        JOIN {$CFG->prefix}block_helpmenow_session s ON s.iscurrent = 1 AND s.queueid IS NULL AND s2u.sessionid = s.id
+        JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = $USER->id
+        JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
+            SELECT MAX(id)
+            FROM {$CFG->prefix}block_helpmenow_message m2
+            WHERE m2.sessionid = s.id
+            AND m2.userid = s2u.userid
+            AND m.time > (s2u2.last_refresh + ".HELPMENOW_BLOCK_ALERT_DELAY.")
+        )
+        WHERE s2u.userid =
+    ";
     $cutoff = helpmenow_cutoff();
-
-    # get any unseen messages
-    foreach ($users as $u) {
-        if ($privilege == 'STUDENT') {
-            $u->online = ($u->isloggedin and ($u->hmn_lastaccess > $cutoff));
-        } else {
+    foreach ($contacts as $u) {
+        $u->online = false;
+        if ($u->isloggedin != 0 or (is_null($u->isloggedin) and $u->hmn_lastaccess > $cutoff)) {
             $u->online = true;
+            if (!$message = get_record_sql($sql.$u->id)) {
+                continue;
+            }
+            $u->message = $message->message;
+            $u->messageid = $message->messageid;
         }
-
-        $sql = "
-            SELECT s.*, m.message, m.id AS messageid
-            FROM {$CFG->prefix}block_helpmenow_session2user s2u
-            JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
-            JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
-            JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-                SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s2u.userid
-            )
-            WHERE s2u.userid = $USER->id
-            AND s.iscurrent = 1
-            AND s2u2.userid = $u->id
-            AND s.queueid IS NULL
-            AND (s2u.last_refresh + 20) < ".time()."
-            AND s2u.last_refresh < m.time
-            ";
-        if (!$session = get_record_sql($sql)) {
-            continue;
-        }
-        $u->sessionid = $session->id;
-        $u->message = $session->message;
     }
 
-    # sort by unseen messages, lastname, firstname
-    usort($users, function($a, $b) use ($privilege)  {
-        if (!(isset($a->sessionid) xor isset($b->sessionid))) {
-            if ($privilege == 'STUDENT') {      # students see offline teachers, therefor we should sort online/offline before alphabetical
-                if (($a->online) xor ($b->online)) {
-                    return ($a->online) ? -1 : 1;
-                }
-            }
-            return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
+    # sort by unseen messages, online, lastname, firstname
+    usort($contacts, function($a, $b) {
+        if ((isset($a->message) xor isset($b->message))) {
+            return isset($a->message) ? -1 : 1;
         }
-        return isset($a->sessionid) ? -1 : 1;
+        if (($a->online) xor ($b->online)) {
+            return ($a->online) ? -1 : 1;
+        }
+        return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
     });
 
-    # build the list
-    $response->users_html = '';
     $connect->remove_params('queueid');
     $connect->remove_params('sessionid');
-    foreach ($users as $u) {
-        if ($privilege == 'TEACHER') {
-            if (isset($u->isadmin) and $u->isadmin) {
-                if (!isset($u->sessionid)) {
-                    continue;
-                }
-            }
-        }
+    foreach ($contacts as $u) {
         $connect->param('userid', $u->id);
         $message = '';
         $style = 'margin-left: 1em;';
-        if (isset($u->motd)) {
+        if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
+                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+            } else {
+                continue;
+            }
+        } else {                        # if isloggedin is set, then 0 = loggedout, any other number is the timestamp of when they logged in
+            if ($u->online) {
+                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
                 $motd = $u->motd;
             } else {
-                $motd = "(Offline)";
+                $name = fullname($u);
+                $motd = get_string('offline', 'block_helpmenow');
             }
             $message .= '<div style="font-size: smaller;">' . $motd . '</div>';
         }
-        if (isset($u->sessionid)) {
+        if (isset($u->message)) {
             $response->pending++;
             $style .= 'background-color:yellow;';
             $message .= '<div>' . $u->message . '</div>';
-            if (helpmenow_notify_once($s->messageid)) {
+            if (helpmenow_notify_once($u->messageid)) {
                 $response->alert = true;
             }
         }
         $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-        if ($isloggedin and ($u->online)) {
-            $link = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
-        } else {
-            $link = fullname($u);
-        }
-        $response->users_html .= "<div style=\"$style\">".$link.$message."</div>";
+        $response->users_html .= "<div style=\"$style\">".$name.$message."</div>";
     }
 }
 
@@ -1784,6 +1768,60 @@ abstract class helpmenow_session2plugin extends helpmenow_plugin_object {
      * @var int $sessionid
      */
     public $sessionid;
+}
+
+/**
+ * abstract class for contact list plugins
+ */
+abstract class helpmenow_contact_list {
+    /**
+     * require the configured plugin file and return the contact list plugin
+     * class name
+     *
+     * @return string class name
+     */
+    public final static function get_plugin() {
+        global $CFG;
+        $plugin = 'native';
+        if (isset($CFG->helpmenow_contact_list) and strlen($CFG->helpmenow_contact_list) > 0) {
+            $plugin = $CFG->helpmenow_contact_list;
+        }
+        $class = "helpmenow_contact_list_$plugin";
+        require_once("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php");
+        return $class;
+    }
+
+    /**
+     * update block_helpmenow_contacts for the given user
+     *
+     * @param int $userid user.id
+     * @return bool success
+     */
+    public abstract static function update_contacts($userid);
+
+    /**
+     * run update_contacts for everybody
+     *
+     * this will likely be pretty brutal, so we might not ever actually use it
+     *
+     * @return bool success
+     */
+    public static function update_all_contacts() {
+        $rval = true;
+        foreach (get_records_select('user', "auth <> 'nologin'") as $u) {
+            $rval = true and static::update_contacts($u->id);
+        }
+        return $rval;
+    }
+
+    /**
+     * display to add to the bottom of the block
+     *
+     * @return mixed html string/false
+     */
+    public static function block_display() {
+        return false;
+    }
 }
 
 ?>

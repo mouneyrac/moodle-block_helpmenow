@@ -29,7 +29,6 @@ defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed
 require_once(dirname(__FILE__) . '/lib.php');
 
 class block_helpmenow extends block_base {
-
     function init() {
         global $CFG;
         if (!empty($CFG->helpmenow_title)) {
@@ -59,9 +58,15 @@ class block_helpmenow extends block_base {
         $this->content->text .= '<noscript>'.get_string('noscript', 'block_helpmenow').'</noscript>';
 
         # the first time a user loads the block this session try to popout
+        helpmenow_clean_sessions();     # clean up users sessions
+
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
-        if (!isset($SESSION->helpmenow_popout)) {
-            $SESSION->helpmenow_popout = true;
+        $contact_list = helpmenow_contact_list::get_plugin();
+            $contact_list::update_contacts($USER->id);
+        # do stuff that stuff that should be done when a user first logs in
+        if (!isset($SESSION->helpmenow_first_load)) {
+            $SESSION->helpmenow_first_load = true;
+            # try to popout the interface
             $this->content->text .= <<<EOF
 <script>
     try {
@@ -73,18 +78,26 @@ class block_helpmenow extends block_base {
     }
 </script>
 EOF;
+            # update the users contacts
         }
 
         $this->content->text .= helpmenow_block_interface();
         $break = false;
-
+        if ($contact_list_display = $contact_list::block_display()) {
+            $this->contect->footer .= $contact_list_display;
+            $break = true;
+        }
         # admin link
         $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
             $admin_text = get_string('admin_link', 'block_helpmenow');
+            if ($break) {
+                $this->content->footer .= "<br />";
+            } else {
+                $break = true;
+            }
             $this->content->footer .= "<a href='$admin'>$admin_text</a>";
-            $break = true;
         }
 
         # "hallway" link
