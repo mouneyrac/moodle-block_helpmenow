@@ -47,7 +47,7 @@ var helpmenow = (function () {
     }
 
     /**
-     * get responses from localStorage
+     * get responses from storage
      */
     function getResponses() {
         var responses = storage.getType('response');
@@ -61,7 +61,7 @@ var helpmenow = (function () {
     }
 
     /**
-     * get requests in localStorage and put them in requests
+     * get requests in storage and put them in requests
      */
     function getRequests() {
         var records = storage.getType('request');
@@ -191,7 +191,7 @@ var helpmenow = (function () {
         if (doBlockUpdates) {
             setTimeout(function () { blockUpdate(); }, 0);
         }
-        getRequests();  // there might be some requests in localStorage
+        getRequests();  // there might be some requests in storage
         setTimeout(function () { getUpdates(); }, 0);
     }
 
@@ -226,15 +226,9 @@ var helpmenow = (function () {
      * storage object
      */
     var storage = (function () {
-        /**
-         * do we have events?
-         */
-        var events = true;
-
-        /**
-         * are we faking localstorage?
-         */
-        var fakingStorage = false;
+        var events = false,             // do we have events?
+            fakingStorage = false,      // are we faking storage?
+            ourStorage;                 // localStorage/faked storage
 
         /**
          * storage event handler
@@ -261,13 +255,15 @@ var helpmenow = (function () {
         function fakeStorage() {
             fakingStorage = true;
 
-            window.localStorage = {     // emulate localStorage api
+            ourStorage = {     // emulate localStorage api
                 _data       : {},
                 setItem     : function(id, val) { return this._data[id] = String(val); },
                 getItem     : function(id) { return this._data.hasOwnProperty(id) ? this._data[id] : undefined; },
                 removeItem  : function(id) { return delete this._data[id]; },
                 clear       : function() { return this._data = {}; }
             };
+
+            if (events) { window.removeEventListener("storage", handleStorageEvent); }      // turn off events
 
             /**
              * because clients won't be sharing data, lets only update the
@@ -276,44 +272,38 @@ var helpmenow = (function () {
             BLOCK_UPDATE_FREQ = 30000;
             doBlockUpdates = false;
 
-            if (typeof id === 'undefined') {
-                takeOver();
+            if (typeof id === 'undefined') { takeOver(); }
+        }
+
+        // use localStorage or fake it
+        if ('localStorage' in window) {
+            ourStorage = window.localStorage;
+            // use events where (well) supported
+            if (window.addEventListener) {
+                events = true;
+                window.addEventListener("storage", handleStorageEvent, false);
             }
-        }
-
-        /**
-         * Handle non-modern browsers (fake localstorage)
-         */
-        if (!('localStorage' in window)) { fakeStorage(); }
-
-        /**
-         * use events where (well) supported
-         */
-        if (window.addEventListener) {
-            window.addEventListener("storage", handleStorageEvent, false);
         } else {
-            events = false;
+            fakeStorage();
         }
 
-        /**
-         * storage interface
-         */
+        // storage interface
         return {
             set: function (id, obj) {
                 try {
-                    if (!fakingStorage) { localStorage.removeItem(id); }
-                    localStorage.setItem(id, JSON.stringify(obj));
+                    if (!fakingStorage) { ourStorage.removeItem(id); }
+                    ourStorage.setItem(id, JSON.stringify(obj));
                 } catch (e) {
                     if (!fakingStorage) {
                         fakeStorage();
-                        localStorage.setItem(id, JSON.stringify(obj));
+                        ourStorage.setItem(id, JSON.stringify(obj));
                     }
                 }
             },
             get: function (id) {
                 var item;
                 try {
-                    item = localStorage.getItem(id);
+                    item = ourStorage.getItem(id);
                     if (item !== null) { item = JSON.parse(item); }
                 } catch (e) {
                     if (!fakingStorage) { fakeStorage(); }
@@ -325,8 +315,8 @@ var helpmenow = (function () {
                 var records = {};
                 try {
                     records = {};
-                    for (var i = 0; i < localStorage.length; i++) {
-                        var key = localStorage.key(i);
+                    for (var i = 0; i < ourStorage.length; i++) {
+                        var key = ourStorage.key(i);
                         if (key.indexOf(PREFIX) !== 0) { continue; }
 
                         var item = storage.get(key);
@@ -340,7 +330,7 @@ var helpmenow = (function () {
             },
             remove: function (id) {
                 try {
-                    localStorage.removeItem(id);
+                    ourStorage.removeItem(id);
                 } catch (e) {
                     if (!fakingStorage) { fakeStorage(); }
                 }
@@ -350,10 +340,10 @@ var helpmenow = (function () {
             },
             cleanUp: function () {
                 if (fakingStorage) { return; }  // if we're faking we don't need to clean up now or ever
-                if (localStorage.length !== 0) {
+                if (ourStorage.length !== 0) {
                     var cutoff = new Date().getTime() - CLEANUP_FREQ;
-                    for (var i = 0; i < localStorage.length; i++) {
-                        var key = localStorage.key(i);
+                    for (var i = 0; i < ourStorage.length; i++) {
+                        var key = ourStorage.key(i);
                         if (key.indexOf(NAME) !== 0) { continue; }
 
                         var item = storage.get(key);

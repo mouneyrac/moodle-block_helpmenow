@@ -56,6 +56,8 @@ class block_helpmenow extends block_base {
             'footer' => '',
         );
 
+        $this->content->text .= '<noscript>'.get_string('noscript', 'block_helpmenow').'</noscript>';
+
         # the first time a user loads the block this session try to popout
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
         if (!isset($SESSION->helpmenow_popout)) {

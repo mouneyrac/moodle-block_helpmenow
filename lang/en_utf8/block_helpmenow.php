@@ -38,6 +38,7 @@ foreach ($plugins as $pluginname) {
 }
 
 # block
+$string['noscript'] = "<div style='background-color:yellow;'>JavaScript is currently disabled. To use this block, please enable JavaScript</div>";
 $string['new_request'] = '(Click to get help)';
 $string['pending'] = '(Click to view your request)';
 $string['queue_na_short'] = '(Currently Offline)';
