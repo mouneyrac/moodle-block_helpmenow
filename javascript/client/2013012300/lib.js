@@ -179,6 +179,7 @@ var helpmenow = (function () {
         if (doTakeOver) {
             takeOver();
         } else {
+            clearTimeout(takeOverTimer);
             takeOverTimer = setTimeout(function () { checkTakeOver(); }, TAKEOVER_DELAY);
         }
     }
@@ -187,6 +188,7 @@ var helpmenow = (function () {
      * perform takeover
      */
     function takeOver() {
+        if (isMaster) { return; }
         isMaster = true;
         if (doBlockUpdates) {
             setTimeout(function () { blockUpdate(); }, 0);
@@ -373,6 +375,7 @@ var helpmenow = (function () {
             // start checkin, and takeover timers
             setTimeout(function () { checkIn(); }, 0);
             if (!isMaster) {
+                clearTimeout(takeOverTimer);
                 takeOverTimer = setTimeout(function () { checkTakeOver(); }, 100);   // wait a short time here
             }
         },

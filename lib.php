@@ -44,7 +44,7 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2013012200);
+define('HELPMENOW_CLIENT_VERSION', 2013012300);
 
 define('HELPMENOW_BLOCK_ALERT_DELAY', 5);   # delay so the block isn't alerting when the user is already in the chat
 
