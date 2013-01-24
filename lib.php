@@ -563,14 +563,14 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         $sql .= "AND userid <> $userid";
     }
     foreach (get_records_sql($sql) as $s2u) {
-        $message = helpmenow_format_message($message_rec, $s2u->userid);
+        $formatted_message = helpmenow_format_message($message_rec, $s2u->userid);
         $cache = json_decode($s2u->cache);
         $cache->last_message = $last_message;
         if ($notify) {
             $cache->beep = true;
             $cache->title_flash = format_string($message);
         }
-        $cache->html = $cache->html . $message;
+        $cache->html = $cache->html . $formatted_message;
         $s2u->cache = json_encode($cache);
         update_record('block_helpmenow_session2user', addslashes_recursive($s2u));
     }
