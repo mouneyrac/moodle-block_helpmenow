@@ -5,7 +5,7 @@ var helpmenow = (function () {
      * the first half here are "defines", the second half are regular variables
      */
     var NAME = 'helpmenow',                     // client name for storage
-        STORAGE_VERSION = '2013011400',         // versioning storage
+        STORAGE_VERSION = '2013012400',         // versioning storage
         PREFIX = NAME + '_' + STORAGE_VERSION + '_',
         TAKEOVER_DELAY = 5000,                  // takeOver timeout in milliseconds
         REQUEST_FREQ = 2000,                    // period at which we send all requests to server
@@ -32,7 +32,8 @@ var helpmenow = (function () {
             'id': id,
             time: new Date().getTime(),
             'type': 'instance',
-            'isBlock': isBlock
+            'isBlock': isBlock,
+            'isMaster': isMaster
         });
 
         /**
@@ -170,7 +171,7 @@ var helpmenow = (function () {
                     storage.remove(PREFIX + instances[key].id);
                     continue;
                 }
-                if (instances[key].id < id) {
+                if (instances[key].id < id || instances[key].isMaster) {
                     doTakeOver = false;
                     break;
                 }
