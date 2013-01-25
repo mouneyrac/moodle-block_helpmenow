@@ -52,7 +52,6 @@ foreach ($requests->requests as $request) {
         # all responses need id of the request and client instance
         $response = (object) array(
             'id' => $request->id,
-            'instanceId' => $request->instanceId
         );
 
         # verify session where applicable

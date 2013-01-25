@@ -44,7 +44,7 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2013012300);
+define('HELPMENOW_CLIENT_VERSION', 2013021700);
 
 /**
  * period (in seconds) we wait for before we decide that the user is in fact not online
@@ -461,8 +461,8 @@ EOF;
         $output .= <<<EOF
 <div id="helpmenow_office">
     <div><b>$my_office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenowBlock.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenowBlock.keypressMOTD(event);" onblur="helpmenowBlock.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+    <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
     <div style="text-align: center; font-size:small; margin-top:.5em;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
         <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
