@@ -52,28 +52,27 @@ $string['pending'] = '(Click to view your request)';
 $string['queue_na_short'] = '(Currently Offline)';
 $string['helper_link'] = 'Open My Queues';
 $string['admin_link'] = 'Manage Queues';
-$string['in_office'] = '';
-$string['out_office'] = 'Out of Office |';
+#$string['in_office'] = '';
+#$string['out_office'] = 'Out of Office |';
 $string['enter_office'] = 'Enter Office';
 $string['leave_office'] = 'Leave Office';
 $string['offline'] = '(Offline)';
 
 # new_request.php
-$string['new_request_heading'] = 'New Request';
+#$string['new_request_heading'] = 'New Request';
 $string['description'] = 'Description (140 characters or less)';
-$string['submitrequest'] = 'Submit request';
+#$string['submitrequest'] = 'Submit request';
 
 # connect.php
-$string['connect'] = 'Connecting';
-$string['missing_helper'] = "We're sorry, there are no available helpers at this time. Please try again later, or contact us by calling 603.778.2500 and selecting option #2, or by <a href='https://courses.vlacs.org/blocks/helpdesk/new.php'>submitting a help desk ticket here.</a>";
-$string['please_wait'] = 'Helpers may currently be helping other users. Please wait while we attempt to connect you.';
-$string['missing_request'] = 'Error: request does not exist.';
-$string['too_slow'] = 'Another helper has already answered this request.';
-$string['your_request'] = 'Your pending request:';
+#$string['connect'] = 'Connecting';
+#$string['please_wait'] = 'Helpers may currently be helping other users. Please wait while we attempt to connect you.';
+#$string['missing_request'] = 'Error: request does not exist.';
+#$string['too_slow'] = 'Another helper has already answered this request.';
+#$string['your_request'] = 'Your pending request:';
 
 # admin.php / edit.php / delete.php
 $string['global_admin'] = 'Global Queues';
-$string['course_admin'] = 'Queues: ';
+#$string['course_admin'] = 'Queues: ';
 $string['admin'] = 'Manage Queues';
 $string['new_queue'] = 'Add Queue';
 $string['weight'] = 'Weight';
