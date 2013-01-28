@@ -336,17 +336,26 @@ function helpmenow_print_hallway($users) {
         $admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
     }
     # start setting up the table
-    # todo: plugin abstraction
     $head = array(
         get_string('name'),
         get_string('motd', 'block_helpmenow'),
         get_string('loggedin', 'block_helpmenow'),
     );
+
+    $num_plugins = 0;
+    $plugins = array();
+    $plugin_names = array();
     if ($admin) {
-        $head = array_merge($head, array(
-            'GoToMeeting',
-            'WizIQ',
-        ));
+        foreach (helpmenow_plugin::get_plugins() as $plugin) {
+            $class = "helpmenow_plugin_$plugin";
+            if($class::has_user2plugin_data()) {
+                $plugins[] = $plugin;
+                $plugin_names[] = get_string("{$plugin}_settings_heading", 'block_helpmenow');
+                $num_plugins++;
+            }
+        }
+
+        $head = array_merge($head, $plugin_names);
     };
     $table = (object) array(
         'head' => $head,
@@ -382,34 +391,26 @@ function helpmenow_print_hallway($users) {
             $row[] = $yes;
 
             if ($admin) {
-#                # gtm
-#                if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
-#                    $row[] = $not_found;
-#                } else {
-#                    $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $user2plugin);
-#                    $row[] = "<a href=\"$user2plugin->join_url\" target=\"_blank\">$wander</a>";
-#                }
-
-                # wiziq
-                if (!$wiziq_u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'wiziq')) {
-                    $row[] = $not_found;
-                } else {
-                    $wiziq_u2p = new helpmenow_user2plugin_wiziq(null, $wiziq_u2p);
-                    if (isset($wiziq_u2p->class_id)) {
-                        $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
-                        $join_url->param('classid', $wiziq_u2p->class_id);
-                        $join_url = $join_url->out();
-                        $row[] = "<a href=\"$join_url\" target=\"_blank\">$wander</a>";
-                    } else {
+                foreach ($plugins as $pluginname) {
+                    if (!$u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', $pluginname)) {
                         $row[] = $not_found;
+                    } else {
+                        $class = "helpmenow_user2plugin_".$pluginname;
+                        $u2p = new $class(null, $u2p);
+                        if ($link = $u2p->get_link()) {
+                            $row[] = "<a href=\"$link\" target=\"_blank\">$wander</a>";
+                        } else {
+                            $row[] = $not_found;
+                        }
                     }
                 }
             }
         } else {
             $row[] = $no;
             if ($admin) {
-                $row[] = $na;
-                $row[] = $na;
+                foreach ($plugins as $plugin) {
+                    $row[] = $na;
+                }
             }
         }
         $table->data[] = $row;
@@ -1724,6 +1725,10 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
         }
         return $plugins;
     }
+
+    public static function has_user2plugin_data() {
+        return false;
+    }
 }
 
 /**
@@ -1753,6 +1758,10 @@ abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
         if ($record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', $plugin)) {
             return new static(null, $record);
         }
+        return false;
+    }
+
+    public function get_link() {
         return false;
     }
 }

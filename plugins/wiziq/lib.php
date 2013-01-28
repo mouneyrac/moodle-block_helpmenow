@@ -207,6 +207,10 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
 
         return array("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/lib_2012111100.js");
     }
+
+    public static function has_user2plugin_data() {
+        return true;
+    }
 }
 
 /**
@@ -368,6 +372,18 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
             $this->$attribute = null;
         }
         return $this->update();
+    }
+
+
+    public function get_link() {
+        global $CFG;
+        if (isset($this->class_id)) {
+            $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/join.php");
+            $join_url->param('classid', $this->class_id);
+            $join_url = $join_url->out();
+            return $join_url;
+        }
+        return false;
     }
 }
 
