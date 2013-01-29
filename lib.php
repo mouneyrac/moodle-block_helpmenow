@@ -673,6 +673,10 @@ function helpmenow_email_messages() {
     # find where we need to email messages
     $earlycutoff = time() - HELPMENOW_EMAIL_EARLYCUTOFF;
     $latecutoff = time() - HELPMENOW_EMAIL_LATECUTOFF;
+
+    # TODO: make this SQL more robust. If any of the sub-selects returns extra 
+    # rows, the whole thing falls over. :/ Generally, this shouldn't happen. But 
+    # if there's a data problem, it could.
     $sql = "
         SELECT s2u.id, s2u.userid, s2u.sessionid, (
             SELECT userid
