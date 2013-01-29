@@ -1118,7 +1118,11 @@ EOF;
         $style = 'margin-left: 1em;';
         if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
-                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                if ($isloggedin) {
+                    $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                } else {
+                    $name = fullname($u);
+                }
             } else {
                 continue;
             }
