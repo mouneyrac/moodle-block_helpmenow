@@ -542,10 +542,10 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         'userid' => $userid,
         'sessionid' => $sessionid,
         'time' => time(),
-        'message' => addslashes($message),
+        'message' => $message,
         'notify' => $notify,
     );
-    if (!$last_message = insert_record('block_helpmenow_message', $message_rec)) {
+    if (!$last_message = insert_record('block_helpmenow_message', addslashes_recursive($message_rec))) {
         return false;
     }
 
