@@ -32,6 +32,9 @@ if (!defined('HELPMENOW_CAP_QUEUE_ASK')) {
 if (!defined('HELPMENOW_CAP_MANAGE')) {
     define('HELPMENOW_CAP_MANAGE', 'block/helpmenow:manage_queues');
 }
+if (!defined('HELPMENOW_CAP_PRIVILEGED')) {
+    define('HELPMENOW_CAP_PRIVILEGED', 'block/helpmenow:privileged_user');
+}
 
 $block_helpmenow_capabilities = array (
     HELPMENOW_CAP_QUEUE_ASK => array (
@@ -60,6 +63,15 @@ $block_helpmenow_capabilities = array (
         'contextlevel'  => CONTEXT_SYSTEM,
         'legecy'        => array (
             'admin'             => CAP_ALLOW
+        )
+    ),
+    HELPMENOW_CAP_PRIVILEGED => array(
+        'riskbitmask' => RISK_SPAM + RISK_CONFIG,
+        'captype'     => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'legecy'       => array (
+            'admin' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW
         )
     ),
 );
