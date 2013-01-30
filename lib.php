@@ -543,10 +543,10 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         'userid' => $userid,
         'sessionid' => $sessionid,
         'time' => time(),
-        'message' => addslashes($message),
+        'message' => $message,
         'notify' => $notify,
     );
-    if (!$last_message = insert_record('block_helpmenow_message', $message_rec)) {
+    if (!$last_message = insert_record('block_helpmenow_message', addslashes_recursive($message_rec))) {
         return false;
     }
 
@@ -674,6 +674,10 @@ function helpmenow_email_messages() {
     # find where we need to email messages
     $earlycutoff = time() - HELPMENOW_EMAIL_EARLYCUTOFF;
     $latecutoff = time() - HELPMENOW_EMAIL_LATECUTOFF;
+
+    # TODO: make this SQL more robust. If any of the sub-selects returns extra 
+    # rows, the whole thing falls over. :/ Generally, this shouldn't happen. But 
+    # if there's a data problem, it could.
     $sql = "
         SELECT s2u.id, s2u.userid, s2u.sessionid, (
             SELECT userid
@@ -823,7 +827,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
     $session2user = helpmenow_get_s2u($request->session);
 
     # unless something has gone wrong, we should already have a response ready:
-    if (helpmenow_is_tester() and $request->last_message == $session2user->optimistic_last_message) {     // just test users for now, please
+    if ($request->last_message == $session2user->optimistic_last_message) {
         $response_cache = json_decode($session2user->cache);
         $response = (object) array_merge((array) $response, (array) $response_cache);
     } else {
@@ -1119,7 +1123,11 @@ EOF;
         $style = 'margin-left: 1em;';
         if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
-                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                if ($isloggedin) {
+                    $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                } else {
+                    $name = fullname($u);
+                }
             } else {
                 continue;
             }
