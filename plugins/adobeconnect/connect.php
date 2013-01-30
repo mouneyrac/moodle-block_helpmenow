@@ -50,6 +50,7 @@ if (!helpmenow_verify_session($sessionid)) {
 
 $username = preg_replace('/admin$/', '', $USER->username);
 
+# todo remove vlacs reference - move to config?
 $url = "http://vlacs.adobeconnect.com/$username";
 $message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
 helpmenow_message($sessionid, null, $message);
