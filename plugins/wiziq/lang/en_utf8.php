@@ -29,31 +29,9 @@ $string['wiziq_settings_heading_desc'] = 'Settings for WizIQ plugin.';
 $string['wiziq_settings_enabled'] = 'Enable WizIQ';
 $string['wiziq_settings_enabled_desc'] = 'Enables/disables the WizIQ plugin.';
 
-
-/*
- * todo
-$string['gotomeeting'] = 'GoToMeeting';
-
-# settings
-$string['gotomeeting_settings_heading'] = 'GoToMeeting';
-$string['gotomeeting_settings_heading_desc'] = 'These settings are for the GoToMeeting plugin.';
-$string['gotomeeting_settings_admin_key'] = 'Setup admin key.';
-$string['gotomeeting_settings_key'] = 'GoToMeeting API Key';
-$string['gotomeeting_settings_key_desc'] = 'GoToMeeting Application Developer API Key';
-$string['gotomeeting_settings_connect_message'] = 'Connect Message';
-$string['gotomeeting_settings_connect_message_desc'] = 'Message displayed on the GoToMeeting connect window.';
-
-# connect.php
-$string['gotomeeting_connecting'] = "You are being connected to GoToMeeting. Once it opens you may ";
-$string['gotomeeting_close'] = "close both windows.";
-
-# token.php
-$string['gotomeeting_token_desc'] = "
-    To continue we need to be authorized to create GoToMeeting sessions on your behalf.
-    <ol><li>Click the link below.</li>
-    <li>Log in to GoToMeeting.</li>
-    <li>Click &quot;Allow&quot;.</li></ol>";
-$string['gotomeeting_token_link'] = "Allow Access";
- */
+$string['wiziq_settings_access_key'] = 'WizIQ Access Key';
+$string['wiziq_settings_access_key_desc'] = 'WizIQ Access Key';
+$string['wiziq_settings_secret_key'] = 'WizIQ Secret Key';
+$string['wiziq_settings_secret_key_desc'] = 'WizIQ Secret Key';
 
 ?>
