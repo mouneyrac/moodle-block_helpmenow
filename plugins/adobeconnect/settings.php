@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This script handles wiziq Help Me Now settings.
+ * This script handles adobeconnect Help Me Now settings.
  *
  * @package     block_helpmenow
  * @copyright   2012 VLACS

@@ -62,7 +62,7 @@ class block_helpmenow extends block_base {
 
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
         $contact_list = helpmenow_contact_list::get_plugin();
-            $contact_list::update_contacts($USER->id);
+        $contact_list::update_contacts($USER->id);
         # do stuff that stuff that should be done when a user first logs in
         if (!isset($SESSION->helpmenow_first_load)) {
             $SESSION->helpmenow_first_load = true;
@@ -111,19 +111,20 @@ EOF;
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
 
-        # link for testing wiziq
-        # todo: make the plugin system be able to add stuff to the block and move this to the wiziq plugin
-        if (has_capability('moodle/site:doanything', $sitecontext) or get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
-            $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
-            $test->param('test', 1);
-            if ($break) {
-                $this->content->footer .= "<br />";
-            } else {
-                $break = true;
+        if (has_capability(HELPMENOW_CAP_PRIVILEGED, $sitecontext)) {
+            # call plugin methods to check for additional display information
+            foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+                $class = "helpmenow_plugin_$pluginname";
+                if($plugindisplay = $class::block_display()) {
+                    if ($break) {
+                        $this->content->footer .= "<br />";
+                    } else {
+                        $break = true;
+                    }
+                    $this->content->footer .= $plugindisplay;
+                }
             }
-            $this->content->footer .= link_to_popup_window($test->out(), "wiziq", 'Test WizIQ', 800, 900, null, null, true);
         }
-
         $this->content->footer .= <<<EOF
 <div id="helpmenow_last_refresh_div"></div>
 <div style="text-align:right;">

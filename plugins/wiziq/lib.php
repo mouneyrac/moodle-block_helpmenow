@@ -205,6 +205,17 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     public static function has_user2plugin_data() {
         return true;
     }
+
+    /**
+     * returns formatted information to put in the main block
+     * @return a link for testing wiziq
+     */
+    public static function block_display() {
+        global $CFG;
+        $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
+        $test->param('test', 1);
+        return link_to_popup_window($test->out(), "wiziq", 'Test WizIQ', 800, 900, null, null, true);
+    }
 }
 
 /**
@@ -379,6 +390,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
         }
         return false;
     }
+
 }
 
 /**

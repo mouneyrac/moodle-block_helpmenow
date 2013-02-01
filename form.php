@@ -46,9 +46,9 @@ class helpmenow_queue_form extends moodleform {
         $mform->addRule('description', null, 'required', null, 'client');
         $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 140, 'client');
 
-        # todo: verify number
         $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 4));
         $mform->addRule('weight', null, 'required', null, 'client');
+        $mform->addRule('weight', null, 'numeric', null, 'client');
 
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));

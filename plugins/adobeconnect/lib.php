@@ -55,7 +55,7 @@ function helpmenow_adobeconnect_tester() {
  */
 
 /**
- * wiziq helpmenow plugin class
+ * adobeconnect helpmenow plugin class
  */
 class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
     /**

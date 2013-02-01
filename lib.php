@@ -649,7 +649,7 @@ function helpmenow_format_message($m, $userid = null) {
         $msg = "<i>$msg</i>";
     } else {
         if ($m->userid == $userid) {
-            $name = "Me";               # todo: internationalize
+            $name = get_string('me', 'block_helpmenow');
         } else {
             if (!isset($users[$m->userid])) {
                 $users[$m->userid] = get_record('user', 'id', $m->userid);
@@ -866,7 +866,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
             )";
         if ($last_message = get_record_sql($sql)) {
             if (!is_null($last_message->userid) and $last_message->time < time() - 30) {
-                $message = 'Sent: '.userdate($last_message->time, '%r');    # todo: internationalize
+                $message = get_string('sent', 'block_helpmenow').': '.userdate($last_message->time, '%r');
                 helpmenow_message($request->session, null, $message, 0);
             }
         }
@@ -1733,6 +1733,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     public static function has_user2plugin_data() {
+        return false;
+    }
+
+    /**
+     * individual plugins may return formatted information to put in the main block
+     * otherwise return false
+     */
+    public static function block_display() {
         return false;
     }
 }

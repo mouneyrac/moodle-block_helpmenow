@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This is the english translation file for helpmenow wiziq plugin
+ * This is the english translation file for helpmenow adobeconnect plugin
  *
  * @package     block_helpmenow
  * @copyright   2010 VLACS
