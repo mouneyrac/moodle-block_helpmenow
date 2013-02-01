@@ -50,8 +50,11 @@ if (!helpmenow_verify_session($sessionid)) {
 
 $username = preg_replace('/admin$/', '', $USER->username);
 
-# todo remove vlacs reference - move to config?
-$url = "http://vlacs.adobeconnect.com/$username";
+if (!empty($CFG->helpmenow_adobeconnect_url)) {
+    $url = $CFG->helpmenow_adobeconnect_url."/$username";
+} else {
+    helpmenow_fatal_error('This page has not been fully configured.');
+}
 $message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
 helpmenow_message($sessionid, null, $message);
 

@@ -29,4 +29,7 @@ $string['adobeconnect_settings_heading_desc'] = 'Settings for Adobe Connect plug
 $string['adobeconnect_settings_enabled'] = 'Enable Adobe Connect';
 $string['adobeconnect_settings_enabled_desc'] = 'Enables/disables the Adobe Connect plugin.';
 
+$string['adobeconnect_settings_url'] = 'Adobe Connect URL';
+$string['adobeconnect_settings_url_desc'] = 'Base URL for Adobe Connect';
+
 ?>

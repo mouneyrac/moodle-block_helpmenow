@@ -25,4 +25,11 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
+$settings->add(new admin_setting_configtext('helpmenow_adobeconnect_url',
+                                            get_string('adobeconnect_settings_url', 'block_helpmenow'),
+                                            get_string('adobeconnect_settings_url_desc', 'block_helpmenow'),
+                                            '',
+                                            PARAM_TEXT,
+                                            100));
+
 ?>
