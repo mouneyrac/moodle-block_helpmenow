@@ -50,7 +50,7 @@ if (!helpmenow_verify_session($sessionid)) {
 
 $username = preg_replace('/admin$/', '', $USER->username);
 
-$url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/meetnow.php");
+$url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
 $url->param('username', $username);
 $url = $url->out();
 
