@@ -27,36 +27,9 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
-require_login(0, false);
+$username = required_param('username', PARAM_TEXT);
 
-# limit to testers for now
-if (!helpmenow_adobeconnect_tester()) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
-
-# make sure user is instructor or helper
-$user = get_record('block_helpmenow_user', 'userid', $USER->id);
-$helper = get_records('block_helpmenow_helper', 'userid', $USER->id);
-if (!$user and !$helper) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
-
-$sessionid = required_param('sessionid', PARAM_INT);
-
-# verify sesion
-if (!helpmenow_verify_session($sessionid)) {
-    helpmenow_fatal_error('You do not have permission to view this page.');
-}
-
-$username = preg_replace('/admin$/', '', $USER->username);
-
-$url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/meetnow.php");
-$url->param('username', $username);
-$url = $url->out();
-
-$message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
-helpmenow_message($sessionid, null, $message);
-
+$url = "http://vlacs.adobeconnect.com/$username";
 redirect($url);
 
 ?>
