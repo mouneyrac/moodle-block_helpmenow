@@ -27,20 +27,23 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
+$testing = optional_param('testing', 0, PARAM_BOOL);
 $username = required_param('username', PARAM_TEXT);
 $url = "http://vlacs.adobeconnect.com/$username";
 
 $heading = 'VLACS-Adobe Connect Redirector';
 print_header($heading, $heading);
 
-$me = qualified_me();
+$me = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+$me->param('username', $username);
+$me = $me->out();
 
 print <<<EOF
 <div id="message"></div>
 <script type="text/javascript">
 <!--
-if (navigator.userAgent.indexOf("Chrome") != -1) {
-    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <a href=\"$me\">$me</a></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
+if ($testing || navigator.userAgent.indexOf("Chrome") != -1) {
+    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <p style=\"font-weight:bold;\">$me</p></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
 
 } else {
     window.location = "$url";
