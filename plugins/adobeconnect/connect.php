@@ -54,7 +54,7 @@ $url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetn
 $url->param('username', $username);
 $url = $url->out();
 
-$message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
+$message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> and select "Enter as a Guest" to join.';
 helpmenow_message($sessionid, null, $message);
 
 redirect($url);

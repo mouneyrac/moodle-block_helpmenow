@@ -28,8 +28,27 @@ require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.ph
 require_once(dirname(__FILE__) . '/lib.php');
 
 $username = required_param('username', PARAM_TEXT);
-
 $url = "http://vlacs.adobeconnect.com/$username";
-redirect($url);
+
+$heading = 'VLACS-Adobe Connect Redirector';
+print_header($heading, $heading);
+
+$me = qualified_me();
+
+print <<<EOF
+<div id="message"></div>
+<script type="text/javascript">
+<!--
+if (navigator.userAgent.indexOf("Chrome") != -1) {
+    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <a href=\"$me\">$me</a></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
+
+} else {
+    window.location = "$url";
+}
+//-->
+</script>
+EOF;
+
+print_footer();
 
 ?>
