@@ -1732,6 +1732,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
         }
         return $plugins;
     }
+
+    /**
+     * individual plugins may return formatted information to put in the main block
+     * otherwise return false
+     */
+    public static function block_display() {
+        return false;
+    }
 }
 
 /**

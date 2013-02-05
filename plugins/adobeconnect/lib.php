@@ -42,6 +42,7 @@ function helpmenow_adobeconnect_tester() {
     case 11:        // Ollire
     case 56895:     // "
     case 4:         // Heather
+    case 50710:     // Karen
         return true;
     default:
         return false;
@@ -81,6 +82,23 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         }
         return '';
     }
+
+    /**
+     * returns formatted information to put in the main block
+     * @return a link to adobe connect user page
+     */
+    public static function block_display() {
+        global $CFG, $USER;
+
+        if (!helpmenow_adobeconnect_tester()) {
+            return false;
+        }
+
+        $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+        $test->param('username', $USER->username);
+        return link_to_popup_window($test->out(), "adobeconnect", 'My Classroom', 800, 900, null, null, true);
+    }
+
 }
 
 ?>
