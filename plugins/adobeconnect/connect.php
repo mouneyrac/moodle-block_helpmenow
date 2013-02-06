@@ -50,12 +50,11 @@ if (!helpmenow_verify_session($sessionid)) {
 
 $username = preg_replace('/admin$/', '', $USER->username);
 
-if (!empty($CFG->helpmenow_adobeconnect_url)) {
-    $url = $CFG->helpmenow_adobeconnect_url."/$username";
-} else {
-    helpmenow_fatal_error('This page has not been fully configured.');
-}
-$message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> to join.';
+$url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+$url->param('username', $username);
+$url = $url->out();
+
+$message = fullname($USER) . ' has invited you to use voice, video, and whiteboarding, <a target="adobe_connect" href="'.$url.'">click here</a> and select "Enter as a Guest" to join.';
 helpmenow_message($sessionid, null, $message);
 
 redirect($url);
