@@ -44,7 +44,7 @@ print <<<EOF
 <script type="text/javascript">
 <!--
 if ($testing || navigator.userAgent.indexOf("Chrome") != -1) {
-    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <p style=\"font-weight:bold; margin-left: 5em; \">$me</p></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
+    document.getElementById('message').innerHTML = "<p>You appear to be using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <p style=\"font-weight:bold; margin-left: 5em; \">$me</p></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
 
 } else {
     window.location = "$url";
