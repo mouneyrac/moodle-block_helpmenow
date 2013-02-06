@@ -58,8 +58,10 @@ if ($login) {
 
 if ($queueid) {     # helper
     update_record('block_helpmenow_helper', $record);
+    helpmenow_log($USER->id, 'updated block_helpmenow_helper', "$record->isloggedin");
 } else {    # instructor
     update_record('block_helpmenow_user', addslashes_recursive($record));
+    helpmenow_log($USER->id, 'updated block_helpmenow_user', "$record->isloggedin");
 }
 
 /**
