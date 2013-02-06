@@ -46,6 +46,11 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
  */
 define('HELPMENOW_CLIENT_VERSION', 2013012300);
 
+/**
+ * period (in seconds) we wait for before we decide that the user is in fact not online
+ */
+define('HELPMENOW_CUTOFF_DELAY', 120);
+
 define('HELPMENOW_BLOCK_ALERT_DELAY', 5);   # delay so the block isn't alerting when the user is already in the chat
 
 function helpmenow_verify_session($session) {
@@ -136,7 +141,7 @@ function helpmenow_cutoff() {
     if (isset($CFG->helpmenow_no_cutoff) and $CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
         return 0;
     }
-    return time() - 300;
+    return time() - HELPMENOW_CUTOFF_DELAY;
 }
 
 /**
@@ -1093,7 +1098,7 @@ EOF;
     $cutoff = helpmenow_cutoff();
     foreach ($contacts as $u) {
         $u->online = false;
-        if ($u->isloggedin != 0 or (is_null($u->isloggedin) and $u->hmn_lastaccess > $cutoff)) {
+        if ($u->hmn_lastaccess > $cutoff and (is_null($u->isloggedin) or $u->isloggedin != 0)) {
             $u->online = true;
             if (!$message = get_record_sql($sql.$u->id)) {
                 continue;
