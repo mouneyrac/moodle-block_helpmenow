@@ -167,6 +167,8 @@ $string['textarea_message'] = 'Type your message here and press the &quot;enter&
 
 $string['motd'] = 'MOTD';
 $string['loggedin'] = 'Logged In?';
+$string['loggedinsince'] = 'Login date';
+$string['lastaccess'] = 'Last updated';
 
 $string['na'] = 'N/A';
 $string['not_found'] = 'Not Found';

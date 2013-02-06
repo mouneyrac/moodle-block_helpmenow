@@ -346,6 +346,8 @@ function helpmenow_print_hallway($users) {
         get_string('name'),
         get_string('motd', 'block_helpmenow'),
         get_string('loggedin', 'block_helpmenow'),
+        get_string('loggedinsince', 'block_helpmenow'),
+        get_string('lastaccess', 'block_helpmenow'),
     );
     if ($admin) {
         $head = array_merge($head, array(
@@ -385,7 +387,8 @@ function helpmenow_print_hallway($users) {
 
         if ($u->isloggedin) {
             $row[] = $yes;
-
+            $row[] = $u->isloggedin ? userdate($u->isloggedin) : $na;
+            $row[] = $u->lastaccess ? userdate($u->lastaccess) : $na;
             if ($admin) {
 #                # gtm
 #                if (!$user2plugin = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', 'gotomeeting')) {
@@ -412,6 +415,8 @@ function helpmenow_print_hallway($users) {
             }
         } else {
             $row[] = $no;
+            $row[] = $u->isloggedin ? userdate($u->isloggedin) : $na;
+            $row[] = $u->lastaccess ? userdate($u->lastaccess) : $na;
             if ($admin) {
                 $row[] = $na;
                 $row[] = $na;
