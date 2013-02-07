@@ -688,7 +688,7 @@ function helpmenow_email_messages() {
     # rows, the whole thing falls over. :/ Generally, this shouldn't happen. But 
     # if there's a data problem, it could.
     $sql = "
-        SELECT s2u.id, s2u.userid, s2u.sessionid, (
+        SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
             SELECT userid
             FROM {$CFG->prefix}block_helpmenow_session2user s2u2
             WHERE s2u2.sessionid = s2u.sessionid
@@ -743,11 +743,12 @@ function helpmenow_email_messages() {
                     $m->message :
                     fullname($users[$m->userid]) . ": $m->message")
                 . "\n";
-            $last_message = $m->id;
         }
 
         if (!$content) {    # missed messages are only system messages, don't email
-            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+            if (!defined('HMN_TESTING')) {
+                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+            }
             continue;
         }
 
@@ -761,9 +762,18 @@ function helpmenow_email_messages() {
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
 
-        if (email_to_user($users[$s2u->userid], $blockname, $subject, $text)) { #, $messagehtml);
-            echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text;
-            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);
+        if (!defined('HMN_TESTING')) {
+            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text);
+        } else {
+            $status = true;
+            print "HMN_TESTING: Pretending email was sent...\n";
+        }
+
+        if ($status) {
+            echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text."\nlast_message: $s2u->last_message\n";
+            if (!defined('HMN_TESTING')) {
+                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);
+            }
         } else {
             echo "failed to email user $s2u->userid\n";
         }
