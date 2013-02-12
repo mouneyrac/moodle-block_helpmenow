@@ -57,6 +57,7 @@ $string['admin_link'] = 'Manage Queues';
 $string['enter_office'] = 'Enter Office';
 $string['leave_office'] = 'Leave Office';
 $string['offline'] = '(Offline)';
+$string['updated'] = 'Updated';
 
 # new_request.php
 #$string['new_request_heading'] = 'New Request';
