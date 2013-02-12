@@ -35,7 +35,7 @@ if (!empty($CFG->helpmenow_adobeconnect_url)) {
     helpmenow_fatal_error('This page has not been configured for adobe connect.');
 }
 
-$heading = 'VLACS-Adobe Connect Redirector';
+$heading = $CFG->helpmenow_adobeconnect_orgname.'-Adobe Connect Redirector';
 print_header($heading, $heading);
 
 $me = qualified_me();
@@ -45,7 +45,7 @@ print <<<EOF
 <script type="text/javascript">
 <!--
 if (navigator.userAgent.indexOf("Chrome") != -1) {
-    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <a href=\"$me\">$me</a></p><p>If you need any help, please <a target=\"_blank\" href=\"http://helpdesk.vlacs.org\">contact our technical help desk</a> by email or phone.</p>";
+    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <a href=\"$me\">$me</a></p><p>If you need any help, please <a target=\"_blank\" href=\"$CFG->helpmenow_adobeconnect_helpurl\">contact our technical help desk</a> by email or phone.</p>";
 
 } else {
     window.location = "$url";

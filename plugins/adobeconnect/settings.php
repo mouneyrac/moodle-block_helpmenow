@@ -32,4 +32,19 @@ $settings->add(new admin_setting_configtext('helpmenow_adobeconnect_url',
                                             PARAM_TEXT,
                                             100));
 
+$settings->add(new admin_setting_configtext('helpmenow_adobeconnect_helpurl',
+                                            get_string('adobeconnect_settings_helpurl', 'block_helpmenow'),
+                                            get_String('adobeconnect_settings_helpurl_desc', 'block_helpmenow'),
+                                            '',
+                                            PARAM_TEXT,
+                                            100));
+
+$settings->add(new admin_setting_configtext('helpmenow_adobeconnect_orgname',
+                                            get_string('adobeconnect_settings_orgname', 'block_helpmenow'),
+                                            get_string('adobeconnect_settings_orgname_desc', 'block_helpmenow'),
+                                            '',
+                                            PARAM_TEXT,
+                                            25));
+
+
 ?>
