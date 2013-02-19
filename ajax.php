@@ -53,6 +53,9 @@ foreach ($requests->requests as $request) {
         $response = (object) array(
             'id' => $request->id,
         );
+        if (isset($request->instanceId)) {
+            $response->instanceId = $request->instanceId;
+        }
 
         # verify session where applicable
         switch ($request->function) {
