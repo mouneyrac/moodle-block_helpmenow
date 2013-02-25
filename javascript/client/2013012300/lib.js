@@ -16,6 +16,7 @@ var helpmenow = (function () {
 
         id,                                     // unique id
         serverURL,                              // server url
+        titleName,                              // title name from cfg
         requestCount = 0,                       // count of requests, used to id requests
         requestCallbacks = {},                  // holds our requests
         isMaster = false,                       // whether or not we are in charge of updates
@@ -382,6 +383,12 @@ var helpmenow = (function () {
         },
         setServerURL: function (newServerURL) {
             serverURL = newServerURL;
+        },
+        setTitleName: function (newTitleName) {
+            titleName = newTitleName;
+        },
+        getTitleName: function () {
+            return titleName;
         },
         addRequest: function (requestBody, callback) {
             var requestId = id + '_' + (requestCount++).toString();

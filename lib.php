@@ -471,6 +471,12 @@ EOF;
     $jplayer = helpmenow_jplayer();
     $version = HELPMENOW_CLIENT_VERSION;
 
+    if (!empty($CFG->helpmenow_title)) {
+        $titlename = $CFG->helpmenow_title;
+    } else {
+        $titlename = get_string('helpmenow', 'block_helpmenow');
+    }
+
     $output .= <<<EOF
 <hr />
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -481,6 +487,7 @@ $jplayer
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/block.js"></script>
 <script type="text/javascript">
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
+    helpmenow.setTitleName("$titlename");
 </script>
 <div id="helpmenow_chime"></div>
 EOF;

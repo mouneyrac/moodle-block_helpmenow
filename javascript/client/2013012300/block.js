@@ -38,7 +38,8 @@ var helpmenowBlock = (function () {
             if (response.alert) {
                 if (response.pending && !$(document)[0].hasFocus()) {
                     //$.titleAlert('"' + response.title_flash + '"', {
-                    $.titleAlert('(' + response.pending + ') VLACS Communicator', {
+                    var titleName = helpmenow.getTitleName();
+                    $.titleAlert('(' + response.pending + ') ' + titleName, {
                         interval:1000
                     });
                 }
