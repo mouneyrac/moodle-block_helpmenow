@@ -44,6 +44,7 @@ function helpmenow_adobeconnect_tester() {
     case 4:         // Heather
     case 50710:     // Karen
     case 10:        // Tony
+    case 37479:     // lisa
         return true;
     default:
         return false;
