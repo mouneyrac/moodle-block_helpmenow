@@ -44,7 +44,12 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2013012300);
+define('HELPMENOW_CLIENT_VERSION', 2013021700);
+
+/**
+ * period (in seconds) we wait for before we decide that the user is in fact not online
+ */
+define('HELPMENOW_CUTOFF_DELAY', 120);
 
 define('HELPMENOW_BLOCK_ALERT_DELAY', 5);   # delay so the block isn't alerting when the user is already in the chat
 
@@ -134,7 +139,7 @@ function helpmenow_cutoff() {
     if (isset($CFG->helpmenow_no_cutoff) and $CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
         return 0;
     }
-    return time() - 300;
+    return time() - HELPMENOW_CUTOFF_DELAY;
 }
 
 /**
@@ -338,6 +343,8 @@ function helpmenow_print_hallway($users) {
         get_string('name'),
         get_string('motd', 'block_helpmenow'),
         get_string('loggedin', 'block_helpmenow'),
+        get_string('loggedinsince', 'block_helpmenow'),
+        get_string('lastaccess', 'block_helpmenow'),
     );
 
     $num_plugins = 0;
@@ -387,7 +394,8 @@ function helpmenow_print_hallway($users) {
 
         if ($u->isloggedin) {
             $row[] = $yes;
-
+            $row[] = $u->isloggedin ? userdate($u->isloggedin) : $na;
+            $row[] = $u->lastaccess ? userdate($u->lastaccess) : $na;
             if ($admin) {
                 foreach ($plugins as $pluginname) {
                     if (!$u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', $pluginname)) {
@@ -405,6 +413,8 @@ function helpmenow_print_hallway($users) {
             }
         } else {
             $row[] = $no;
+            $row[] = $u->isloggedin ? userdate($u->isloggedin) : $na;
+            $row[] = $u->lastaccess ? userdate($u->lastaccess) : $na;
             if ($admin) {
                 foreach ($plugins as $plugin) {
                     $row[] = $na;
@@ -450,8 +460,8 @@ EOF;
         $output .= <<<EOF
 <div id="helpmenow_office">
     <div><b>$my_office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenowBlock.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenowBlock.keypressMOTD(event);" onblur="helpmenowBlock.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+    <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
     <div style="text-align: center; font-size:small; margin-top:.5em;">
         <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
         <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
@@ -684,7 +694,7 @@ function helpmenow_email_messages() {
     # rows, the whole thing falls over. :/ Generally, this shouldn't happen. But 
     # if there's a data problem, it could.
     $sql = "
-        SELECT s2u.id, s2u.userid, s2u.sessionid, (
+        SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
             SELECT userid
             FROM {$CFG->prefix}block_helpmenow_session2user s2u2
             WHERE s2u2.sessionid = s2u.sessionid
@@ -739,11 +749,12 @@ function helpmenow_email_messages() {
                     $m->message :
                     fullname($users[$m->userid]) . ": $m->message")
                 . "\n";
-            $last_message = $m->id;
         }
 
         if (!$content) {    # missed messages are only system messages, don't email
-            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+            if (!defined('HMN_TESTING')) {
+                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+            }
             continue;
         }
 
@@ -757,9 +768,18 @@ function helpmenow_email_messages() {
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
 
-        if (email_to_user($users[$s2u->userid], $blockname, $subject, $text)) { #, $messagehtml);
-            echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text;
-            set_field('block_helpmenow_session2user', 'last_message', $last_message, 'id', $s2u->id);
+        if (!defined('HMN_TESTING')) {
+            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text);
+        } else {
+            $status = true;
+            print "HMN_TESTING: Pretending email was sent...\n";
+        }
+
+        if ($status) {
+            echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text."\nlast_message: $s2u->last_message\n";
+            if (!defined('HMN_TESTING')) {
+                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);
+            }
         } else {
             echo "failed to email user $s2u->userid\n";
         }
@@ -1099,7 +1119,7 @@ EOF;
     $cutoff = helpmenow_cutoff();
     foreach ($contacts as $u) {
         $u->online = false;
-        if ($u->isloggedin != 0 or (is_null($u->isloggedin) and $u->hmn_lastaccess > $cutoff)) {
+        if ($u->hmn_lastaccess > $cutoff and (is_null($u->isloggedin) or $u->isloggedin != 0)) {
             $u->online = true;
             if (!$message = get_record_sql($sql.$u->id)) {
                 continue;

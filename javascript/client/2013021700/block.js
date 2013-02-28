@@ -1,7 +1,9 @@
-var helpmenowBlock = (function () {
+var helpmenow = (function (my) {
     "use strict";
 
     var lastUpdate = 0;     // last time we got block data
+
+    my.sharedData.isBlock = true;
 
     /**
      * toggles logged in status display
@@ -21,10 +23,8 @@ var helpmenowBlock = (function () {
     /**
      * refresh block
      */
-    function refresh() {
-        var response = helpmenow.getBlockData();
-        if (typeof response === "undefined") {               // don't have block data yet
-            setTimeout(function () { refresh(); }, 500);
+    my.processUpdates = function (response) {
+        if (typeof response === "undefined" || response === null) {               // don't have block data yet
             return;
         }
         if (response.time > lastUpdate) {
@@ -60,42 +60,36 @@ var helpmenowBlock = (function () {
             } catch (e) {
             }
         }
-        setTimeout(function () { refresh(); }, 500);
-    }
+    };
 
     /**
      * Handles submitting the motd
      */
     function submitMOTD(motd) {
         var params = {
-            "function" : "motd",
-            "motd" : motd
+            'requests': {
+                'motd': {
+                    'id': 'motd',
+                    'function': 'motd',
+                    'motd': motd
+                }
+            }
         };
-        helpmenow.addRequest(params, function(response) {
+        helpmenow.ajax(params, function(xmlhttp) {
+            if (xmlhttp.readyState !== 4) { return; }
+            if (xmlhttp.status !== 200) { return; }      // todo: maybe have a spot on the block that displays errors if they occur
+            var response = JSON.parse(xmlhttp.responseText);
             if (typeof response.error === 'undefined') {
                 var edit_element = document.getElementById("helpmenow_motd_edit");
                 var motd_element = document.getElementById("helpmenow_motd");
-                edit_element.value = response.motd;
-                motd_element.innerHTML = response.motd;
-                helpmenowBlock.toggleMOTD(false);
+                edit_element.value = response[0].motd;
+                motd_element.innerHTML = response[0].motd;
+                helpmenow.block.toggleMOTD(false);
             }
         });
     }
 
-    /**
-     * public interface
-     */
-    return {
-        init: function () {
-            helpmenow.init();
-            refresh();
-        },
-
-        /**
-         * toggles motd editing
-         *
-         * @param bool edit  true indicates edit mode, false is display mode
-         */
+    my.block = {
         toggleMOTD: function (edit) {
             var motd_element = document.getElementById("helpmenow_motd");
             var edit_element = document.getElementById("helpmenow_motd_edit");
@@ -137,9 +131,5 @@ var helpmenowBlock = (function () {
             return true;
         }
     };
-}) ();
-
-$(document).ready(function () {
-    "use strict";
-    helpmenowBlock.init();
-});
+    return my;
+}) (helpmenow);

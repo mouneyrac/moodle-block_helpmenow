@@ -52,8 +52,10 @@ foreach ($requests->requests as $request) {
         # all responses need id of the request and client instance
         $response = (object) array(
             'id' => $request->id,
-            'instanceId' => $request->instanceId
         );
+        if (isset($request->instanceId)) {
+            $response->instanceId = $request->instanceId;
+        }
 
         # verify session where applicable
         switch ($request->function) {

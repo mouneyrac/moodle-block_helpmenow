@@ -27,6 +27,7 @@
 require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
+$testing = optional_param('testing', 0, PARAM_BOOL);
 $username = required_param('username', PARAM_TEXT);
 
 if (!empty($CFG->helpmenow_adobeconnect_url)) {
@@ -38,14 +39,17 @@ if (!empty($CFG->helpmenow_adobeconnect_url)) {
 $heading = $CFG->helpmenow_adobeconnect_orgname.'-Adobe Connect Redirector';
 print_header($heading, $heading);
 
-$me = qualified_me();
+$me = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+$me->param('username', $username);
+$me = $me->out();
 
 print <<<EOF
+<img src="https://courses.vlacs.org/vlacslogo.png" width="287px"/>
 <div id="message"></div>
 <script type="text/javascript">
 <!--
-if (navigator.userAgent.indexOf("Chrome") != -1) {
-    document.getElementById('message').innerHTML = "<p>You are using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <a href=\"$me\">$me</a></p><p>If you need any help, please <a target=\"_blank\" href=\"$CFG->helpmenow_adobeconnect_helpurl\">contact our technical help desk</a> by email or phone.</p>";
+if ($testing || navigator.userAgent.indexOf("Chrome") != -1) {
+    document.getElementById('message').innerHTML = "<p>You appear to be using Google's Chrome browser. We like it, too!</p><p>Unfortunately, Adobe Connect does not yet support Chrome, so we cannot connect you until you switch to a different browser.</p><p>Please open a different browser (Firefox, Safari, and Internet Explorer are recommended) and copy and paste the following link into that browser to continue: <p style=\"font-weight:bold; margin-left: 5em; \">$me</p></p><p>If you need any help, please <a target=\"_blank\" href=\"$CFG->helpmenow_adobeconnect_helpurl\">contact our technical help desk</a> by email or phone.</p>";
 
 } else {
     window.location = "$url";

@@ -116,8 +116,8 @@ echo <<<EOF
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/chat.js" type="text/javascript"></script>
         <script type="text/javascript">
             helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
-            helpmenowChat.setLastMessage($last_message);
-            helpmenowChat.setSessionId($sessionid);
+            helpmenow.chat.setLastMessage($last_message);
+            helpmenow.chat.setSessionId($sessionid);
             var plugin_refresh = new Array();
         </script>
         $plugins_js
