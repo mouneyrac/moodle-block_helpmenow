@@ -79,7 +79,9 @@ function helpmenow_check_privileged($session) {
         if (record_exists_sql($sql)) {
             return true;
         }
-    } else if ( has_capability(HELPMENOW_CAP_PRIVILEGED, get_context_instance(CONTEXT_SYSTEM, SITEID))) {
+    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {    #todo: change this to a capability
+        return true;
+    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'ADMIN') {    #todo: change this to a capability
         return true;
     }
     return false;
