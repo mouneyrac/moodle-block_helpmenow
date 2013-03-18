@@ -68,6 +68,8 @@ function helpmenow_verify_session($session) {
 function helpmenow_check_privileged($session) {
     global $USER, $CFG;
 
+    $contact_list = helpmenow_contact_list::get_plugin();
+
     if (isset($session->queueid)) {
         $sql = "
             SELECT 1
@@ -79,14 +81,13 @@ function helpmenow_check_privileged($session) {
         if (record_exists_sql($sql)) {
             return true;
         }
-    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {    #todo: change this to a capability
-        return true;
-    } else if (get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'ADMIN') {    #todo: change this to a capability
+    } else if ($contact_list::is_admin_or_teacher()) {
         return true;
     }
     return false;
 }
 
+/* replaced by contact_lists
 function helpmenow_get_students() {
     global $CFG, $USER;
     $cutoff = helpmenow_cutoff();
@@ -135,7 +136,7 @@ function helpmenow_get_instructors() {
     ";
     return get_records_sql($sql);
 }
-
+ */
 function helpmenow_cutoff() {
     global $CFG;
     if (isset($CFG->helpmenow_no_cutoff) and $CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
@@ -440,9 +441,9 @@ function helpmenow_block_interface() {
 <div id="helpmenow_queue_div"></div>
 EOF;
 
-    $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber);
-    switch ($privilege) {
-    case 'TEACHER':
+    $contact_list = helpmenow_contact_list::get_plugin();
+    
+    if($contact_list::is_teacher()) {
         $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
         $instyle = $outstyle = '';
         if ($helpmenow_user->isloggedin) {
@@ -472,13 +473,11 @@ EOF;
     <div id="helpmenow_users_div"></div>
 </div>
 EOF;
-        break;
-    case 'STUDENT':
+    } else if($contact_list::is_student()) {
         $output .= '
             <div>'.get_string('instructors', 'block_helpmenow').'</div>
             <div id="helpmenow_users_div"></div>
             ';
-        break;
     }
     $jplayer = helpmenow_jplayer();
     $version = HELPMENOW_CLIENT_VERSION;
@@ -1837,6 +1836,10 @@ abstract class helpmenow_contact_list {
         $plugin = 'native';
         if (isset($CFG->helpmenow_contact_list) and strlen($CFG->helpmenow_contact_list) > 0) {
             $plugin = $CFG->helpmenow_contact_list;
+            if(!file_exists("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php")) {
+                # TODO: Warn config error
+                $plugin = 'native';
+            }
         }
         $class = "helpmenow_contact_list_$plugin";
         require_once("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php");
@@ -1874,6 +1877,29 @@ abstract class helpmenow_contact_list {
     public static function block_display() {
         return false;
     }
+
+    /**
+     * Check if user is a teacher - teachers have capabilities to see their 
+     * enrolled students and may sometimes be added to queue helper lists
+     */
+    public abstract static function is_teacher($userid=null);
+
+    /*
+     * Check if user is an admin - admins have additional management capabilites 
+     * over other users
+     */
+    public abstract static function is_admin($userid=null);
+
+    /**
+     * Check if user is admin or teacher - sometimes optimized over calling 
+     * bother functions
+     */
+    public abstract static function is_admin_or_teacher($userid=null);
+
+    /**
+     * Check if user is a student
+     */
+    public abstract static function is_student($userid=null);
 }
 
 ?>

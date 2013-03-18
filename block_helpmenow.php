@@ -111,7 +111,7 @@ EOF;
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
 
-        if (has_capability('moodle/site:doanything', $sitecontext) or get_field('sis_user', 'privilege', 'sis_user_idstr', $USER->idnumber) == 'TEACHER') {
+        if ($contact_list::is_admin_or_teacher()) {
             # call plugin methods to check for additional display information
             foreach (helpmenow_plugin::get_plugins() as $pluginname) {
                 $class = "helpmenow_plugin_$pluginname";

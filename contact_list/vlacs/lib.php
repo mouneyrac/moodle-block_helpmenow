@@ -95,6 +95,44 @@ class helpmenow_contact_list_vlacs extends helpmenow_contact_list {
 
         return $rval;
     }
+
+
+    public static function is_teacher($userid=null) {
+        global $USER;
+        if ($userid == null) {
+            $userid = $USER->idnumber;
+        }
+        return get_field('sis_user', 'privilege', 'sis_user_idstr', $userid) == 'TEACHER';
+    }
+
+    public static function is_admin($userid=null) {
+        global $USER;
+        if ($userid == null) {
+            $userid = $USER->idnumber;
+        }
+        return get_field('sis_user', 'privilege', 'sis_user_idstr', $userid) == 'ADMIN';
+    }
+
+    public static function is_admin_or_teacher($userid=null) {
+        global $USER;
+        if ($userid == null) {
+            $userid = $USER->idnumber;
+        }
+        $privilege = get_field('sis_user', 'privilege', 'sis_user_idstr', $userid);
+        if ($privilege == 'TEACHER' or $privilege == 'ADMIN') {
+            return true;
+        }
+        return false;
+    }
+
+    public static function is_student($userid=null) {
+        global $USER;
+        if ($userid == null) {
+            $userid = $USER->idnumber;
+        }
+        return get_field('sis_user', 'privilege', 'sis_user_idstr', $userid) == 'STUDENT';
+    }
+
 }
 
 ?>
