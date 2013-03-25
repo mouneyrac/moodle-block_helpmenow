@@ -3,10 +3,10 @@ Copyright: VLACS 2013 www.vlacs.org
 License: http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 
 Intro:
-This moodle block creates a chat interface for students and teachers to connect.
-It also provides a help desk chat interface for students to ask questions of the
-teachers/admins who are assigned as helpers and currently logged in. It also has plugins
-for multiple sharing tools that can be enabled.
+This moodle block creates a chat interface for students and teachers to
+connect.  It also provides a help desk chat interface for students to ask
+questions of the teachers/admins who are assigned as helpers and currently
+logged in. It also has plugins for multiple sharing tools that can be enabled.
 
 Requires:
 Client side javascript
@@ -15,10 +15,11 @@ Features:
 
 - Help Desk Chat:
   - Admins can create any number of help desks, ie: Technical Help, Academic
-    Help etc. 
-  - Users are added as helpers to the help desk queues by adding permissions for them then
-    assigning them to helpers using the Manage Queues Link (Admins only)
-  - These queues are designed so that multiple teachers/admins can login to help
+    Help, etc.
+  - Users are added as helpers to the help desk queues by adding permissions
+    for them, then assigning them to helpers using the Manage Queues Link.
+    (Admins only)
+  - These queues are designed so that multiple teachers/admins can log in to help
     students with questions during specific hours.
   - Allow all authenticated users the permission block/helpmenow:queue_ask to be
     able to ask questions to the queues.
@@ -40,8 +41,7 @@ Features:
     better version of the contact lists utilizing the updated Student/Teacher
     roles. 
 
-
-- Teachers and help desk helpers are not automatically logged into the system
+- Teachers and help desk helpers are not automatically logged in to the system
   when they use moodle, they should log in during the times they are available
   to answer students questions. All students are automatically logged into the
   helpmenow block
@@ -66,11 +66,6 @@ Features:
 
   - Links are provided in chat to invite students to join the teacher in the
     shared area.
-
-
-
-
-
 
 
 
