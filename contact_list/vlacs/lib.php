@@ -70,14 +70,15 @@ class helpmenow_contact_list_vlacs extends helpmenow_contact_list {
             $new_contacts = array();
             break;
         }
-        # get the current contacts
-        $current_contacts = get_records('block_helpmenow_contact', 'userid', $userid, '', 'contact_userid, id');
 
         $rval = true;
-        # remove current contacts we shouldn't have
-        foreach ($current_contacts as $cc) {
-            if (!isset($new_contacts[$cc->contact_userid])) {
-                $rval = $rval and delete_records('block_helpmenow_contact', 'id', $cc->id);
+        # get the current contacts
+        if ($current_contacts = get_records('block_helpmenow_contact', 'userid', $userid, '', 'contact_userid, id')) {
+            # remove current contacts we shouldn't have
+            foreach ($current_contacts as $cc) {
+                if (!isset($new_contacts[$cc->contact_userid])) {
+                    $rval = $rval and delete_records('block_helpmenow_contact', 'id', $cc->id);
+                }
             }
         }
 

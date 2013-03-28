@@ -105,12 +105,12 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
         # get the current contacts
         if ($current_contacts = get_records('block_helpmenow_contact', 'userid', $userid, '', 'contact_userid, id')) {
 
-        # remove current contacts we shouldn't have
-        foreach ($current_contacts as $cc) {
-            if (!isset($new_contacts[$cc->contact_userid])) {
-                $rval = $rval and delete_records('block_helpmenow_contact', 'id', $cc->id);
+            # remove current contacts we shouldn't have
+            foreach ($current_contacts as $cc) {
+                if (!isset($new_contacts[$cc->contact_userid])) {
+                    $rval = $rval and delete_records('block_helpmenow_contact', 'id', $cc->id);
+                }
             }
-        }
         }
 
         # add new contacts we don't have
