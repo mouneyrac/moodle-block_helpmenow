@@ -30,5 +30,6 @@ $plugin->requires = 2007101509;
 $plugin->cron = 60;
 $plugin->component = 'block_helpmenow';
 # $plugin->maturity = MATURITY_BETA;
+$plugin->release = '1.9 (Build: 2013030600)';
 
 ?>
