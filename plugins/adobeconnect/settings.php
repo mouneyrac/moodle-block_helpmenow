@@ -46,5 +46,12 @@ $settings->add(new admin_setting_configtext('helpmenow_adobeconnect_orgname',
                                             PARAM_TEXT,
                                             25));
 
+$settings->add(new admin_setting_configtext('helpmenow_adobeconnect_logourl',
+                                            get_string('adobeconnect_settings_logourl', 'block_helpmenow'),
+                                            get_string('adobeconnect_settings_logourl_desc', 'block_helpmenow'),
+                                            '',
+                                            PARAM_TEXT,
+                                            100));
+
 
 ?>

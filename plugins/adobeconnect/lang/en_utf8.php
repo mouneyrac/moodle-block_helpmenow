@@ -35,5 +35,7 @@ $string['adobeconnect_settings_helpurl'] = 'URL for technical help desk';
 $string['adobeconnect_settings_helpurl_desc'] = 'URL to direct users to the technical help desk if issues arise when connecting to Adobe Connect';
 $string['adobeconnect_settings_orgname'] = 'Organization name';
 $string['adobeconnect_settings_orgname_desc'] = 'Name of your organization - will be shown on Adobe Connect redirection page headings';
+$string['adobeconnect_settings_logourl'] = 'Organization logo URL';
+$string['adobeconnect_settings_logourl_desc'] = 'Logo URL for your organization - will be shown on error page (for chrome)';
 
 ?>

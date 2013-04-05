@@ -43,8 +43,10 @@ $me = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetno
 $me->param('username', $username);
 $me = $me->out();
 
+$logo = $CFG->helpmenow_adobeconnect_logourl;
+
 print <<<EOF
-<img src="https://courses.vlacs.org/vlacslogo.png" width="287px"/>
+<img src="$logo" width="287px"/>
 <div id="message"></div>
 <script type="text/javascript">
 <!--
