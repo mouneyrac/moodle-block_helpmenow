@@ -26,52 +26,27 @@
 require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
 
 /**
- * temporary hard coding of those that can use adobeconnect plugin for testing
+ * Test to see if the adobeconnect url for the user is working, if it is, then 
+ * show the link, otherwise show nothing
  */
 function helpmenow_adobeconnect_tester() {
-    global $USER;
+    global $USER, $CFG;
 
-    switch ($USER->id) {
-    case 5:         // matt
-    case 52650:     // dave
-    case 57885:     // jc
-    case 930:       // elizabeth
-    case 56528:     // "
-    case 56093:     // jason
-    case 62589:     // "
-    case 11:        // Ollire
-    case 56895:     // "
-    case 4:         // Heather
-    case 50710:     // Karen
-    case 10:        // Tony
-    case 37479:     // lisa
-    case 907:       # temmett1
-    case 29:        # khanley3
-    case 41256:     # bledrew1
-    case 41252:     # ptempleton2
-    case 33:        # bmorrissette1
-    case 24:        # tbryde1
-    case 44248:     # jbabcock15
-    case 35:        # ewhittington2
-    case 56546:     # ewhittingtonadmin
-    case 45710:     # mdecker1
-    case 56497:     # mdecker1admin
-    case 62589:     # jfitzpatrickadmin
-    case 56093:     # jfitzpatrick
-    case 62776:     # jfitzpatricktest
-    case 64813:     # jfitzpatricktemplatetest
-    case 930:       # eohare1
-    case 56528:     # eohare1admin
-    case 57118:     # eohare
-    case 59151:     # etest
-    case 1352:      # vgancarz1
-    case 45:        # mdudek3
-    case 909:       # tina
-    case 961:       # catherine demchur-merry
-        return true;
-    default:
+    $username = $USER->username;
+    if (!empty($CFG->helpmenow_adobeconnect_url)) {
+        $url = $CFG->helpmenow_adobeconnect_url."/$username";
+    } else {
         return false;
     }
+
+    $ci = curl_init($url);
+    curl_setopt($ci, CURLOPT_HEADER, TRUE);
+    curl_setopt($ci, CURLOPT_NOBODY, TRUE);
+    curl_setopt($ci, CURLOPT_FOLLOWLOCATION, FALSE);
+    curl_setopt($ci, CURLOPT_RETURNTRANSFER, TRUE);
+    $status = array();
+    preg_match('/HTTP\/.* ([0-9]+) .*/', curl_exec($ci) , $status);
+    return ($status[1] == 302);
 }
 
 /**

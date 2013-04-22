@@ -11,6 +11,9 @@ var helpmenow = (function (my) {
     function toggleLoginDisplay(loggedin) {
         var logged_in_div = document.getElementById("helpmenow_logged_in_div_0");
         var logged_out_div = document.getElementById("helpmenow_logged_out_div_0");
+        if (logged_in_div === null || logged_out_div === null) {
+            return;
+        }
         if (loggedin) {
             logged_in_div.style.display = "block";
             logged_out_div.style.display = "none";
@@ -58,6 +61,7 @@ var helpmenow = (function (my) {
                     users_div.innerHTML = response.users_html;
                 }
             } catch (e) {
+                console.log('block processUpdates exception:' + e.message);
             }
         }
     };
