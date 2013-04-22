@@ -27,26 +27,35 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
 
 /**
  * Test to see if the adobeconnect url for the user is working, if it is, then 
- * show the link, otherwise show nothing
+ * show the link, otherwise show nothing.
+ *
+ * Cache this in the $SESSION to avoid lots of repeat queries to adobeconnect 
+ * across the Interblag. The user can log out and back in if an update is 
+ * necessary.
  */
-function helpmenow_adobeconnect_tester() {
-    global $USER, $CFG;
+function helpmenow_adobeconnect_urlexists() {
+    global $USER, $CFG, $SESSION;
 
-    $username = $USER->username;
-    if (!empty($CFG->helpmenow_adobeconnect_url)) {
-        $url = $CFG->helpmenow_adobeconnect_url."/$username";
-    } else {
-        return false;
+    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$USER->id])) {
+        $SESSION->helpmenow_adobeconnect_urlexists = array();
+    }
+    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$USER->id])) {
+        if (empty($CFG->helpmenow_adobeconnect_url)) {
+            $SESSION->helpmenow_adobeconnect_urlexists[$USER->id] = false;
+        } else {
+            $url = "$CFG->helpmenow_adobeconnect_url/$USER->username";
+            $ci = curl_init($url);
+            curl_setopt($ci, CURLOPT_HEADER, TRUE);
+            curl_setopt($ci, CURLOPT_NOBODY, TRUE);
+            curl_setopt($ci, CURLOPT_FOLLOWLOCATION, FALSE);
+            curl_setopt($ci, CURLOPT_RETURNTRANSFER, TRUE);
+            $status = array();
+            preg_match('/HTTP\/.* ([0-9]+) .*/', curl_exec($ci) , $status);
+            $SESSION->helpmenow_adobeconnect_urlexists[$USER->id] = ($status[1] == 302);
+        }
     }
 
-    $ci = curl_init($url);
-    curl_setopt($ci, CURLOPT_HEADER, TRUE);
-    curl_setopt($ci, CURLOPT_NOBODY, TRUE);
-    curl_setopt($ci, CURLOPT_FOLLOWLOCATION, FALSE);
-    curl_setopt($ci, CURLOPT_RETURNTRANSFER, TRUE);
-    $status = array();
-    preg_match('/HTTP\/.* ([0-9]+) .*/', curl_exec($ci) , $status);
-    return ($status[1] == 302);
+    return $SESSION->helpmenow_adobeconnect_urlexists[$USER->id];
 }
 
 /**
@@ -71,7 +80,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
     public static function display($sessionid, $privileged = false) {
         global $CFG, $USER;
 
-        if (!helpmenow_adobeconnect_tester()) {
+        if (!helpmenow_adobeconnect_urlexists()) {
             return '';
         }
 
@@ -90,7 +99,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
     public static function block_display() {
         global $CFG, $USER;
 
-        if (!helpmenow_adobeconnect_tester()) {
+        if (!helpmenow_adobeconnect_urlexists()) {
             return false;
         }
 

@@ -29,8 +29,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
-# limit to testers for now
-if (!helpmenow_adobeconnect_tester()) {
+if (!helpmenow_adobeconnect_urlexists()) {
     helpmenow_fatal_error('You do not have permission to view this page.');
 }
 
