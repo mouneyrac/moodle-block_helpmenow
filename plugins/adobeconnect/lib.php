@@ -66,6 +66,8 @@ function helpmenow_adobeconnect_tester() {
     case 59151:     # etest
     case 1352:      # vgancarz1
     case 45:        # mdudek3
+    case 909:       # tina
+    case 961:       # catherine demchur-merry
         return true;
     default:
         return false;
