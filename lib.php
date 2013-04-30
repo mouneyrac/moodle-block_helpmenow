@@ -969,7 +969,7 @@ function helpmenow_serverfunc_block($request, &$response) {
                     $response->pending++;
                     $style = ' style="background-color:yellow"';
                     $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
-                    if (helpmenow_notify_once($s->messageid)) {
+                    if (helpmenow_notify_once($session->messageid)) {
                         $response->alert = true;
                     }
                 }
