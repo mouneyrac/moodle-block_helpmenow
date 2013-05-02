@@ -933,6 +933,7 @@ function helpmenow_serverfunc_block($request, &$response) {
     global $USER, $CFG;
 
     set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);   # update our user lastaccess
+    helpmenow_log($USER->id, 'block refresh', '');
     $response->last_refresh = get_string('updated', 'block_helpmenow').': '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
     $response->alert = false;
