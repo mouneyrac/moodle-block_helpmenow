@@ -605,13 +605,18 @@ function helpmenow_get_unread($sessionid, $userid, $last_message = null) {
     global $CFG;
 
     if (!is_int($last_message)) {
-        $last_message = "(
-            SELECT last_message
+        $last_message = "
+            SELECT last_message, last_read
             FROM {$CFG->prefix}block_helpmenow_session2user
             WHERE userid = $userid
             AND sessionid = $sessionid
-        )";
+        ";
     }
+    $s2u = get_record_sql($last_message);
+    if ($s2u->last_read > 0)
+        $last_message = $s2u->last_read;
+    else
+        $last_message = $s2u->last_message;
 
     $sql = "
         SELECT *
@@ -685,15 +690,49 @@ function helpmenow_format_message($m, $userid = null) {
 function helpmenow_email_messages() {
     global $CFG;
 
-    echo "\n";
+    echo "helpmenow_email_messages\n";
+    echo "Select users to email\n";
 
     # find where we need to email messages
     $earlycutoff = time() - HELPMENOW_EMAIL_EARLYCUTOFF;
     $latecutoff = time() - HELPMENOW_EMAIL_LATECUTOFF;
+    $idlecutoff = helpmenow_cutoff();
 
     # TODO: make this SQL more robust. If any of the sub-selects returns extra 
     # rows, the whole thing falls over. :/ Generally, this shouldn't happen. But 
     # if there's a data problem, it could.
+/*    $sql = "
+        SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
+            SELECT userid
+            FROM {$CFG->prefix}block_helpmenow_session2user s2u2
+            WHERE s2u2.sessionid = s2u.sessionid
+            AND s2u2.userid <> s2u.userid
+        ) AS fromuserid
+        FROM {$CFG->prefix}block_helpmenow_session2user s2u
+        JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+        JOIN {$CFG->prefix}block_helpmenow_user u ON u.id = s2u.userid
+        WHERE s.queueid IS NULL
+        AND s.last_message <> 0
+        AND s2u.last_message < s.last_message
+        AND (
+            ($latecutoff > (
+                SELECT m.time
+                FROM {$CFG->prefix}block_helpmenow_message m
+                WHERE m.id = s.last_message
+            )
+            AND $earlycutoff > (
+                SELECT min(m2.time)
+                FROM {$CFG->prefix}block_helpmenow_message m2
+                WHERE m2.sessionid = s2u.sessionid
+                AND m2.id > s2u.last_message
+            )) 
+            OR
+            (u.lastaccess > $idlecutoff)
+        )
+        ";*/
+    // Query check to see what users have unread messages
+    // Check if user is logged out - via lastaccess and isloggedin or
+    // use the cutoffs to send messages from 10-30 minutes ago.
     $sql = "
         SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
             SELECT userid
@@ -703,21 +742,30 @@ function helpmenow_email_messages() {
         ) AS fromuserid
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+        JOIN {$CFG->prefix}block_helpmenow_user u ON u.userid = s2u.userid
         WHERE s.queueid IS NULL
-        AND s.last_message <> 0
-        AND s2u.last_message < s.last_message
-        AND $latecutoff > (
-            SELECT m.time
-            FROM {$CFG->prefix}block_helpmenow_message m
-            WHERE m.id = s.last_message
+        AND ((s.last_message <> 0 AND s2u.last_message < s.last_message) 
+        OR (s2u.last_read = 0 AND s2u.last_message = 0))
+        AND s2u.last_read < s.last_message
+        AND (
+            NOT(u.lastaccess > $idlecutoff AND (u.isloggedin IS NULL OR u.isloggedin <> 0))
+            OR
+            ($latecutoff > (
+                SELECT m.time
+                FROM {$CFG->prefix}block_helpmenow_message m
+                WHERE m.id = s.last_message
+            )
+            AND $earlycutoff > (
+                SELECT min(m2.time)
+                FROM {$CFG->prefix}block_helpmenow_message m2
+                WHERE m2.sessionid = s2u.sessionid
+                AND m2.id > s2u.last_read
+            ))
         )
-        AND $earlycutoff > (
-            SELECT min(m2.time)
-            FROM {$CFG->prefix}block_helpmenow_message m2
-            WHERE m2.sessionid = s2u.sessionid
-            AND m2.id > s2u.last_message
-        )
-    ";
+        ";
+    // logged in if:
+        //if ($u->hmn_lastaccess > $cutoff and (is_null($u->isloggedin) or $u->isloggedin != 0)) {
+
     echo $sql . "\n";
     if (!$session2users = get_records_sql($sql)) {
         echo "we don't have any users to email\n";
@@ -740,21 +788,24 @@ function helpmenow_email_messages() {
         if (!isset($users[$s2u->fromuserid])) {
             $users[$s2u->fromuserid] = get_record('user', 'id', $s2u->fromuserid);
         }
-        $messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid);
+
 
         $formatted = '';
         $content = false;
-        foreach ($messages as $m) {
-            if (!is_null($m->userid)) { $content = true; }
-            $formatted .= (is_null($m->userid) ?
-                    $m->message :
-                    fullname($users[$m->userid]) . ": $m->message")
+        if ($messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid)) {
+            foreach ($messages as $m) {
+                if (!is_null($m->userid)) { $content = true; }
+                $formatted .= (is_null($m->userid) ?
+                $m->message :
+                fullname($users[$m->userid]) . ": $m->message")
                 . "\n";
+            }
         }
 
         if (!$content) {    # missed messages are only system messages, don't email
             if (!defined('HMN_TESTING')) {
                 set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);   # but do update the last_read so we don't keep catching them
             }
             continue;
         }
@@ -780,6 +831,7 @@ function helpmenow_email_messages() {
             echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text."\nlast_message: $s2u->last_message\n";
             if (!defined('HMN_TESTING')) {
                 set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);
+                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);
             }
         } else {
             echo "failed to email user $s2u->userid\n";
@@ -838,6 +890,26 @@ function helpmenow_serverfunc_message($request, &$response) {
 
     if (!helpmenow_message($request->session, $USER->id, htmlspecialchars($request->message))) {
         throw new Exception('Could insert message record');
+    }
+}
+
+/**
+ * chat lastRead message from client - records that last read message that the 
+ * user has seen - save to email unread messages to user
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_lastRead($request, &$response) {
+    global $USER;
+
+    $s2u = helpmenow_get_s2u($request->session);
+
+    # update session2user
+    $s2u->last_read = $request->lastRead;
+
+    if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
+        throw new Exception('Could not update session2user record');
     }
 }
 

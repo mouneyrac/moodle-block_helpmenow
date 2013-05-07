@@ -134,6 +134,17 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && create_table($table);
     }
 
+    if ($result && $oldversion < 2013042400) {
+
+    /// Define field last_read to be added to block_helpmenow_session2user
+        $table = new XMLDBTable('block_helpmenow_session2user');
+        $field = new XMLDBField('last_read');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, '0', 'cache');
+
+        /// Launch add field last_read
+        $result = $result && add_field($table, $field);
+    }
+
     return $result;
 }
 ?>

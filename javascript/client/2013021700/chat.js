@@ -1,3 +1,6 @@
+// This "inherits" from lib.js helpmenow. This chat.js file contains
+// functionality specific to the popup chat window.
+
 var helpmenow = (function (my) {
     "use strict";
 
@@ -9,13 +12,13 @@ var helpmenow = (function (my) {
     var oldInit = my.init;
     my.init = function () {
         $('#inputTextarea').keypress(function (e) {  // textarea keypress handler
-                if (e.keyCode === 13 && !e.ctrlKey) {
+                if (e.keyCode === 13 && !e.ctrlKey) { // Check for enter/return press without ctrl key
                     var message = $(this).val();
-                    if (message.length === 0) {
+                    if (message.length === 0) { // Don't send blank messages
                         return false;
                     }
                     helpmenow.chat.submitMessage(message);
-                    $(this).val('');
+                    $(this).val(''); // clear text box after sending message
                     return false;
                 }
                 return true;
@@ -43,9 +46,9 @@ var helpmenow = (function (my) {
                 helpmenow.sharedData.lastMessage = response.last_message;
                 $("#chatDiv").append(response.html)
                     .scrollTop($('#chatDiv')[0].scrollHeight);
-                if (response.beep && !$(document)[0].hasFocus()) {
+                if (response.beep && !$(document)[0].hasFocus()) { // Chime if window does not have focus
                     helpmenow.chime();
-                    if (typeof response.title_flash !== "undefined") {
+                    if (typeof response.title_flash !== "undefined") { // make title blink
                         $.titleAlert('"' + response.title_flash + '"', {
                             interval:1000
                         });
@@ -90,10 +93,48 @@ var helpmenow = (function (my) {
                 }
             });
         },
+        submitLastRead: function (messageid) {
+            var params = {
+                'requests': {
+                    'lastRead': {
+                        'id': 'lastRead',
+                        'function': 'lastRead',
+                        'lastRead': messageid,
+                        'session': helpmenow.sharedData.session
+                    }
+                }
+            };
+            helpmenow.ajax(params, function (xmlhttp) {
+                if (xmlhttp.readyState !== 4) { return; }
+                try {
+                    if (xmlhttp.status != 200) { throw "status: " + xmlhttp.status; }
+                    var response = JSON.parse(xmlhttp.responseText);
+                    if (typeof response.error !== 'undefined') {throw "error: " + response.error; }
+//                    console.log('Sent lastRead message back to the server: ' + messageid);
+                } catch (e) {
+                    $("#chatDiv").append("<div><i>An error occured with your connection to the server, please check your internet connection or contact the help desk for more help.</i></div>")     // todo: language string
+                        .scrollTop($('#chatDiv')[0].scrollHeight);
+                }
+            });
+        },
         addPluginRefresh: function (callback) {
             pluginRefresh.push(callback);
         }
     };
+
+    // When chat window is focused on mark messages as read, leave as
+    // unfocused/unread otherwise to include in emails
+    $(window).focus(function() {
+//        console.log('Last Message read: ' + helpmenow.sharedData.lastMessage);
+        if(helpmenow.sharedData.lastReadMessage != helpmenow.sharedData.lastMessage &&
+           helpmenow.sharedData.lastMessage != 0 ) {
+            helpmenow.sharedData.lastReadMessage = helpmenow.sharedData.lastMessage;
+            // Send last read message id back to server to record in db
+            helpmenow.chat.submitLastRead(helpmenow.sharedData.lastReadMessage);
+//            console.log('Sending id ' + helpmenow.sharedData.lastReadMessage + ' back to server');
+        }
+    });
+
 
     return my;
 }) (helpmenow);
