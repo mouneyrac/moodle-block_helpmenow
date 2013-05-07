@@ -1005,6 +1005,7 @@ function helpmenow_serverfunc_block($request, &$response) {
     global $USER, $CFG;
 
     set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);   # update our user lastaccess
+    helpmenow_log($USER->id, 'block refresh', '');
     $response->last_refresh = get_string('updated', 'block_helpmenow').': '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
     $response->alert = false;
@@ -1041,7 +1042,7 @@ function helpmenow_serverfunc_block($request, &$response) {
                     $response->pending++;
                     $style = ' style="background-color:yellow"';
                     $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
-                    if (helpmenow_notify_once($s->messageid)) {
+                    if (helpmenow_notify_once($session->messageid)) {
                         $response->alert = true;
                     }
                 }
@@ -1176,7 +1177,7 @@ EOF;
     }
 
     $sql = "
-        SELECT s.id, m.message
+        SELECT s.id, m.message, m.id AS messageid
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}block_helpmenow_session s ON s.iscurrent = 1 AND s.queueid IS NULL AND s2u.sessionid = s.id
         JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = $USER->id

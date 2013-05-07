@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/helpmenow/db" VERSION="20130424" COMMENT="XMLDB file for Moodle blocks/helpmenow"
+<XMLDB PATH="blocks/helpmenow/db" VERSION="20130502" COMMENT="XMLDB file for Moodle blocks/helpmenow"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -134,6 +134,10 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
+      <INDEXES>
+        <INDEX NAME="block_helpmenow_log_u_ix" UNIQUE="false" FIELDS="userid" NEXT="block_helpmenow_log_ua_ix"/>
+        <INDEX NAME="block_helpmenow_log_ua_ix" UNIQUE="false" FIELDS="userid, action" PREVIOUS="block_helpmenow_log_u_ix"/>
+      </INDEXES>
     </TABLE>
     <TABLE NAME="block_helpmenow_error_log" COMMENT="Default comment for the table, please edit me" PREVIOUS="block_helpmenow_log" NEXT="block_helpmenow_contact">
       <FIELDS>

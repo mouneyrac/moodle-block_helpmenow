@@ -134,7 +134,26 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && create_table($table);
     }
 
-    if ($result && $oldversion < 2013042400) {
+    if ($result && $oldversion < 2013050200) {
+
+        /// Define index block_helpmenow_log_u_ix (not unique) to be added to block_helpmenow_log
+        $table = new XMLDBTable('block_helpmenow_log');
+        $index = new XMLDBIndex('block_helpmenow_log_u_ix');
+        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid'));
+
+        /// Launch add index block_helpmenow_log_u_ix
+        $result = $result && add_index($table, $index);
+
+        /// Define index block_helpmenow_log_ua_ix (not unique) to be added to block_helpmenow_log
+        $table = new XMLDBTable('block_helpmenow_log');
+        $index = new XMLDBIndex('block_helpmenow_log_ua_ix');
+        $index->setAttributes(XMLDB_INDEX_NOTUNIQUE, array('userid', 'action'));
+
+        /// Launch add index block_helpmenow_log_ua_ix
+        $result = $result && add_index($table, $index);
+    }
+
+    if ($result && $oldversion < 2013050700) {
 
     /// Define field last_read to be added to block_helpmenow_session2user
         $table = new XMLDBTable('block_helpmenow_session2user');
