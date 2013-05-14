@@ -206,6 +206,21 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         return true;
     }
 
+    public static function get_user2plugin_link($userid) {
+        $plugin = 'wiziq';
+        if (!$u2p = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', $plugin)) {
+            return false;
+        } else {
+            $class = "helpmenow_user2plugin_".$plugin;
+            $u2p = new $class(null, $u2p);
+            if ($link = $u2p->get_link()) {
+                return $link;
+            } else {
+                return false;
+            }
+        }
+    }
+
     /**
      * returns formatted information to put in the main block
      * @return a link for testing wiziq

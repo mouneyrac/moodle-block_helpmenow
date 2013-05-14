@@ -87,56 +87,6 @@ function helpmenow_check_privileged($session) {
     return false;
 }
 
-/* replaced by contact_lists
-function helpmenow_get_students() {
-    global $CFG, $USER;
-    $cutoff = helpmenow_cutoff();
-    $sql = "
-        SELECT u.*, hu.lastaccess AS hmn_lastaccess
-        FROM {$CFG->prefix}classroom c
-        JOIN {$CFG->prefix}classroom_enrolment ce ON ce.classroom_idstr = c.classroom_idstr
-        JOIN {$CFG->prefix}user u ON u.idnumber = ce.sis_user_idstr
-        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
-        WHERE c.sis_user_idstr = '$USER->idnumber'
-        AND ce.status_idstr = 'ACTIVE'
-        AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
-        AND ce.iscurrent = 1
-        AND hu.lastaccess > $cutoff
-    ";
-    return get_records_sql($sql);
-}
-
-function helpmenow_get_admins() {
-    global $CFG, $USER;
-    $cutoff = helpmenow_cutoff();
-    $sql = "
-        SELECT u.*, 1 AS isadmin, hu.lastaccess AS hmn_lastaccess
-        FROM {$CFG->prefix}sis_user su
-        JOIN {$CFG->prefix}user u ON u.idnumber = su.sis_user_idstr
-        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
-        WHERE su.privilege = 'ADMIN'
-        AND hu.lastaccess > $cutoff
-    ";
-    return get_records_sql($sql);
-}
-
-function helpmenow_get_instructors() {
-    global $CFG, $USER;
-    $cutoff = helpmenow_cutoff();
-    $sql = "
-        SELECT u.*, hu.isloggedin, hu.motd, hu.lastaccess AS hmn_lastaccess
-        FROM {$CFG->prefix}classroom_enrolment ce
-        JOIN {$CFG->prefix}classroom c ON c.classroom_idstr = ce.classroom_idstr
-        JOIN {$CFG->prefix}user u ON c.sis_user_idstr = u.idnumber
-        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = u.id
-        WHERE ce.sis_user_idstr = '$USER->idnumber'
-        AND ce.status_idstr = 'ACTIVE'
-        AND ce.activation_status_idstr IN ('ENABLED', 'CONTACT_INSTRUCTOR')
-        AND ce.iscurrent = 1
-    ";
-    return get_records_sql($sql);
-}
- */
 function helpmenow_cutoff() {
     global $CFG;
     if (isset($CFG->helpmenow_no_cutoff) and $CFG->helpmenow_no_cutoff) {    # set this to true to see everyone
@@ -401,16 +351,11 @@ function helpmenow_print_hallway($users) {
             $row[] = $u->lastaccess ? userdate($u->lastaccess) : $na;
             if ($admin) {
                 foreach ($plugins as $pluginname) {
-                    if (!$u2p = get_record('block_helpmenow_user2plugin', 'userid', $u->userid, 'plugin', $pluginname)) {
-                        $row[] = $not_found;
+                    $class = "helpmenow_plugin_$pluginname";
+                    if ($link = $class::get_user2plugin_link($u->userid)) {
+                        $row[] = "<a href=\"$link\" target=\"_blank\">$wander</a>";
                     } else {
-                        $class = "helpmenow_user2plugin_".$pluginname;
-                        $u2p = new $class(null, $u2p);
-                        if ($link = $u2p->get_link()) {
-                            $row[] = "<a href=\"$link\" target=\"_blank\">$wander</a>";
-                        } else {
-                            $row[] = $not_found;
-                        }
+                        $row[] = $not_found;
                     }
                 }
             }
@@ -1829,6 +1774,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
     }
 
     public static function has_user2plugin_data() {
+        return false;
+    }
+
+    /**
+     * Gets a link to the user's specific plugin page
+     * @return link if there is one, false otherwise
+     */
+    public static function get_user2plugin_link($userid) {
         return false;
     }
 

@@ -33,17 +33,24 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
  * across the Interblag. The user can log out and back in if an update is 
  * necessary.
  */
-function helpmenow_adobeconnect_urlexists() {
+function helpmenow_adobeconnect_urlexists($userid = false) {
     global $USER, $CFG, $SESSION;
 
-    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$USER->id])) {
+    if (!$userid) {
+        $userid = $USER->id;
+        $username = $USER->username;
+    } else {
+        $username = get_field('user', 'username', 'id', $userid);
+    }
+
+    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$userid])) {
         $SESSION->helpmenow_adobeconnect_urlexists = array();
     }
-    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$USER->id])) {
+    if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$userid])) {
         if (empty($CFG->helpmenow_adobeconnect_url)) {
-            $SESSION->helpmenow_adobeconnect_urlexists[$USER->id] = false;
+            $SESSION->helpmenow_adobeconnect_urlexists[$userid] = false;
         } else {
-            $url = "$CFG->helpmenow_adobeconnect_url/$USER->username";
+            $url = "$CFG->helpmenow_adobeconnect_url/$username";
             $ci = curl_init($url);
             curl_setopt($ci, CURLOPT_HEADER, TRUE);
             curl_setopt($ci, CURLOPT_NOBODY, TRUE);
@@ -51,11 +58,11 @@ function helpmenow_adobeconnect_urlexists() {
             curl_setopt($ci, CURLOPT_RETURNTRANSFER, TRUE);
             $status = array();
             preg_match('/HTTP\/.* ([0-9]+) .*/', curl_exec($ci) , $status);
-            $SESSION->helpmenow_adobeconnect_urlexists[$USER->id] = ($status[1] == 302);
+            $SESSION->helpmenow_adobeconnect_urlexists[$userid] = ($status[1] == 302);
         }
     }
 
-    return $SESSION->helpmenow_adobeconnect_urlexists[$USER->id];
+    return $SESSION->helpmenow_adobeconnect_urlexists[$userid];
 }
 
 /**
@@ -108,6 +115,21 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         return link_to_popup_window($test->out(), "adobeconnect", 'My Classroom', 800, 900, null, null, true);
     }
 
+    public static function has_user2plugin_data() {
+        return true;
+    }
+
+    public static function get_user2plugin_link($userid) {
+        global $CFG;
+        if (helpmenow_adobeconnect_urlexists($userid)) {
+            $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+            $username = get_field('user', 'username', 'id', $userid);
+            $join_url->param('username', $username);
+            $join_url = $join_url->out();
+            return $join_url;
+        }
+        return false;
+    }
 }
 
 ?>
