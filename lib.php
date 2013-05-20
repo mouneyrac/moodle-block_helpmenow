@@ -65,6 +65,9 @@ function helpmenow_verify_session($session) {
     return record_exists_sql($sql);
 }
 
+/**
+ * Check if the user is an admin or teacher or if the user is a queue helper
+ */
 function helpmenow_check_privileged($session) {
     global $USER, $CFG;
 
@@ -587,13 +590,27 @@ function helpmenow_get_history($sessionid) {
 }
 
 /**
+ * returns entirety of session messages
+ * @param array of (int $sessionid)
+ * @return mixed array of messages or false
+ */
+function helpmenow_get_history_list($sessionids) {
+    return get_records_list('block_helpmenow_message', 'sessionid', $sessionids, 'id ASC');
+}
+
+
+/**
  * formats array of messages
  * todo: move this to the client
  */
-function helpmenow_format_messages($messages) {
+function helpmenow_format_messages($messages, $history = false) {
     $output = '';
     foreach ($messages as $m) {
-        $output .= helpmenow_format_message($m);
+        // For historical messages, skip system messages such as invites and 
+        // timestamps
+        if ($history and is_null($m->userid))
+            continue;
+        $output .= helpmenow_format_message($m, null, $history);
     }
     return $output;
 }
@@ -601,7 +618,7 @@ function helpmenow_format_messages($messages) {
 /**
  * formats message
  */
-function helpmenow_format_message($m, $userid = null) {
+function helpmenow_format_message($m, $userid = null, $history = false) {
     if (!isset($userid)) {
         global $USER;
         $userid = $USER->id;
@@ -624,7 +641,11 @@ function helpmenow_format_message($m, $userid = null) {
             }
             $name = fullname($users[$m->userid]);
         }
-        $msg = "<b>$name:</b> $msg";
+        if ($history)
+            $time = "<i> " . userdate($m->time, '%b %e, %Y %r') . "</i> ";
+        else
+            $time = '';
+        $msg = "$time<b>$name:</b> $msg";
     }
     return "<div>$msg</div>";
 }

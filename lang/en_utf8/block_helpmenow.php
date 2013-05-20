@@ -182,6 +182,7 @@ $string['online_students'] = 'Online Students:';
 $string['instructors'] = 'Instructors:';
 $string['me'] = 'Me';
 $string['sent'] = 'Sent';
+$string['chat_history'] = 'Chat history';
 
 $string['may_close'] = 'You may now close this window';
 $string['multiple_plugins'] = 'Multiple plugins require further action. Please follow the links below to finish logging in.';
