@@ -550,6 +550,7 @@ function helpmenow_get_unread($sessionid, $userid, $last_message = null) {
     global $CFG;
 
     if (!is_int($last_message)) {
+        # TODO: either use COALESCE(last_message, last_read) to eliminate the subsequent PHP branch, or use get_record() to eliminate the SQL.
         $last_message = "
             SELECT last_message, last_read
             FROM {$CFG->prefix}block_helpmenow_session2user
