@@ -546,19 +546,10 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
  * @param int $user user.id
  * @return mixed array of messages or false
  */
-function helpmenow_get_unread($sessionid, $userid, $last_message = null) {
+function helpmenow_get_unread($sessionid, $userid) {
     global $CFG;
 
-    if (!is_int($last_message)) {
-        # TODO: either use COALESCE(last_message, last_read) to eliminate the subsequent PHP branch, or use get_record() to eliminate the SQL.
-        $last_message = "
-            SELECT last_message, last_read
-            FROM {$CFG->prefix}block_helpmenow_session2user
-            WHERE userid = $userid
-            AND sessionid = $sessionid
-        ";
-    }
-    $s2u = get_record_sql($last_message);
+    $s2u = get_record('block_helpmenow_session2user', 'userid', $userid, 'sessionid', $sessionid);
     if ($s2u->last_read > 0)
         $last_message = $s2u->last_read;
     else
@@ -746,6 +737,8 @@ function helpmenow_email_messages() {
         if (!$content) {    # missed messages are only system messages, don't email
             if (!defined('HMN_TESTING')) {
                 set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
+                // uncomment after testing phase when this data is used, 
+                // otherwise it will be wiped out before being seen
 //                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);   # but do update the last_read so we don't keep catching them
             }
             continue;
@@ -835,19 +828,19 @@ function helpmenow_serverfunc_message($request, &$response) {
 }
 
 /**
- * chat lastRead message from client - records that last read message that the 
+ * chat last_read message from client - records that last read message that the 
  * user has seen - save to email unread messages to user
  *
  * @param object $request request from client
  * @param object $response response
  */
-function helpmenow_serverfunc_lastRead($request, &$response) {
+function helpmenow_serverfunc_last_read($request, &$response) {
     global $USER;
 
     $s2u = helpmenow_get_s2u($request->session);
 
     # update session2user
-    $s2u->last_read = $request->lastRead;
+    $s2u->last_read = $request->last_read;
 
     if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
         throw new Exception('Could not update session2user record');
