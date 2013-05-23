@@ -61,7 +61,7 @@ foreach ($requests->requests as $request) {
         switch ($request->function) {
         case 'message':
         case 'refresh':
-        case 'lastRead':
+        case 'last_read':
             if (!$session2user = helpmenow_get_s2u($request->session)) {
                 throw new Exception('Could not get session2user record');
             }
@@ -75,7 +75,7 @@ foreach ($requests->requests as $request) {
         case 'block':
         case 'motd':
         case 'plugin':
-        case 'lastRead':
+        case 'last_read':
             $function = 'helpmenow_serverfunc_' . $request->function;
             $function($request, $response);
             break;

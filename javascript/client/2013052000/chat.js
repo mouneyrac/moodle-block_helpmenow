@@ -98,8 +98,8 @@ var helpmenow = (function (my) {
                 'requests': {
                     'lastRead': {
                         'id': 'lastRead',
-                        'function': 'lastRead',
-                        'lastRead': messageid,
+                        'function': 'last_read',
+                        'last_read': messageid,
                         'session': helpmenow.sharedData.session
                     }
                 }
@@ -110,7 +110,6 @@ var helpmenow = (function (my) {
                     if (xmlhttp.status != 200) { throw "status: " + xmlhttp.status; }
                     var response = JSON.parse(xmlhttp.responseText);
                     if (typeof response.error !== 'undefined') {throw "error: " + response.error; }
-//                    console.log('Sent lastRead message back to the server: ' + messageid);
                 } catch (e) {
                     $("#chatDiv").append("<div><i>An error occured with your connection to the server, please check your internet connection or contact the help desk for more help.</i></div>")     // todo: language string
                         .scrollTop($('#chatDiv')[0].scrollHeight);
@@ -125,13 +124,11 @@ var helpmenow = (function (my) {
     // When chat window is focused on mark messages as read, leave as
     // unfocused/unread otherwise to include in emails
     $(window).focus(function() {
-//        console.log('Last Message read: ' + helpmenow.sharedData.lastMessage);
         if(helpmenow.sharedData.lastReadMessage != helpmenow.sharedData.lastMessage &&
            helpmenow.sharedData.lastMessage != 0 ) {
             helpmenow.sharedData.lastReadMessage = helpmenow.sharedData.lastMessage;
             // Send last read message id back to server to record in db
             helpmenow.chat.submitLastRead(helpmenow.sharedData.lastReadMessage);
-//            console.log('Sending id ' + helpmenow.sharedData.lastReadMessage + ' back to server');
         }
     });
 
