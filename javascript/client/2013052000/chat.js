@@ -93,6 +93,29 @@ var helpmenow = (function (my) {
                 }
             });
         },
+        submitSystemMessage: function (message) {
+            var params = {
+                'requests': {
+                    'sysmessage': {
+                        'id': 'sysmessage',
+                        'function': 'sysmessage',
+                        'message': message,
+                        'session': helpmenow.sharedData.session
+                    }
+                }
+            };
+            helpmenow.ajax(params, function (xmlhttp) {
+                if (xmlhttp.readyState !== 4) { return; }
+                try {
+                    if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
+                    var response = JSON.parse(xmlhttp.responseText);
+                    if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
+                } catch (e) {
+                    $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")     // todo: and here
+                        .scrollTop($('#chatDiv')[0].scrollHeight);
+                }
+            });
+        },
         submitLastRead: function (messageid) {
             var params = {
                 'requests': {

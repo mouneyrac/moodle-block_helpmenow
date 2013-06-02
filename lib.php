@@ -828,6 +828,21 @@ function helpmenow_serverfunc_message($request, &$response) {
 }
 
 /**
+ * system messages
+ *
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_sysmessage($request, &$response) {
+    global $USER;
+
+    if (!helpmenow_message($request->session, null, $request->message)) {
+        throw new Exception('Could insert system message record');
+    }
+}
+
+
+/**
  * chat last_read message from client - records that last read message that the 
  * user has seen - save to email unread messages to user
  *
@@ -1712,6 +1727,14 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      */
     public static function get_js_libs() {
         return array();
+    }
+
+    /**
+     * returns parameter to pass to init function for plugin's js
+     * @return parameter for js init
+     */
+    public static function get_js_init_param() {
+        return false;
     }
 
     /**

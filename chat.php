@@ -58,7 +58,7 @@ if (!$privileged and isset($session->queueid)) {
 }
 
 # get plugin links and load necessary javascript
-$plugins_display = $plugins_js = array();
+$plugins_display = $plugins_js = $plugins_init = array();
 foreach (helpmenow_plugin::get_plugins() as $pluginname) {
     # display
     $class = "helpmenow_plugin_$pluginname";
@@ -75,6 +75,10 @@ foreach (helpmenow_plugin::get_plugins() as $pluginname) {
             $plugins_js[] = "<script src=\"$lib\" type=\"text/javascript\"></script>";
         }
     }
+    $js_init_param = $class::get_js_init_param();
+    if ($js_init_param) {
+        $plugins_init[] = "<script type=\"text/javascript\">helpmenow_plugin_$pluginname.init($js_init_param);</script>";
+    }
 }
 if (count($plugins_display)) {
     $plugins_display = '<div id="pluginDiv">'.implode(' | ', $plugins_display).'</div>';
@@ -85,6 +89,11 @@ if (count($plugins_js)) {
     $plugins_js = implode("\n", $plugins_js);
 } else {
     $plugins_js = '';
+}
+if (count($plugins_init)) {
+    $plugins_init = implode("\n", $plugins_init);
+} else {
+    $plugins_init = '';
 }
 
 $textarea_message = get_string('textarea_message', 'block_helpmenow');  # default text in chat input box
@@ -121,6 +130,7 @@ echo <<<EOF
             var plugin_refresh = new Array();
         </script>
         $plugins_js
+        $plugins_init
     </head>
     <body>
         <div id="helpmenow_chime"></div>

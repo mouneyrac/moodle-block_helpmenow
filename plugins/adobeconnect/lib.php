@@ -92,9 +92,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         }
 
         if ($privileged) {
-            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/connect.php");
-            $connect->param('sessionid', $sessionid);
-            return link_to_popup_window($connect->out(), "adobe_connect", 'Invite to Adobe Connect', 400, 500, null, null, true);
+            return '<a id="adobeconnect_invite" href="#">'.get_string('adobeconnect_invite', 'block_helpmenow').'</a>';
         }
         return '';
     }
@@ -130,6 +128,28 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         }
         return false;
     }
+    /**
+     * returns array of full url paths to needed javascript libraries
+     * @return array
+     */
+    public static function get_js_libs() {
+        global $CFG;
+
+        return array("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/lib_2013052000.js");
+    }
+
+    public static function get_js_init_param() {
+        global $CFG, $USER;
+        $username = preg_replace('/admin$/', '', $USER->username);
+
+        $url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
+        $url->param('username', $username);
+        $url = $url->out();
+
+        $message = '\'' . fullname($USER) . get_string('adobeconnect_invited1', 'block_helpmenow') . "<a target=\"adobe_connect\" href=\"".$url."\">click here</a> ". get_string('adobeconnect_invited2', 'block_helpmenow') . '\'';
+        return $message;
+    }
 }
+
 
 ?>

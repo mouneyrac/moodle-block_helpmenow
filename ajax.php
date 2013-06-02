@@ -60,6 +60,7 @@ foreach ($requests->requests as $request) {
         # verify session where applicable
         switch ($request->function) {
         case 'message':
+        case 'sysmessage':
         case 'refresh':
         case 'last_read':
             if (!$session2user = helpmenow_get_s2u($request->session)) {
@@ -71,6 +72,7 @@ foreach ($requests->requests as $request) {
         # generate response
         switch ($request->function) {
         case 'message':
+        case 'sysmessage':
         case 'refresh':
         case 'block':
         case 'motd':
