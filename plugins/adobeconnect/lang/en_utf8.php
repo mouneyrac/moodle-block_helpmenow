@@ -38,4 +38,8 @@ $string['adobeconnect_settings_orgname_desc'] = 'Name of your organization - wil
 $string['adobeconnect_settings_logourl'] = 'Organization logo URL';
 $string['adobeconnect_settings_logourl_desc'] = 'Logo URL for your organization - will be shown on error page (for chrome)';
 
+
+$string['adobeconnect_invite'] = 'Invite to Adobe Connect';
+$string['adobeconnect_invited1'] = ' has invited you to use voice, video, and whiteboarding, ';
+$string['adobeconnect_invited2'] = 'and select \"Enter as a Guest\" to join.';
 ?>
