@@ -52,18 +52,18 @@ $offset = $per_page * $page;
 
 # get stuff from the db
 $sql = "
-    FROM {$CFG->prefix}block_helpmenow_error_log e
-    LEFT JOIN {$CFG->prefix}user u ON e.userid = u.id
+    FROM {block_helpmenow_error_log} e
+    LEFT JOIN {user} u ON e.userid = u.id
 ";
 if ($search) {
-    $ilike = sql_ilike();
+    $ilike = $DB->sql_ilike();
     $sql .= "
         WHERE e.error $ilike '%$search%'
         OR u.firstname $ilike '%$search%'
         OR u.lastname $ilike '%$search%'
     ";
 }
-$count = count_records_sql('SELECT COUNT(*) '.$sql);
+$count = $DB->count_records_sql('SELECT COUNT(*) '.$sql);
 if ($count) {
     $sql = "
         SELECT e.*, u.firstname, u.lastname
@@ -71,7 +71,7 @@ if ($count) {
         LIMIT $per_page
         OFFSET $offset
     ";
-    $errors = get_records_sql($sql);
+    $errors = $DB->get_records_sql($sql);
 
     # start setting up the table
     $table = (object) array(

@@ -69,7 +69,7 @@ if ($code) {
     }
 
     # save the reponse to user2plugin record
-    if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', 'gotomeeting')) {
+    if (!$record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $userid, 'plugin' => 'gotomeeting'))) {
         $user2plugin = new helpmenow_user2plugin_gotomeeting();
         $user2plugin->userid = $userid;
         $user2plugin->insert();

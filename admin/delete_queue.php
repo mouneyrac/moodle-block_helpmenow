@@ -43,7 +43,7 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 }
 
 if ($delete) {
-    delete_records('block_helpmenow_queue', 'id', $queueid);
+    $DB->delete_records('block_helpmenow_queue', 'id', $queueid);
     redirect($admin_url);
 }
 

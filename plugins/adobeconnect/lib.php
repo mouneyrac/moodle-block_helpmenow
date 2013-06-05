@@ -34,13 +34,13 @@ require_once(dirname(dirname(dirname(__FILE__))) . '/lib.php');
  * necessary.
  */
 function helpmenow_adobeconnect_urlexists($userid = false) {
-    global $USER, $CFG, $SESSION;
+    global $USER, $CFG, $SESSION, $DB;
 
     if (!$userid) {
         $userid = $USER->id;
         $username = $USER->username;
     } else {
-        $username = get_field('user', 'username', 'id', $userid);
+        $username = $DB->get_field('user', 'username', array('id' => $userid));
     }
 
     if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$userid])) {
@@ -118,10 +118,10 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
     }
 
     public static function get_user2plugin_link($userid) {
-        global $CFG;
+        global $CFG, $DB;
         if (helpmenow_adobeconnect_urlexists($userid)) {
             $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
-            $username = get_field('user', 'username', 'id', $userid);
+            $username = $DB->get_field('user', 'username', array('id' => $userid));
             $join_url->param('username', $username);
             $join_url = $join_url->out();
             return $join_url;

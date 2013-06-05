@@ -48,7 +48,7 @@ class block_helpmenow extends block_base {
             return $this->content;
         }
 
-        global $CFG, $USER, $SESSION;
+        global $CFG, $USER, $SESSION, $DB;
 
         $this->content = (object) array(
             'text' => '',
@@ -101,7 +101,7 @@ EOF;
         }
 
         # "hallway" link
-        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or $DB->record_exists('block_helpmenow_helper', array('userid' => $USER->id))) {
             $who = get_string('who', 'block_helpmenow');
             if ($break) {
                 $this->content->footer .= "<br />";

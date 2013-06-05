@@ -34,17 +34,17 @@ if (!helpmenow_verify_session($sessionid) or isset($session->queueid)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
-$session = get_record('block_helpmenow_session', 'id',  $sessionid);
+$session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
 
 # title
 $sql = "
     SELECT u.*
-    FROM {$CFG->prefix}block_helpmenow_session2user s2u
-    JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+    FROM {block_helpmenow_session2user} s2u
+    JOIN {user} u ON u.id = s2u.userid
     WHERE s2u.sessionid = $sessionid
     AND s2u.userid <> $USER->id
     ";
-$other_user_recs = get_records_sql($sql);
+$other_user_recs = $DB->get_records_sql($sql);
 $other_users = array();
 foreach ($other_user_recs as $r) {
     $other_users[] = fullname($r);
@@ -58,15 +58,15 @@ if (count($other_user_recs)>1) {
 
 $sql = "
     SELECT s.id
-    FROM {$CFG->prefix}block_helpmenow_session s
-    JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s.id = s2u.sessionid AND s2u.userid=$USER->id
-    JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s.id = s2u2.sessionid AND s2u2.userid = $otheruserid
+    FROM {block_helpmenow_session} s
+    JOIN {block_helpmenow_session2user} s2u ON s.id = s2u.sessionid AND s2u.userid=$USER->id
+    JOIN {block_helpmenow_session2user} s2u2 ON s.id = s2u2.sessionid AND s2u2.userid = $otheruserid
     ";
 // TODO: Add WHERE that limits messages to recent times...
 
 $messages = '';
 $sessionids = array();
-if ($sessions = get_records_sql($sql)) {
+if ($sessions = $DB->get_records_sql($sql)) {
     foreach ($sessions as $s) {
         $sessionids[] = $s->id;
     }

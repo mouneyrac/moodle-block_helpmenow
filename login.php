@@ -37,12 +37,12 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 
 $message = '';
 if ($queueid) {     # helper
-    if (!$record = get_record('block_helpmenow_helper', 'queueid', $queueid, 'userid', $USER->id)) {
+    if (!$record = $DB->get_record('block_helpmenow_helper', array('queueid' => $queueid, 'userid' => $USER->id))) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     $message = "queueid: $queueid, ";
 } else {    # instructor
-    if (!$record = get_record('block_helpmenow_user', 'userid', $USER->id)) {
+    if (!$record = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id))) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
 }
@@ -57,10 +57,10 @@ if ($login) {
 }
 
 if ($queueid) {     # helper
-    update_record('block_helpmenow_helper', $record);
+    $DB->update_record('block_helpmenow_helper', $record);
     helpmenow_log($USER->id, 'updated block_helpmenow_helper', "$record->isloggedin");
 } else {    # instructor
-    update_record('block_helpmenow_user', addslashes_recursive($record));
+    $DB->update_record('block_helpmenow_user', addslashes_recursive($record));
     helpmenow_log($USER->id, 'updated block_helpmenow_user', "$record->isloggedin");
 }
 

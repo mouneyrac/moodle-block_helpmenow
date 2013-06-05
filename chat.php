@@ -35,21 +35,21 @@ if (!helpmenow_verify_session($sessionid)) {
 }
 
 # figure out if the user should see plugins
-$session = get_record('block_helpmenow_session', 'id',  $sessionid);
+$session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
 $privileged = helpmenow_check_privileged($session);
 
 # title
 if (!$privileged and isset($session->queueid)) {
-    $title = get_field('block_helpmenow_queue', 'name', 'id', $session->queueid);
+    $title = $DB->get_field('block_helpmenow_queue', 'name', 'id', $session->queueid);
 } else {
     $sql = "
         SELECT u.*
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {user} u ON u.id = s2u.userid
         WHERE s2u.sessionid = $sessionid
         AND s2u.userid <> $USER->id
     ";
-    $other_user_recs = get_records_sql($sql);
+    $other_user_recs = $DB->get_records_sql($sql);
     $other_users = array();
     foreach ($other_user_recs as $r) {
         $other_users[] = fullname($r);
@@ -110,14 +110,12 @@ $textarea_message = get_string('textarea_message', 'block_helpmenow');  # defaul
 $jplayer = helpmenow_jplayer();     # jquery plugin for bell sound
 $version = HELPMENOW_CLIENT_VERSION;
 
-if ($history = helpmenow_get_history($sessionid)) {
-    $messages = helpmenow_format_messages($history);
-    foreach ($history as $m) {
-        $last_message = $m->id;
-    }
-} else {
-    $messages = '';
-    $last_message = 0;
+$messages = '';
+$last_message = 0;
+$history = helpmenow_get_history($sessionid);
+$messages = helpmenow_format_messages($history);
+foreach ($history as $m) {
+    $last_message = $m->id;
 }
 $messages = $history_link . $messages;
 

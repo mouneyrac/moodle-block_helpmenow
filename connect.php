@@ -35,8 +35,8 @@ $sessionid = optional_param('sessionid', 0, PARAM_INT);
 $chat_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
 
 if ($sessionid) {   # helpers connecting to queue sessions
-    $session = get_record('block_helpmenow_session', 'id', $sessionid);
-    if (!record_exists('block_helpmenow_helper', 'queueid', $session->queueid, 'userid', $USER->id)) {
+    $session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
+    if (!$DB->record_exists('block_helpmenow_helper', array('queueid' => $session->queueid, 'userid' => $USER->id))) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
     helpmenow_add_user($USER->id, $session->id);
@@ -44,12 +44,12 @@ if ($sessionid) {   # helpers connecting to queue sessions
     # build sql to check for existing sesssions
     $sql = "
         SELECT s.*
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}block_helpmenow_session s ON s2u.sessionid = s.id
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {block_helpmenow_session} s ON s2u.sessionid = s.id
     ";
     if ($userid) {
         $sql .= "
-            JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
+            JOIN {block_helpmenow_session2user} s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
             WHERE s2u2.userid = $userid
         ";
     } else if ($queueid) {
@@ -61,7 +61,7 @@ if ($sessionid) {   # helpers connecting to queue sessions
         AND s2u.userid = $USER->id
         AND s.iscurrent = 1
     ";
-    if (!$session = get_record_sql($sql)) {
+    if (!$session = $DB->get_record_sql($sql)) {
         # if we don't have a current session, create one
         $session = (object) array(
             'timecreated' => time(),
@@ -71,7 +71,7 @@ if ($sessionid) {   # helpers connecting to queue sessions
         if ($queueid) {
             $session->queueid = $queueid;
         }
-        $session->id = insert_record('block_helpmenow_session', $session);
+        $session->id = $DB->insert_record('block_helpmenow_session', $session);
 
         # add user(s)
         helpmenow_add_user($USER->id, $session->id, time());

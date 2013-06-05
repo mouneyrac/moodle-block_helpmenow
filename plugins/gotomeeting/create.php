@@ -29,9 +29,9 @@ require_once(dirname(__FILE__) . '/lib.php');
 require_login(0, false);
 
 # make sure user is instructor or helper
-$user = get_record('block_helpmenow_user', 'userid', $USER->id);
-$helper = get_records('block_helpmenow_helper', 'userid', $USER->id);
-if (!$user and !$helper) {
+$user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id));
+$helper = $DB->get_records('block_helpmenow_helper', array('userid' => $USER->id));
+if (!$user and (count($helper) == 0)) {
     helpmenow_fatal_error('You do not have permission to view this page.');
 }
 
@@ -39,7 +39,7 @@ if (!$user and !$helper) {
 $token_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/gotomeeting/token.php");
 $token_url->param('redirect', qualified_me());
 $token_url = $token_url->out();
-if ($record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+if ($record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $USER->id, 'plugin' => 'gotomeeting'))) {
     $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
 } else {
     $user2plugin = new helpmenow_user2plugin_gotomeeting();

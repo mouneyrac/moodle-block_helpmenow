@@ -11,8 +11,8 @@ $longopts = array(
 );
 $opts = (object)getopt(null, $longopts);
 
-global $db;
-$db->debug = true;
+//global $db;
+//$db->debug = true;
 
 $function = $opts->function;
 switch($function) {

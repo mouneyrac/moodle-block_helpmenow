@@ -47,10 +47,10 @@ if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
 } else if ($formdata = $form->get_data()) {     # submitted
     if (!$formdata->queueid) {
-        insert_record('block_helpmenow_queue', $formdata);
+        $DB->insert_record('block_helpmenow_queue', $formdata);
     } else {
         $formdata->id = $formdata->queueid;
-        update_record('block_helpmenow_queue', $formdata);
+        $DB->update_record('block_helpmenow_queue', $formdata);
     }
     redirect($admin_url);
 } 

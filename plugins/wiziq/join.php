@@ -42,7 +42,7 @@ if (!$session_id) {
         helpmenow_fatal_error('You do not have permission to view this page.');
     }
 
-    if (!$s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
+    if (!$s2p_rec = $DB->get_record('block_helpmenow_s2p', array('sessionid' => $session_id, 'plugin' => 'wiziq'))) {
         helpmenow_fatal_error('Invalid session.');
     }
     $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);

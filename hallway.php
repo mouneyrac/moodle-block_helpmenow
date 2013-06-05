@@ -33,7 +33,7 @@ require_login(0, false);
 
 # contexts and cap check
 $admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
-if (!($admin or record_exists('block_helpmenow_helper', 'userid', $USER->id))) {
+if (!($admin or $DB->record_exists('block_helpmenow_helper', array('userid', $USER->id)))) {
     redirect();
 }
 
@@ -54,18 +54,18 @@ print_box_start('generalbox centerpara');
 $where = $admin ? '' : "WHERE h.userid = {$USER->id}";
 $sql = "
     SELECT q.*
-    FROM {$CFG->prefix}block_helpmenow_queue q
-    JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
+    FROM {block_helpmenow_queue} q
+    JOIN {block_helpmenow_helper} h ON h.queueid = q.id
     $where
 ";
 # helpers see other helpers in the same queue
-if ($queues = get_records_sql($sql)) {
+if ($queues = $DB->get_records_sql($sql)) {
     foreach ($queues as $q) {
         print_heading($q->name, '', 3);
-        $helpers = get_records_sql("
+        $helpers = $DB->get_records_sql("
             SELECT *
-            FROM {$CFG->prefix}block_helpmenow_helper h
-            JOIN {$CFG->prefix}user u ON u.id = h.userid
+            FROM {block_helpmenow_helper} h
+            JOIN {user} u ON u.id = h.userid
             WHERE h.queueid = {$q->id}
         ");
         helpmenow_print_hallway($helpers);
@@ -75,10 +75,10 @@ if ($queues = get_records_sql($sql)) {
 # admins see all instructors
 if ($admin) {
     print_heading("Instructors", '', 3);
-    $instructors = get_records_sql("
+    $instructors = $DB->get_records_sql("
         SELECT *
-        FROM {$CFG->prefix}block_helpmenow_user hu
-        JOIN {$CFG->prefix}user u ON u.id = hu.userid
+        FROM {block_helpmenow_user} hu
+        JOIN {user} u ON u.id = hu.userid
     ");
     helpmenow_print_hallway($instructors);
 }
