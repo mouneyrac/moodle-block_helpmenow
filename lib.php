@@ -1938,7 +1938,9 @@ abstract class helpmenow_contact_list {
      * @param int $userid user.id
      * @return bool success
      */
-    public abstract static function update_contacts($userid);
+    public static function update_contacts($userid) {
+        return false;
+    }
 
     /**
      * run update_contacts for everybody
@@ -1969,24 +1971,32 @@ abstract class helpmenow_contact_list {
      * Check if user is a teacher - teachers have capabilities to see their 
      * enrolled students and may sometimes be added to queue helper lists
      */
-    public abstract static function is_teacher($userid=null);
+    public static function is_teacher($userid=null) {
+        return false;
+    }
 
     /*
      * Check if user is an admin - admins have additional management capabilites 
      * over other users
      */
-    public abstract static function is_admin($userid=null);
+    public static function is_admin($userid=null) {
+        return false;
+    }
 
     /**
      * Check if user is admin or teacher - sometimes optimized over calling 
      * bother functions
      */
-    public abstract static function is_admin_or_teacher($userid=null);
+    public static function is_admin_or_teacher($userid=null) {
+        return false;
+    }
 
     /**
      * Check if user is a student
      */
-    public abstract static function is_student($userid=null);
+    public static function is_student($userid=null) {
+        return false;
+    }
 }
 
 ?>
