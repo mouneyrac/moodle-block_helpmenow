@@ -60,7 +60,7 @@ $sql = "
     SELECT s.id
     FROM {$CFG->prefix}block_helpmenow_session s
     JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s.id = s2u.sessionid AND s2u.userid=$USER->id
-    JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s.id = s2u2.sessionid AND s2u2.userid = $otheruserid
+    JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s.id = s2u2.sessionid AND s2u2.userid=$otheruserid
     ";
 // TODO: Add WHERE that limits messages to recent times...
 
