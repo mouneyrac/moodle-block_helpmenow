@@ -84,23 +84,26 @@ label {
 
 #titleDiv {
     position: absolute;
-    top: 1em;
     left: 1em;
     right: 1em;
     height: 2em;
-    padding: 0;
+    padding: .5em;
     padding-left: .5em;
 }
 
 #chatDiv {
     position: absolute;
+    top: 2em;
     left: 1em;
     right: 1em;
-    top: 3em;
+    bottom: 1em;
     padding: .5em;
     overflow: auto;
     border: 1px solid black;
     min-height: 5em;
 }
 
+#recent {
+    position: relative;
+}
 

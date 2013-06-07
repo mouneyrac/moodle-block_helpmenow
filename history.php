@@ -87,7 +87,10 @@ echo <<<EOF
     </head>
     <body>
         <div id="titleDiv"><b>$title</b></div>
-        <div id="chatDiv">$messages</div>
+        <div id="chatDiv">
+            $messages
+            <div id="recent"></div>
+        </div>
     </body>
 </html>
 EOF;
