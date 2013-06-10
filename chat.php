@@ -100,6 +100,7 @@ if (count($plugins_init)) {
 if (!isset($session->queueid)) {
     $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
     $history_url->param('session', $sessionid);
+    $history_url->param('date', '-1 year');
     $history_link = link_to_popup_window($history_url->out(), $sessionid, $history_name, 400, 500, null, null, true);
     $history_link = '<div>'.$history_link.'</div>';
 } else {
