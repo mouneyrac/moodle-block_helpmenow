@@ -111,6 +111,17 @@ EOF;
             $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
         }
 
+        # Chat histories link
+        $chathistories = get_string('chathistories', 'block_helpmenow');
+        if ($break) {
+            $this->content->footer .= "<br />";
+        } else {
+            $break = true;
+        }
+        $chat_history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
+        $chat_history_url->param('userid', $USER->id);
+        $this->content->footer .= "<a href=" . $chat_history_url->out() . ">$chathistories</a>";
+
         if ($contact_list::is_admin_or_teacher()) {
             # call plugin methods to check for additional display information
             foreach (helpmenow_plugin::get_plugins() as $pluginname) {

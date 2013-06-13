@@ -183,6 +183,12 @@ $string['instructors'] = 'Instructors:';
 $string['me'] = 'Me';
 $string['sent'] = 'Sent';
 $string['chat_history'] = 'Chat history';
+$string['chathistories'] = 'Chat Histories';
+$string['viewconversation'] = 'View conversations with:';
+$string['orderby'] = 'Order by';
+$string['name'] = 'Name';
+$string['mostrecentconversation'] = 'Most Recent Conversation';
+$string['history_not_available'] = 'No chat history found';
 
 $string['may_close'] = 'You may now close this window';
 $string['multiple_plugins'] = 'Multiple plugins require further action. Please follow the links below to finish logging in.';

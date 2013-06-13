@@ -48,6 +48,7 @@ Features:
 - Teachers may enter a Message of the Day (MOTD) which is their current status,
   this is displayed to students.
 - Missed Chats are emailed to the user.
+- Chat history is availible to all users.
 
 - Updates are not instantaneous, things may take up to 10 seconds to refresh
   (like logging in and out of the block, lists of students online)

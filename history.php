@@ -28,6 +28,16 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
+// Date is a string representation of the starting date for the history to be 
+// shown. "-1 year" is default, but a date such as "20130610" will work also
+// This limits by the session creation date, so it may not be exact.
+$date = optional_param('date', '', PARAM_TEXT);
+if (!$date) {
+    $date = strtotime("-1 year");
+} else {
+    $date = strtotime($date);
+}
+
 # verify session, also verify it is not from a queue, they do not have history
 $sessionid = required_param('session', PARAM_INT);
 if (!helpmenow_verify_session($sessionid) or isset($session->queueid)) {
@@ -61,8 +71,8 @@ $sql = "
     FROM {block_helpmenow_session} s
     JOIN {block_helpmenow_session2user} s2u ON s.id = s2u.sessionid AND s2u.userid=$USER->id
     JOIN {block_helpmenow_session2user} s2u2 ON s.id = s2u2.sessionid AND s2u2.userid = $otheruserid
+    WHERE s.timecreated > $date
     ";
-// TODO: Add WHERE that limits messages to recent times...
 
 $messages = '';
 $sessionids = array();
@@ -72,7 +82,7 @@ if ($sessions = $DB->get_records_sql($sql)) {
     }
     $sessionids = implode(', ', $sessionids);
     if ($history = helpmenow_get_history_list($sessionids)) {
-        $messages = helpmenow_format_messages_history(helpmenow_filter_messages_history($history), $USER->id);
+        $messages = helpmenow_format_messages_history(helpmenow_filter_messages_history($history), '');
     }
 }
 
@@ -87,7 +97,10 @@ echo <<<EOF
     </head>
     <body>
         <div id="titleDiv"><b>$title</b></div>
-        <div id="chatDiv">$messages</div>
+        <div id="chatDiv">
+            $messages
+            <div id="recent"></div>
+        </div>
     </body>
 </html>
 EOF;
