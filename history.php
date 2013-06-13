@@ -82,7 +82,7 @@ if ($sessions = get_records_sql($sql)) {
     }
     $sessionids = implode(', ', $sessionids);
     if ($history = helpmenow_get_history_list($sessionids)) {
-        $messages = helpmenow_format_messages_history(helpmenow_filter_messages_history($history), $USER->id);
+        $messages = helpmenow_format_messages_history(helpmenow_filter_messages_history($history), '');
     }
 }
 
