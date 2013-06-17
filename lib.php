@@ -385,12 +385,16 @@ function helpmenow_block_interface() {
 
     $output = '';
 
+    $loading = get_string('loading', 'block_helpmenow');
+    $output .= <<<EOF
+<span id="loading" style=display:none">$loading ...</span>
+EOF;
     $output .= <<<EOF
 <div id="helpmenow_queue_div"></div>
 EOF;
 
     $contact_list = helpmenow_contact_list::get_plugin();
-    
+
     if($contact_list::is_teacher()) {
         $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
         $instyle = $outstyle = '';

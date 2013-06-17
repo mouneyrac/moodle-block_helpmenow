@@ -58,6 +58,7 @@ $string['enter_office'] = 'Enter Office';
 $string['leave_office'] = 'Leave Office';
 $string['offline'] = '(Offline)';
 $string['updated'] = 'Updated';
+$string['loading'] = 'Loading';
 
 # new_request.php
 #$string['new_request_heading'] = 'New Request';
