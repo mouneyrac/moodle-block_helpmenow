@@ -38,6 +38,9 @@ var helpmenow = (function (my) {
             var last_refresh_div = document.getElementById("helpmenow_last_refresh_div");
             last_refresh_div.innerHTML = response.last_refresh;
 
+            var links_div = document.getElementById("helpmenow_links_div");
+            links_div.innerHTML = response.links_html;
+
             if (response.alert) {
                 if (response.pending && !$(document)[0].hasFocus()) {
                     //$.titleAlert('"' + response.title_flash + '"', {

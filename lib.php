@@ -442,6 +442,12 @@ EOF;
 
     $output .= <<<EOF
 <hr />
+<div id="helpmenow_links" style="text-align: center; font-size:small;">
+    <div id="helpmenow_links_div"></div>
+</div>
+EOF;
+
+    $output .= <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
 <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/jquery.titlealert.js" type="text/javascript"></script>
@@ -1006,6 +1012,8 @@ function helpmenow_serverfunc_block($request, &$response) {
     $response->pending = 0;
     $response->alert = false;
 
+    $response->links_html = helpmenow_get_block_footer_links();
+
     /**
      * queues
      */
@@ -1286,6 +1294,76 @@ function helpmenow_serverfunc_plugin($request, &$response) {
     }
     $response = (object) array_merge((array) $response, (array) $plugin_function($request));
 }
+
+/**
+ * create link html for footer of the client
+ * @returns html for links
+ */
+function helpmenow_get_block_footer_links() {
+    global $USER;
+    $link_html = '';
+    $break = false;
+
+    $contact_list = helpmenow_contact_list::get_plugin();
+    $contact_list::update_contacts($USER->id);
+    if ($contact_list_display = $contact_list::block_display()) {
+        $link_html .= $contact_list_display;
+        $break = true;
+    }
+
+    # admin link
+    $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+    if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
+        $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
+        $admin_text = get_string('admin_link', 'block_helpmenow');
+        if ($break) {
+            $link_html .= "<br />";
+        } else {
+            $break = true;
+        }
+        $link_html .= "<a href='$admin'>$admin_text</a>";
+    }
+
+    # "hallway" link
+    if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+        $who = get_string('who', 'block_helpmenow');
+        if ($break) {
+            $link_html .= "<br />";
+        } else {
+            $break = true;
+        }
+        $link_html .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
+    }
+
+    # Chat histories link
+    $chathistories = get_string('chathistories', 'block_helpmenow');
+    if ($break) {
+        $link_html .= "<br />";
+    } else {
+        $break = true;
+    }
+    $chat_history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
+    $chat_history_url->param('userid', $USER->id);
+    $link_html .= "<a href=" . $chat_history_url->out() . ">$chathistories</a>";
+
+    if ($contact_list::is_admin_or_teacher()) {
+        # call plugin methods to check for additional display information
+        foreach (helpmenow_plugin::get_plugins() as $pluginname) {
+            $class = "helpmenow_plugin_$pluginname";
+            if($plugindisplay = $class::block_display()) {
+                if ($break) {
+                    $link_html .= "<br />";
+                } else {
+                    $break = true;
+                }
+                $link_html .= $plugindisplay;
+            }
+        }
+    }
+
+    return $link_html;
+}
+
 
 /**
  * log error from the client

@@ -61,8 +61,6 @@ class block_helpmenow extends block_base {
         helpmenow_clean_sessions();     # clean up users sessions
 
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
-        $contact_list = helpmenow_contact_list::get_plugin();
-        $contact_list::update_contacts($USER->id);
         # do stuff that stuff that should be done when a user first logs in
         if (!isset($SESSION->helpmenow_first_load)) {
             $SESSION->helpmenow_first_load = true;
@@ -82,60 +80,7 @@ EOF;
         }
 
         $this->content->text .= helpmenow_block_interface();
-        $break = false;
-        if ($contact_list_display = $contact_list::block_display()) {
-            $this->contect->footer .= $contact_list_display;
-            $break = true;
-        }
-        # admin link
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
-        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-            $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
-            $admin_text = get_string('admin_link', 'block_helpmenow');
-            if ($break) {
-                $this->content->footer .= "<br />";
-            } else {
-                $break = true;
-            }
-            $this->content->footer .= "<a href='$admin'>$admin_text</a>";
-        }
 
-        # "hallway" link
-        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
-            $who = get_string('who', 'block_helpmenow');
-            if ($break) {
-                $this->content->footer .= "<br />";
-            } else {
-                $break = true;
-            }
-            $this->content->footer .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
-        }
-
-        # Chat histories link
-        $chathistories = get_string('chathistories', 'block_helpmenow');
-        if ($break) {
-            $this->content->footer .= "<br />";
-        } else {
-            $break = true;
-        }
-        $chat_history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
-        $chat_history_url->param('userid', $USER->id);
-        $this->content->footer .= "<a href=" . $chat_history_url->out() . ">$chathistories</a>";
-
-        if ($contact_list::is_admin_or_teacher()) {
-            # call plugin methods to check for additional display information
-            foreach (helpmenow_plugin::get_plugins() as $pluginname) {
-                $class = "helpmenow_plugin_$pluginname";
-                if($plugindisplay = $class::block_display()) {
-                    if ($break) {
-                        $this->content->footer .= "<br />";
-                    } else {
-                        $break = true;
-                    }
-                    $this->content->footer .= $plugindisplay;
-                }
-            }
-        }
         $this->content->footer .= <<<EOF
 <div id="helpmenow_last_refresh_div"></div>
 <div style="text-align:right;">
