@@ -787,6 +787,11 @@ function helpmenow_email_messages() {
             continue;
         }
 
+
+        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+        $history_url->param('session', $s2u->sessionid);
+        $history_url->param('date', '-1 year');
+
         $subject = get_string('default_emailsubject', 'block_helpmenow');
         $subject = str_replace('!blockname!', $blockname, $subject);
         $subject = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $subject);
@@ -796,9 +801,11 @@ function helpmenow_email_messages() {
         $text = str_replace('!blockname!', $blockname, $text);
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
+        $texthtml = $text . get_string('default_emailhtml', 'block_helpmenow');
+        $texthtml = str_replace('!link!', $history_url->out(), $texthtml);
 
         if (!defined('HMN_TESTING')) {
-            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text);
+            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text, $texthtml);
         } else {
             $status = true;
             print "HMN_TESTING: Pretending email was sent...\n";
