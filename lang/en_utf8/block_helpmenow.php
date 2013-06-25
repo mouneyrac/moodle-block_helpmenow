@@ -185,6 +185,7 @@ $string['sent'] = 'Sent';
 $string['chat_history'] = 'Chat history';
 $string['chathistories'] = 'Chat Histories';
 $string['viewconversation'] = 'View conversations with:';
+$string['conversations'] = '\'s conversations with:';
 $string['orderby'] = 'Order by';
 $string['name'] = 'Name';
 $string['mostrecentconversation'] = 'Most Recent Conversation';
