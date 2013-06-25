@@ -34,7 +34,7 @@ require_login(0, true);
 # contexts and cap check
 $admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
 if (!($admin or $userid==$USER->id)) {
-    redirect();
+    helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
 # title, navbar, and a nice box
@@ -81,13 +81,19 @@ if (count($sessions) < 1) {
         SELECT u.*, s2u.sessionid
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}user u ON u.id = s2u.userid
-        WHERE s2u.userid <> $USER->id
+        WHERE s2u.userid <> $userid
         AND s2u.sessionid IN ($sessions)
         ORDER BY $orderby
         ";
     $other_user_recs = get_records_sql($sql);
 
-    print_heading(get_string('viewconversation', 'block_helpmenow'), 'left');
+    $heading = get_string('viewconversation', 'block_helpmenow');
+    if ($userid != $USER->id) {
+        $mainuser = get_record('user', 'id', $userid);
+        $name = fullname($mainuser);
+        $heading = $name . get_string('conversations', 'block_helpmenow');
+    }
+    print_heading($heading, 'left');
     $orderbystring = get_string('orderby', 'block_helpmenow') . " ( <a href=$orderbyname_url>" . get_string('name', 'block_helpmenow') . "</a> | <a href=$orderbydate_url>" . get_string('mostrecentconversation', 'block_helpmenow') . '</a> )';
     print "<div>$orderbystring</div><br />";
 

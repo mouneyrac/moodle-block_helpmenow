@@ -188,6 +188,7 @@ $string['sent'] = 'Sent';
 $string['chat_history'] = 'Chat history';
 $string['chathistories'] = 'Chat Histories';
 $string['viewconversation'] = 'View conversations with:';
+$string['conversations'] = '\'s conversations with:';
 $string['orderby'] = 'Order by';
 $string['name'] = 'Name';
 $string['mostrecentconversation'] = 'Most Recent Conversation';
@@ -203,7 +204,12 @@ You may have missed these messages in !blockname! from !fromusername! while you 
 
 !messages!
 EOF;
-$string['default_emailhtml'] = '';
+$string['default_emailhtml'] = <<<EOF
+Hello !username!, <br /><br />
+You may have missed these messages in !blockname! from !fromusername! while you were offline:<br /><br />
+!messages!<br /><br />
+<a href='!link!'>Link to chat history page</a>
+EOF;
 $string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
 
 

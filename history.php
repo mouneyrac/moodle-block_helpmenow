@@ -38,9 +38,12 @@ if (!$date) {
     $date = strtotime($date);
 }
 
-# verify session, also verify it is not from a queue, they do not have history
+$contact_list = helpmenow_contact_list::get_plugin();
+$is_admin = $contact_list::is_admin();
+
+# verify session
 $sessionid = required_param('session', PARAM_INT);
-if (!helpmenow_verify_session($sessionid) or isset($session->queueid)) {
+if (!(helpmenow_verify_session($sessionid) or $is_admin)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
@@ -52,25 +55,23 @@ $sql = "
     FROM {$CFG->prefix}block_helpmenow_session2user s2u
     JOIN {$CFG->prefix}user u ON u.id = s2u.userid
     WHERE s2u.sessionid = $sessionid
-    AND s2u.userid <> $USER->id
     ";
-$other_user_recs = get_records_sql($sql);
+$chat_users = get_records_sql($sql);
 $other_users = array();
-foreach ($other_user_recs as $r) {
+$i=0;
+$joinlist = '';
+foreach ($chat_users as $r) {
     $other_users[] = fullname($r);
-    $otheruserid = $r->id;
+    $joinlist .= "JOIN {$CFG->prefix}block_helpmenow_session2user s2u$i ON s.id = s2u$i.sessionid AND s2u$i.userid=$r->id ";
+    $i += 1;
 }
 $title = get_string('chat_history', 'block_helpmenow') . ': ' . implode(', ', $other_users);
 
-if (count($other_user_recs)>1) {
-    helpmenow_fatal_error(get_string('history_not_available', 'block_helpmenow'));
-}
 
 $sql = "
     SELECT s.id
     FROM {$CFG->prefix}block_helpmenow_session s
-    JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s.id = s2u.sessionid AND s2u.userid=$USER->id
-    JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s.id = s2u2.sessionid AND s2u2.userid=$otheruserid
+    $joinlist
     WHERE s.timecreated > $date
     ";
 
@@ -84,6 +85,8 @@ if ($sessions = get_records_sql($sql)) {
     if ($history = helpmenow_get_history_list($sessionids)) {
         $messages = helpmenow_format_messages_history(helpmenow_filter_messages_history($history), '');
     }
+} else {
+    helpmenow_fatal_error(get_string('history_not_available', 'block_helpmenow'));
 }
 
 

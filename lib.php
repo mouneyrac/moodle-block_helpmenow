@@ -776,14 +776,17 @@ function helpmenow_email_messages() {
 
 
         $formatted = '';
+        $formattedhtml = '';
         $content = false;
         if ($messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid)) {
             foreach ($messages as $m) {
                 if (!is_null($m->userid)) { $content = true; }
-                $formatted .= (is_null($m->userid) ?
+                $msg = (is_null($m->userid) ?
                 $m->message :
-                fullname($users[$m->userid]) . ": $m->message")
-                . "\n";
+                fullname($users[$m->userid]) . ": $m->message");
+
+                $formatted .= "$msg\n";
+                $formattedhtml .= "$msg <br />";
             }
         }
 
@@ -797,6 +800,11 @@ function helpmenow_email_messages() {
             continue;
         }
 
+
+        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+        $history_url->param('session', $s2u->sessionid);
+        $history_url->param('date', '-1 year');
+
         $subject = get_string('default_emailsubject', 'block_helpmenow');
         $subject = str_replace('!blockname!', $blockname, $subject);
         $subject = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $subject);
@@ -806,9 +814,15 @@ function helpmenow_email_messages() {
         $text = str_replace('!blockname!', $blockname, $text);
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
+        $texthtml = get_string('default_emailhtml', 'block_helpmenow');
+        $texthtml = str_replace('!username!', fullname($users[$s2u->userid]), $texthtml);
+        $texthtml = str_replace('!blockname!', $blockname, $texthtml);
+        $texthtml = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $texthtml);
+        $texthtml = str_replace('!messages!', $formattedhtml, $texthtml);
+        $texthtml = str_replace('!link!', $history_url->out(), $texthtml);
 
         if (!defined('HMN_TESTING')) {
-            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text);
+            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text, $texthtml);
         } else {
             $status = true;
             print "HMN_TESTING: Pretending email was sent...\n";
