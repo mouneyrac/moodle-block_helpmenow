@@ -766,14 +766,17 @@ function helpmenow_email_messages() {
 
 
         $formatted = '';
+        $formattedhtml = '';
         $content = false;
         if ($messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid)) {
             foreach ($messages as $m) {
                 if (!is_null($m->userid)) { $content = true; }
-                $formatted .= (is_null($m->userid) ?
+                $msg = (is_null($m->userid) ?
                 $m->message :
-                fullname($users[$m->userid]) . ": $m->message")
-                . "\n";
+                fullname($users[$m->userid]) . ": $m->message");
+
+                $formatted .= "$msg\n";
+                $formattedhtml .= "$msg <br />";
             }
         }
 
@@ -801,7 +804,11 @@ function helpmenow_email_messages() {
         $text = str_replace('!blockname!', $blockname, $text);
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
-        $texthtml = $text . get_string('default_emailhtml', 'block_helpmenow');
+        $texthtml = get_string('default_emailhtml', 'block_helpmenow');
+        $texthtml = str_replace('!username!', fullname($users[$s2u->userid]), $texthtml);
+        $texthtml = str_replace('!blockname!', $blockname, $texthtml);
+        $texthtml = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $texthtml);
+        $texthtml = str_replace('!messages!', $formattedhtml, $texthtml);
         $texthtml = str_replace('!link!', $history_url->out(), $texthtml);
 
         if (!defined('HMN_TESTING')) {

@@ -201,7 +201,10 @@ You may have missed these messages in !blockname! from !fromusername! while you 
 !messages!
 EOF;
 $string['default_emailhtml'] = <<<EOF
-<a href='!link!'>Link to Chat History page</a>
+Hello !username!, <br /><br />
+You may have missed these messages in !blockname! from !fromusername! while you were offline:<br /><br />
+!messages!<br /><br />
+<a href='!link!'>Link to chat history page</a>
 EOF;
 $string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
 
