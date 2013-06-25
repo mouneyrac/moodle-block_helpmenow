@@ -121,6 +121,8 @@ $string['block_title'] = 'Block title';
 $string['block_title_desc'] = 'Sets the block title';
 $string['settings_contact_list'] = 'Contact list plugin';
 $string['settings_contact_list_desc'] = 'Which contact list plugin to use to manage contacts';
+$string['alternate_master_server'] = 'Alternate Master Server';
+$string['alternate_master_server_desc'] = 'WWWROOT for the alternate moodle helpmenow block. This allows the helpmenow block to be a shell that redirects to another helpmenow server (Leave blank if using only one helpmenow block, or if this block is the master helpmenow)';
 
 /*
 $string['settings_heading'] = 'Help Me Now Settings';

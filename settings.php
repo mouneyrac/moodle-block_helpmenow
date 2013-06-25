@@ -33,6 +33,14 @@ $settings->add(new admin_setting_configtext('helpmenow_title',
     50
 ));
 
+$settings->add(new admin_Setting_configtext('helpmenow_alternate_master_server',
+    get_string('alternate_master_server', 'block_helpmenow'),
+    get_string('alternate_master_server_desc', 'block_helpmenow'),
+    '',
+    PARAM_TEXT,
+    100
+));
+
 $plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));
 foreach ($plugins as $pluginname) {
     # plugin heading
