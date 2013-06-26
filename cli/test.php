@@ -4,7 +4,7 @@ if (PHP_SAPI !== 'cli') { print "NO!\n"; exit; }
 require_once(dirname(dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(dirname(__FILE__)) . '/lib.php');
 
-//define('HMN_TESTING', 1);
+define('HMN_TESTING', 1);
 
 $longopts = array(
     'function:',
