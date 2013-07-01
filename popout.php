@@ -28,12 +28,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
-if (!empty($CFG->helpmenow_title)) {
-    $title = $CFG->helpmenow_title;
-} else {
-    $title = get_string('helpmenow', 'block_helpmenow'); 
-}
-print_header($title);
+print_header(helpmenow_title());
 
 $output = <<<EOF
 <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
@@ -42,7 +37,6 @@ EOF;
 
 $output .= helpmenow_block_interface();
 $output .= <<<EOF
-<div id="helpmenow_last_refresh_div" style="font-size:small;"></div> 
 </div></div></div></body></html>
 EOF;
 

@@ -175,7 +175,6 @@ var helpmenow = (function () {
                 setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
             }
         });
-        $('#loading').hide();
     }
 
     function checkUpdates() {
@@ -193,8 +192,6 @@ var helpmenow = (function () {
     $(document).ready(function () {     // call our init function onLoad
         helpmenow.init();
     });
-
-    $('#loading').show();
 
     /**
      * public interface

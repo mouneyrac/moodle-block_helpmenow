@@ -38,11 +38,7 @@ if (!($admin or $userid==$USER->id)) {
 }
 
 # title, navbar, and a nice box
-if (!empty($CFG->helpmenow_title)) {
-    $blockname = $CFG->helpmenow_title;
-} else {
-    $blockname = get_string('helpmenow', 'block_helpmenow'); 
-}
+$blockname = helpmenow_title();
 $title = get_string('chathistories', 'block_helpmenow');
 $nav = array(
     array('name' => $blockname),

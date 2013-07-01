@@ -30,12 +30,7 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 class block_helpmenow extends block_base {
     function init() {
-        global $CFG;
-        if (!empty($CFG->helpmenow_title)) {
-            $this->title = $CFG->helpmenow_title;
-        } else {
-            $this->title = get_string('helpmenow', 'block_helpmenow'); 
-        }
+        $this->title = helpmenow_title();
 
         $plugin = new object;
         require(dirname(__FILE__) . "/version.php");
@@ -48,22 +43,23 @@ class block_helpmenow extends block_base {
             return $this->content;
         }
 
-        global $CFG, $USER, $SESSION;
+        global $CFG, $SESSION;
 
         $this->content = (object) array(
             'text' => '',
             'footer' => '',
         );
 
+        # noscript block - if js is not there
         $this->content->text .= '<noscript>'.get_string('noscript', 'block_helpmenow').'</noscript>';
 
         # the first time a user loads the block this session try to popout
-        helpmenow_clean_sessions();     # clean up users sessions
-
         $popout_url = "$CFG->wwwroot/blocks/helpmenow/popout.php";
         # do stuff that stuff that should be done when a user first logs in
         if (!isset($SESSION->helpmenow_first_load)) {
             $SESSION->helpmenow_first_load = true;
+            helpmenow_clean_sessions();     # clean up users sessions
+
             # try to popout the interface
             $this->content->text .= <<<EOF
 <script>
@@ -76,13 +72,11 @@ class block_helpmenow extends block_base {
     }
 </script>
 EOF;
-            # update the users contacts
         }
 
         $this->content->text .= helpmenow_block_interface();
 
         $this->content->footer .= <<<EOF
-<div id="helpmenow_last_refresh_div"></div>
 <div style="text-align:right;">
     <div style="float:left;">
         <a href="javascript:void(0)" onclick="helpmenow.chime();">
@@ -101,7 +95,7 @@ EOF;
         $success = $success and helpmenow_autologout_helpers();
         $success = $success and helpmenow_autologout_users();
         $success = $success and helpmenow_email_messages();
-        $success = $success and helpmenow_clean_sessions(true);
+        $success = $success and helpmenow_clean_all_sessions();
         return $success;
     }
 }

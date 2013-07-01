@@ -182,6 +182,10 @@ function helpmenow_log($userid, $action, $details) {
     insert_record('block_helpmenow_log', $new_record);
 }
 
+function helpmenow_clean_all_sessions() {
+    helpmenow_clean_sessions(true);
+}
+
 function helpmenow_clean_sessions($all = false) {
     global $CFG, $USER;
 
@@ -386,18 +390,20 @@ function helpmenow_block_interface() {
     $output = '';
 
     $loading = get_string('loading', 'block_helpmenow');
-    $output .= <<<EOF
-<span id="loading" style=display:none">$loading ...</span>
-EOF;
-    $output .= <<<EOF
-<div id="helpmenow_queue_div"></div>
-EOF;
 
     $contact_list = helpmenow_contact_list::get_plugin();
 
+    $my_office = '';
+    $motd = '';
+    $user_heading = '';
+    $instyle = $outstyle = '';
+    $login = $logout = $out_of_office = '';
+    $officestyle = 'style="display: none;"';
+
     if($contact_list::is_teacher()) {
+        $officestyle = '';
         $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
-        $instyle = $outstyle = '';
+        $motd = $helpmenow_user->motd;
         if ($helpmenow_user->isloggedin) {
             $outstyle = 'style="display: none;"';
         } else {
@@ -410,42 +416,15 @@ EOF;
         $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
         $my_office = get_string('my_office', 'block_helpmenow');
         $out_of_office = get_string('out_of_office', 'block_helpmenow');
-        $online_students = get_string('online_students', 'block_helpmenow');
-
+        $user_heading = get_string('online_students', 'block_helpmenow');
         $output .= <<<EOF
-<div id="helpmenow_office">
-    <div><b>$my_office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$helpmenow_user->motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
-    <div style="text-align: center; font-size:small; margin-top:.5em;">
-        <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
-        <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
-    </div>
-    <div style="margin-top:.5em;">$online_students</div>
-    <div id="helpmenow_users_div"></div>
-</div>
 EOF;
     } else if($contact_list::is_student()) {
-        $output .= '
-            <div>'.get_string('instructors', 'block_helpmenow').'</div>
-            <div id="helpmenow_users_div"></div>
-            ';
+        $user_heading = get_string('instructors', 'block_helpmenow');
     }
     $jplayer = helpmenow_jplayer();
     $version = HELPMENOW_CLIENT_VERSION;
-
-    if (!empty($CFG->helpmenow_title)) {
-        $titlename = $CFG->helpmenow_title;
-    } else {
-        $titlename = get_string('helpmenow', 'block_helpmenow');
-    }
-
-    $output .= <<<EOF
-<hr />
-<div id="helpmenow_links" style="text-align: center; font-size:small;">
-    <div id="helpmenow_links_div"></div>
-</div>
-EOF;
+    $titlename = helpmenow_title();
 
     $output .= <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -458,10 +437,36 @@ $jplayer
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
     helpmenow.setTitleName("$titlename");
 </script>
+<span id="loading" style=display:none">$loading ...</span>
+<div id="helpmenow_queue_div"></div>
+<div id="helpmenow_office" $officestyle>
+    <div><b>$my_office</b></div>
+    <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$motd</div>
+    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+    <div style="text-align: center; font-size:small; margin-top:.5em;">
+        <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
+        <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
+    </div>
+</div>
+<div id="helpmenow_users_heading_div style="margin-top:.5em;">$user_heading</div>
+<div id="helpmenow_users_div"></div>
+<hr />
+<div id="helpmenow_links_div" style="text-align: center; font-size:small;"></div>
+<div id="helpmenow_last_refresh_div" style="text-align:center; font-size:small;"></div> 
 <div id="helpmenow_chime"></div>
 EOF;
 
     return $output;
+}
+
+function helpmenow_title() {
+    global $CFG;
+    if (!empty($CFG->helpmenow_title)) {
+        $title = $CFG->helpmenow_title;
+    } else {
+        $title = get_string('helpmenow', 'block_helpmenow');
+    }
+    return $title;
 }
 
 function helpmenow_notify_once($messageid) {
@@ -758,11 +763,7 @@ function helpmenow_email_messages() {
     }
 
     $users = array();
-    if (!empty($CFG->helpmenow_title)) {
-        $blockname = $CFG->helpmenow_title;
-    } else {
-        $blockname = get_string('helpmenow', 'block_helpmenow'); 
-    }
+    $blockname = helpmenow_title();
 
     # get messages, format and send the email
     foreach ($session2users as $s2u) {

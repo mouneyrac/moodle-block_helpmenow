@@ -31,6 +31,7 @@ var helpmenow = (function (my) {
             return;
         }
         if (response.time > lastUpdate) {
+            $('#loading').hide();
             lastUpdate = response.time;
             var queue_div = document.getElementById("helpmenow_queue_div");
             queue_div.innerHTML = response.queues_html;
