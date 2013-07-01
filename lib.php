@@ -437,7 +437,7 @@ $jplayer
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
     helpmenow.setTitleName("$titlename");
 </script>
-<span id="loading" style=display:none">$loading ...</span>
+<span id="loading" style=display:none"><b>$loading ...</b></span>
 <div id="helpmenow_queue_div"></div>
 <div id="helpmenow_office" $officestyle>
     <div><b>$my_office</b></div>
