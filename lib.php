@@ -1182,19 +1182,40 @@ EOF;
     }
 
     # build contact list
-    $response->users_html = '';
+    list($html, $pending, $alert) = helpmenow_build_contact_html($USER->id, $isloggedin);
+    $response->pending += $pending;
+    $response->alert = $response->alert or $alert;
+    $response->users_html = $html;
+}
+
+/*
+ * helpmenow_build_contact_html
+ * builds the contact list for the user
+ * @return user_html - the html contact list with messages
+ * @return pending - if there are new pending messages
+ * @return alert - alert if new messages
+ */
+function helpmenow_build_contact_html($userid, $isloggedin) {
+    global $CFG;
+    $html = '';
+    $pending = 0;
+    $alert = false;
+
+    # Get contacts for the user
     $sql = "
         SELECT u.*, hu.isloggedin, hu.motd, hu.lastaccess AS hmn_lastaccess
         FROM {$CFG->prefix}block_helpmenow_contact c
         JOIN {$CFG->prefix}user u ON u.id = c.contact_userid
         JOIN {$CFG->prefix}block_helpmenow_user hu ON c.contact_userid = hu.userid
-        WHERE c.userid = $USER->id
-    ";
+        WHERE c.userid = $userid
+        ";
     $contacts = get_records_sql($sql);
     if (!$contacts) {
-        return;
+        return array($html, $pending, $alert);
     }
 
+    # For each contact, find out if they are online and if they have sent any
+    # messages to display
     $sql = "
         SELECT s.id, m.message, m.id AS messageid
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
@@ -1233,8 +1254,7 @@ EOF;
         return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
     });
 
-    $connect->remove_params('queueid');
-    $connect->remove_params('sessionid');
+    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
     foreach ($contacts as $u) {
         $connect->param('userid', $u->id);
         $message = '';
@@ -1260,16 +1280,18 @@ EOF;
             $message .= '<div style="font-size: smaller;">' . $motd . '</div>';
         }
         if (isset($u->message)) {
-            $response->pending++;
+            $pending++;
             $style .= 'background-color:yellow;';
             $message .= '<div>' . $u->message . '</div>';
             if (helpmenow_notify_once($u->messageid)) {
-                $response->alert = true;
+                $alert = true;
             }
         }
         $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-        $response->users_html .= "<div style=\"$style\">".$name.$message."</div>";
+        $html .= "<div style=\"$style\">".$name.$message."</div>";
     }
+
+    return array($html, $pending, $alert);
 }
 
 /**
