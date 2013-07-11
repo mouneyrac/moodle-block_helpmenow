@@ -167,6 +167,23 @@ function helpmenow_ensure_user_exists() {
 }
 
 /**
+ * Checks to see if the user on the server is the same as the user on the client
+ * This is required for alternate ajax server master/slave setups (settings 
+ * - alternate master server
+ *
+ * @returns - html formatted warning message to user to be added to block
+ */
+function helpmenow_check_user($user_id_number, $user_fullname) {
+    global $USER;
+    $user_warning = '';
+
+    if ($USER->idnumber != $user_id_number) {
+        $user_warning = $user_fullname . ': ' . get_string('user_warning', 'block_helpmenow') . ' ' . fullname($USER) . get_string('user_warning2', 'block_helpmenow') . '<hr />';
+    }
+    return $user_warning;
+}
+
+/**
  * inserts a message into block_helpmenow_log
  * @param int $userid user performing action
  * @param string $action action user is performing
@@ -426,6 +443,9 @@ EOF;
     $version = HELPMENOW_CLIENT_VERSION;
     $titlename = helpmenow_title();
 
+    $username = fullname($USER);
+    $idnumber = $USER->idnumber;
+
     $output .= <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
@@ -436,7 +456,9 @@ $jplayer
 <script type="text/javascript">
     helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
     helpmenow.setTitleName("$titlename");
+    helpmenow.setUser($idnumber, "$username");
 </script>
+<div id="helpmenow_user_warning_div" style="font-size:small; font-weight:bold; color:red;"></div>
 <span id="loading" style=display:none"><b>$loading ...</b></span>
 <div id="helpmenow_queue_div"></div>
 <div id="helpmenow_office" $officestyle>
@@ -1013,6 +1035,21 @@ function helpmenow_serverfunc_refresh($request, &$response) {
 }
 
 /**
+ * block init - stuff that only needs to be checked infrequently
+ * @param object $request request from client
+ * @param object $response response
+ */
+function helpmenow_serverfunc_init($request, &$response) {
+    global $USER;
+
+    $response->user_warning = helpmenow_check_user($request->useridnumber, $request->username);
+
+    $response->links_html = helpmenow_get_block_footer_links();
+
+}
+
+
+/**
  * chat block
  *
  * @param object $request request from client
@@ -1026,8 +1063,6 @@ function helpmenow_serverfunc_block($request, &$response) {
     $response->last_refresh = get_string('updated', 'block_helpmenow').': '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
     $response->alert = false;
-
-    $response->links_html = helpmenow_get_block_footer_links();
 
     /**
      * queues
@@ -1337,7 +1372,7 @@ function helpmenow_serverfunc_plugin($request, &$response) {
  * @returns html for links
  */
 function helpmenow_get_block_footer_links() {
-    global $USER;
+    global $USER, $CFG;
     $link_html = '';
     $break = false;
 

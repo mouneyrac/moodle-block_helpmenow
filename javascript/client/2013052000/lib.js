@@ -15,6 +15,8 @@ var helpmenow = (function () {
         id,
         serverURL,
         titleName,
+        userName            = '',                       // user name and idnumber to be set by the server the instance is being viewed on
+        userIdNumber        = 0,
         latestUpdate,
         lastBlockUpdate     = 0,
         multiClient         = true;                     // are we using localStorage to minimize the number of connections we make to the server?
@@ -189,6 +191,45 @@ var helpmenow = (function () {
         setTimeout(function () { checkUpdates(); }, PROCESS_FREQ);
     }
 
+    /**
+     * initialize block
+     */
+    function initBlock() {
+        var params = {
+            'requests': {
+                'init': {
+                    'id': 'init',
+                    'function': 'init',
+                    'useridnumber': userIdNumber,
+                    'username': userName
+                }
+            }
+        };
+        helpmenow.ajax(params, function (xmlhttp) {
+            if (xmlhttp.readyState !== 4) { return; }
+            try {
+                if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
+                var response = JSON.parse(xmlhttp.responseText);
+                if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
+
+                for (var i = 0; i < response.length; i++) {
+                    if (response[i].links_html) {
+                        var links_div = document.getElementById("helpmenow_links_div");
+                        links_div.innerHTML += response[i].links_html;
+                    }
+                    if (response[i].user_warning) {
+                        var warning_div = document.getElementById("helpmenow_user_warning_div");
+                        warning_div.innerHTML = response[i].user_warning;
+                    }
+                }
+
+            } catch (e) {
+                var links_div = document.getElementById("helpmenow_links_div");
+                links_div.innerHTML += "An Error occurred while initializing the block";
+            }
+        });
+    }
+
     $(document).ready(function () {     // call our init function onLoad
         helpmenow.init();
     });
@@ -205,6 +246,7 @@ var helpmenow = (function () {
             storage.cleanUp();
             setTimeout(function () { getUpdates(); }, 0);
             setTimeout(function () { checkUpdates(); }, 0);
+            initBlock();
         },
         setServerURL: function (newServerURL) {
             serverURL = newServerURL;
@@ -214,6 +256,16 @@ var helpmenow = (function () {
         },
         getTitleName: function () {
             return titleName;
+        },
+        setUser: function (newUserIdNumber, newUserName) {
+            userIdNumber = newUserIdNumber;
+            userName = newUserName;
+        },
+        getUserName: function () {
+            return userName;
+        },
+        getUserIdNumber: function () {
+            return userIdNumber;
         },
         chime: function () {
             $("#helpmenow_chime").jPlayer("play");

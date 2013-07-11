@@ -75,6 +75,7 @@ foreach ($requests->requests as $request) {
         case 'sysmessage':
         case 'refresh':
         case 'block':
+        case 'init':
         case 'motd':
         case 'plugin':
         case 'last_read':
