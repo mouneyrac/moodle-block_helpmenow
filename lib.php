@@ -399,10 +399,20 @@ function helpmenow_print_hallway($users) {
     print_table($table);
 }
 
+function helpmenow_user_list_heading() {
+    $user_heading = '';
+    $contact_list = helpmenow_contact_list::get_plugin();
+
+    if($contact_list::is_teacher()) {
+        $user_heading = get_string('online_students', 'block_helpmenow');
+    } else if($contact_list::is_student()) {
+        $user_heading = get_string('instructors', 'block_helpmenow');
+    }
+    return $user_heading;
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
-
-    helpmenow_ensure_user_exists();
 
     $output = '';
 
@@ -412,7 +422,6 @@ function helpmenow_block_interface() {
 
     $my_office = '';
     $motd = '';
-    $user_heading = '';
     $instyle = $outstyle = '';
     $login = $logout = $out_of_office = '';
     $officestyle = 'style="display: none;"';
@@ -433,12 +442,10 @@ function helpmenow_block_interface() {
         $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
         $my_office = get_string('my_office', 'block_helpmenow');
         $out_of_office = get_string('out_of_office', 'block_helpmenow');
-        $user_heading = get_string('online_students', 'block_helpmenow');
         $output .= <<<EOF
 EOF;
-    } else if($contact_list::is_student()) {
-        $user_heading = get_string('instructors', 'block_helpmenow');
     }
+
     $jplayer = helpmenow_jplayer();
     $version = HELPMENOW_CLIENT_VERSION;
     $titlename = helpmenow_title();
@@ -470,7 +477,7 @@ $jplayer
         <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
     </div>
 </div>
-<div id="helpmenow_users_heading_div style="margin-top:.5em;">$user_heading</div>
+<div id="helpmenow_users_heading_div" style="margin-top:.5em;"></div>
 <div id="helpmenow_users_div"></div>
 <hr />
 <div id="helpmenow_links_div" style="text-align: center; font-size:small;"></div>
@@ -1035,7 +1042,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
 }
 
 /**
- * block init - stuff that only needs to be checked infrequently
+ * block init - block setup stuff that should only be done once
  * @param object $request request from client
  * @param object $response response
  */
@@ -1045,6 +1052,10 @@ function helpmenow_serverfunc_init($request, &$response) {
     $response->user_warning = helpmenow_check_user($request->useridnumber, $request->username);
 
     $response->links_html = helpmenow_get_block_footer_links();
+
+    $response->user_heading = helpmenow_user_list_heading();
+
+    helpmenow_ensure_user_exists();
 
 }
 

@@ -221,6 +221,10 @@ var helpmenow = (function () {
                         var warning_div = document.getElementById("helpmenow_user_warning_div");
                         warning_div.innerHTML = response[i].user_warning;
                     }
+                    if (response[i].user_heading) {
+                        var user_heading_div = document.getElementById("helpmenow_users_heading_div");
+                        user_heading_div.innerHTML = response[i].user_heading;
+                    }
                 }
 
             } catch (e) {
