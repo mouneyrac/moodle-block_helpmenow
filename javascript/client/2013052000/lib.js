@@ -225,11 +225,22 @@ var helpmenow = (function () {
                         var user_heading_div = document.getElementById("helpmenow_users_heading_div");
                         user_heading_div.innerHTML = response[i].user_heading;
                     }
+                    if (response[i].show_office) {
+                        var office_div = document.getElementById("helpmenow_office");
+                        office_div.style.display = "block";
+                        if (response[i].office_motd) {
+                            var office_motd_div = document.getElementById("helpmenow_motd");
+                            office_motd_div.innerHTML = response[i].office_motd;
+                        }
+                        if (response[i].office_loggedin) {
+                            helpmenow.toggleLoginDisplay(response[i].office_loggedin);
+                        }
+                    }
                 }
 
             } catch (e) {
                 var links_div = document.getElementById("helpmenow_links_div");
-                links_div.innerHTML += "An Error occurred while initializing the block";
+                links_div.innerHTML += "An Error occurred while initializing the block " + e;
             }
         });
     }
@@ -292,6 +303,24 @@ var helpmenow = (function () {
             xmlhttp.setRequestHeader("Content-type", "application/json");
             xmlhttp.send(request);
         },
-        sharedData: {}
-    };
+        sharedData: {},
+        /**
+         * toggles logged in status display
+         */
+        toggleLoginDisplay: function (loggedin) {
+            var logged_in_div = document.getElementById("helpmenow_logged_in_div_0");
+            var logged_out_div = document.getElementById("helpmenow_logged_out_div_0");
+            if (logged_in_div === null || logged_out_div === null) {
+                return;
+            }
+            if (loggedin) {
+                logged_in_div.style.display = "block";
+                logged_out_div.style.display = "none";
+            } else {
+                logged_out_div.style.display = "block";
+                logged_in_div.style.display = "none";
+            }
+        }
+
+   };
 }) ();

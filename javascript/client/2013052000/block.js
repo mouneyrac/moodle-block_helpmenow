@@ -6,24 +6,6 @@ var helpmenow = (function (my) {
     my.sharedData.isBlock = true;
 
     /**
-     * toggles logged in status display
-     */
-    function toggleLoginDisplay(loggedin) {
-        var logged_in_div = document.getElementById("helpmenow_logged_in_div_0");
-        var logged_out_div = document.getElementById("helpmenow_logged_out_div_0");
-        if (logged_in_div === null || logged_out_div === null) {
-            return;
-        }
-        if (loggedin) {
-            logged_in_div.style.display = "block";
-            logged_out_div.style.display = "none";
-        } else {
-            logged_out_div.style.display = "block";
-            logged_in_div.style.display = "none";
-        }
-    }
-
-    /**
      * refresh block
      */
     my.processUpdates = function (response) {
@@ -54,7 +36,7 @@ var helpmenow = (function (my) {
             // from being logged in as an instructor
             try {
                 if (typeof response.isloggedin !== "undefined") {
-                    toggleLoginDisplay(response.isloggedin);
+                    helpmenow.toggleLoginDisplay(response.isloggedin);
                 }
 
                 if (typeof response.users_html !== "undefined") {

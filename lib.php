@@ -411,40 +411,67 @@ function helpmenow_user_list_heading() {
     return $user_heading;
 }
 
+function helpmenow_show_office() {
+    $show_office = false;
+    $contact_list = helpmenow_contact_list::get_plugin();
+    if($contact_list::is_teacher()) {
+        $show_office = true;
+    }
+    return $show_office;
+}
+
+function helpmenow_office_get_motd() {
+    global $USER;
+    $motd = '';
+    $contact_list = helpmenow_contact_list::get_plugin();
+    if($contact_list::is_teacher()) {
+        $instyle = $outstyle = '';
+        $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
+        $motd = $helpmenow_user->motd;
+    }
+    return $motd;
+}
+
+function helpmenow_office_is_loggedin() {
+    global $USER;
+    $contact_list = helpmenow_contact_list::get_plugin();
+    if($contact_list::is_teacher()) {
+        $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
+        if ($helpmenow_user->isloggedin) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function helpmenow_myoffice() {
+    global $CFG;
+
+    $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+    $login_url->param('login', 0);
+    $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
+    $login_url->param('login', 1);
+    $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
+    $my_office = get_string('my_office', 'block_helpmenow');
+    $out_of_office = get_string('out_of_office', 'block_helpmenow');
+
+    $office = <<<EOF
+        <div><b>$my_office</b></div>
+        <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;"></div>
+        <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
+        <div style="text-align: center; font-size:small; margin-top:.5em;">
+            <div id="helpmenow_logged_in_div_0" style="display: none;">$logout</div>
+            <div id="helpmenow_logged_out_div_0" style="display: none;">$out_of_office | $login</div>
+        </div>
+EOF;
+
+    return $office;
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
-    $output = '';
-
     $loading = get_string('loading', 'block_helpmenow');
-
-    $contact_list = helpmenow_contact_list::get_plugin();
-
-    $my_office = '';
-    $motd = '';
-    $instyle = $outstyle = '';
-    $login = $logout = $out_of_office = '';
-    $officestyle = 'style="display: none;"';
-
-    if($contact_list::is_teacher()) {
-        $officestyle = '';
-        $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
-        $motd = $helpmenow_user->motd;
-        if ($helpmenow_user->isloggedin) {
-            $outstyle = 'style="display: none;"';
-        } else {
-            $instyle = 'style="display: none;"';
-        }
-        $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
-        $login_url->param('login', 0);
-        $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
-        $login_url->param('login', 1);
-        $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
-        $my_office = get_string('my_office', 'block_helpmenow');
-        $out_of_office = get_string('out_of_office', 'block_helpmenow');
-        $output .= <<<EOF
-EOF;
-    }
 
     $jplayer = helpmenow_jplayer();
     $version = HELPMENOW_CLIENT_VERSION;
@@ -452,8 +479,9 @@ EOF;
 
     $username = fullname($USER);
     $idnumber = $USER->idnumber;
+    $office = helpmenow_myoffice();
 
-    $output .= <<<EOF
+    $output = <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
 <script src="$CFG->wwwroot/blocks/helpmenow/javascript/lib/jquery.titlealert.js" type="text/javascript"></script>
@@ -468,20 +496,12 @@ $jplayer
 <div id="helpmenow_user_warning_div" style="font-size:small; font-weight:bold; color:red;"></div>
 <span id="loading" style=display:none"><b>$loading ...</b></span>
 <div id="helpmenow_queue_div"></div>
-<div id="helpmenow_office" $officestyle>
-    <div><b>$my_office</b></div>
-    <div id="helpmenow_motd" onclick="helpmenow.block.toggleMOTD(true);" style="border:1px dotted black; width:12em; min-height:1em; padding:.2em; margin-top:.5em;">$motd</div>
-    <textarea id="helpmenow_motd_edit" onkeypress="return helpmenow.block.keypressMOTD(event);" onblur="helpmenow.block.toggleMOTD(false)" style="display:none; margin-top:.5em;" rows="4" cols="22"></textarea>
-    <div style="text-align: center; font-size:small; margin-top:.5em;">
-        <div id="helpmenow_logged_in_div_0" $instyle>$logout</div>
-        <div id="helpmenow_logged_out_div_0" $outstyle>$out_of_office | $login</div>
-    </div>
-</div>
+<div id="helpmenow_office" style="display:none;">$office</div>
 <div id="helpmenow_users_heading_div" style="margin-top:.5em;"></div>
 <div id="helpmenow_users_div"></div>
 <hr />
 <div id="helpmenow_links_div" style="text-align: center; font-size:small;"></div>
-<div id="helpmenow_last_refresh_div" style="text-align:center; font-size:small;"></div> 
+<div id="helpmenow_last_refresh_div" style="text-align:center; font-size:small;"></div>
 <div id="helpmenow_chime"></div>
 EOF;
 
@@ -1055,6 +1075,11 @@ function helpmenow_serverfunc_init($request, &$response) {
 
     $response->user_heading = helpmenow_user_list_heading();
 
+    $response->show_office = helpmenow_show_office();
+    if ($response->show_office) {
+        $response->office_motd = helpmenow_office_get_motd();
+        $response->office_loggedin = helpmenow_office_is_loggedin();
+    }
     helpmenow_ensure_user_exists();
 
 }
@@ -2079,16 +2104,19 @@ abstract class helpmenow_contact_list {
      */
     public final static function get_plugin() {
         global $CFG;
-        $plugin = 'native';
-        if (isset($CFG->helpmenow_contact_list) and strlen($CFG->helpmenow_contact_list) > 0) {
-            $plugin = $CFG->helpmenow_contact_list;
-            if(!file_exists("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php")) {
-                # TODO: Warn config error
-                $plugin = 'native';
+        static $class = false;
+        if (!$class) {
+            $plugin = 'native';
+            if (isset($CFG->helpmenow_contact_list) and strlen($CFG->helpmenow_contact_list) > 0) {
+                $plugin = $CFG->helpmenow_contact_list;
+                if(!file_exists("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php")) {
+                    # TODO: Warn config error
+                    $plugin = 'native';
+                }
             }
+            $class = "helpmenow_contact_list_$plugin";
+            require_once("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php");
         }
-        $class = "helpmenow_contact_list_$plugin";
-        require_once("$CFG->dirroot/blocks/helpmenow/contact_list/$plugin/lib.php");
         return $class;
     }
 
