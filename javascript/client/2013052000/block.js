@@ -58,6 +58,7 @@ var helpmenow = (function (my) {
                 'motd': {
                     'id': 'motd',
                     'function': 'motd',
+                    'useridnumber': userIdNumber,
                     'motd': motd
                 }
             }

@@ -33,12 +33,26 @@ $settings->add(new admin_setting_configtext('helpmenow_title',
     50
 ));
 
-$settings->add(new admin_Setting_configtext('helpmenow_alternate_master_server',
+$settings->add(new admin_setting_configtext('helpmenow_alternate_master_server',
     get_string('alternate_master_server', 'block_helpmenow'),
     get_string('alternate_master_server_desc', 'block_helpmenow'),
     '',
     PARAM_TEXT,
     100
+));
+
+$settings->add(new admin_setting_configcheckbox('helpmenow_allow_as_master',
+    get_string('allow_as_master', 'block_helpmenow'),
+    get_string('allow_as_master_desc', 'block_helpmenow'),
+    '0'
+));
+
+$settings->add(new admin_setting_configtext('helpmenow_master_server_key',
+    get_string('master_server_key', 'block_helpmenow'),
+    get_string('master_server_key_desc', 'block_helpmenow'),
+    '',
+    PARAM_TEXT,
+    150
 ));
 
 $plugins = get_list_of_plugins('plugins', '', dirname(__FILE__));

@@ -123,6 +123,10 @@ $string['settings_contact_list'] = 'Contact list plugin';
 $string['settings_contact_list_desc'] = 'Which contact list plugin to use to manage contacts';
 $string['alternate_master_server'] = 'Alternate Master Server';
 $string['alternate_master_server_desc'] = 'WWWROOT for the alternate moodle helpmenow block. This allows the helpmenow block to be a shell that redirects to another helpmenow server (Leave blank if using only one helpmenow block, or if this block is the master helpmenow)';
+$string['allow_as_master'] = 'Allow as Master';
+$string['allow_as_master_desc'] = 'Allow this helpmenow block to be a master server when using multiple servers';
+$string['master_server_key'] = 'Master Server Key';
+$string['master_server_key_desc'] = 'When using master setup for multiple servers, this will be the generated key, copy to all other helpmenow shell instances';
 
 /*
 $string['settings_heading'] = 'Help Me Now Settings';

@@ -29,7 +29,7 @@ ob_start();
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
 require_once(dirname(__FILE__) . '/lib.php');
 
-if (!isloggedin()) {
+if (!(isloggedin() || $CFG->helpmenow_allow_as_master)) {
     header('HTTP/1.1 401 Unauthorized');
     die;
 }
@@ -43,6 +43,8 @@ if (isset($requests->error)) {
     header('HTTP/1.1 200 OK');
     die;
 }
+
+$original_user = $USER;
 
 # iterate through the requests and create responses
 $responses = array();
@@ -67,6 +69,10 @@ foreach ($requests->requests as $request) {
                 throw new Exception('Could not get session2user record');
             }
             break;
+        }
+
+        if (!isloggedin() && $CFG->helpmenow_allow_as_master && $request->useridnumber) {
+            $USER = get_record('user', 'idnumber', $request->useridnumber);
         }
 
         # generate response
@@ -96,6 +102,8 @@ foreach ($requests->requests as $request) {
     }
     $responses[] = $response;
 }
+
+$USER = $original_user;
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-cache');

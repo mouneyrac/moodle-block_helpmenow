@@ -481,6 +481,11 @@ function helpmenow_block_interface() {
     $idnumber = $USER->idnumber;
     $office = helpmenow_myoffice();
 
+    $serverurl = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
+    if (!empty($CFG->helpmenow_alternate_master_server)) {
+        $serverurl = "$CFG->helpmenow_alternate_master_server/blocks/helpmenow/ajax.php";
+    }
+
     $output = <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 $jplayer
@@ -489,7 +494,7 @@ $jplayer
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/lib.js"></script>
 <script type="text/javascript" src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/block.js"></script>
 <script type="text/javascript">
-    helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
+    helpmenow.setServerURL("$serverurl");
     helpmenow.setTitleName("$titlename");
     helpmenow.setUser($idnumber, "$username");
 </script>

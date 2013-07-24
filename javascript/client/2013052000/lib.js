@@ -121,6 +121,7 @@ var helpmenow = (function () {
                     'id': records[key].id,
                     'function': 'refresh',
                     session: records[key].session,
+                    'useridnumber': userIdNumber,
                     'last_message': records[key].lastMessage
                 };
             }
@@ -134,6 +135,7 @@ var helpmenow = (function () {
                 'id': id,
                 'function': 'refresh',
                 session: helpmenow.sharedData.session,
+                'useridnumber': userIdNumber,
                 'last_message': helpmenow.sharedData.lastMessage
             };
         }
@@ -143,7 +145,8 @@ var helpmenow = (function () {
             lastBlockUpdate = now;
             params.requests.block = {
                 'id': 'block',
-                'function': 'block'
+                'function': 'block',
+                'useridnumber': userIdNumber
             };
         }
         if (!haveRequests) {
