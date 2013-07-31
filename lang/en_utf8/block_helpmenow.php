@@ -216,7 +216,6 @@ You may have missed these messages in !blockname! from !fromusername! while you 
 EOF;
 $string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
 
-$string['user_warning'] = 'Warning, you are logged in as ';
-$string['user_warning2'] = ' on another moodle session. Please contact the help desk for additional details.';
+$string['user_warning'] = 'Warning, you are not correctly logged in. Please contact the help desk for additional details.';
 
 ?>

@@ -17,6 +17,7 @@ var helpmenow = (function () {
         titleName,
         userName            = '',                       // user name and idnumber to be set by the server the instance is being viewed on
         userIdNumber        = 0,
+        token               = 0,
         latestUpdate,
         lastBlockUpdate     = 0,
         multiClient         = true;                     // are we using localStorage to minimize the number of connections we make to the server?
@@ -122,6 +123,7 @@ var helpmenow = (function () {
                     'function': 'refresh',
                     session: records[key].session,
                     'useridnumber': userIdNumber,
+                    'token': token,
                     'last_message': records[key].lastMessage
                 };
             }
@@ -136,6 +138,7 @@ var helpmenow = (function () {
                 'function': 'refresh',
                 session: helpmenow.sharedData.session,
                 'useridnumber': userIdNumber,
+                'token': token,
                 'last_message': helpmenow.sharedData.lastMessage
             };
         }
@@ -146,7 +149,8 @@ var helpmenow = (function () {
             params.requests.block = {
                 'id': 'block',
                 'function': 'block',
-                'useridnumber': userIdNumber
+                'useridnumber': userIdNumber,
+                'token': token
             };
         }
         if (!haveRequests) {
@@ -204,7 +208,8 @@ var helpmenow = (function () {
                     'id': 'init',
                     'function': 'init',
                     'useridnumber': userIdNumber,
-                    'username': userName
+                    'username': userName,
+                    'token': token
                 }
             }
         };
@@ -278,6 +283,9 @@ var helpmenow = (function () {
         setUser: function (newUserIdNumber, newUserName) {
             userIdNumber = newUserIdNumber;
             userName = newUserName;
+        },
+        setToken: function (newToken) {
+            token = newToken;
         },
         getUserName: function () {
             return userName;

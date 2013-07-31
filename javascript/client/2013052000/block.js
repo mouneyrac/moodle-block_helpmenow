@@ -59,6 +59,7 @@ var helpmenow = (function (my) {
                     'id': 'motd',
                     'function': 'motd',
                     'useridnumber': userIdNumber,
+                    'token': token,
                     'motd': motd
                 }
             }

@@ -51,6 +51,16 @@ $responses = array();
 foreach ($requests->requests as $request) {
     ob_start();
     try {
+        if (!isloggedin() && $CFG->helpmenow_allow_as_master && $request->useridnumber) {
+            $token = md5($CFG->helpmenow_master_server_key . $request->useridnumber);
+            if ($token == $request->token) {
+                $USER = get_record('user', 'idnumber', $request->useridnumber);
+            } else {
+                header('HTTP/1.1 411 Unauthorized');
+                die;
+            }
+        }
+
         # all responses need id of the request and client instance
         $response = (object) array(
             'id' => $request->id,
@@ -69,10 +79,6 @@ foreach ($requests->requests as $request) {
                 throw new Exception('Could not get session2user record');
             }
             break;
-        }
-
-        if (!isloggedin() && $CFG->helpmenow_allow_as_master && $request->useridnumber) {
-            $USER = get_record('user', 'idnumber', $request->useridnumber);
         }
 
         # generate response

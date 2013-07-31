@@ -178,7 +178,7 @@ function helpmenow_check_user($user_id_number, $user_fullname) {
     $user_warning = '';
 
     if ($USER->idnumber != $user_id_number) {
-        $user_warning = $user_fullname . ': ' . get_string('user_warning', 'block_helpmenow') . ' ' . fullname($USER) . get_string('user_warning2', 'block_helpmenow') . '<hr />';
+        $user_warning = $user_fullname . ': ' . get_string('user_warning', 'block_helpmenow') . '<hr />';
     }
     return $user_warning;
 }
@@ -479,6 +479,7 @@ function helpmenow_block_interface() {
 
     $username = fullname($USER);
     $idnumber = $USER->idnumber;
+    $token = md5($CFG->helpmenow_master_server_key . $USER->idnumber);
     $office = helpmenow_myoffice();
 
     $serverurl = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
@@ -497,6 +498,7 @@ $jplayer
     helpmenow.setServerURL("$serverurl");
     helpmenow.setTitleName("$titlename");
     helpmenow.setUser($idnumber, "$username");
+    helpmenow.setToken("$token");
 </script>
 <div id="helpmenow_user_warning_div" style="font-size:small; font-weight:bold; color:red;"></div>
 <span id="loading" style=display:none"><b>$loading ...</b></span>
