@@ -58,8 +58,8 @@ var helpmenow = (function (my) {
                 'motd': {
                     'id': 'motd',
                     'function': 'motd',
-                    'useridnumber': userIdNumber,
-                    'token': token,
+                    'useridnumber': helpmenow.userIdNumber,
+                    'token': helpmenow.token,
                     'motd': motd
                 }
             }
