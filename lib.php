@@ -1298,7 +1298,7 @@ function helpmenow_build_contact_html($userid, $isloggedin) {
         SELECT s.id, m.message, m.id AS messageid
         FROM {$CFG->prefix}block_helpmenow_session2user s2u
         JOIN {$CFG->prefix}block_helpmenow_session s ON s.iscurrent = 1 AND s.queueid IS NULL AND s2u.sessionid = s.id
-        JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = $USER->id
+        JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = $userid
         JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
             SELECT MAX(id)
             FROM {$CFG->prefix}block_helpmenow_message m2
