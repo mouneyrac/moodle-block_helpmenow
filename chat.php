@@ -111,6 +111,15 @@ $textarea_message = get_string('textarea_message', 'block_helpmenow');  # defaul
 $jplayer = helpmenow_jplayer();     # jquery plugin for bell sound
 $version = HELPMENOW_CLIENT_VERSION;
 
+$username = fullname($USER);
+$idnumber = $USER->idnumber;
+$token = md5($CFG->helpmenow_master_server_key . $USER->idnumber);
+
+$serverurl = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
+if (!empty($CFG->helpmenow_alternate_master_server)) {
+    $serverurl = "$CFG->helpmenow_alternate_master_server/blocks/helpmenow/ajax.php";
+}
+
 if ($history = helpmenow_get_history($sessionid)) {
     $messages = helpmenow_format_messages($history);
     foreach ($history as $m) {
@@ -136,7 +145,9 @@ echo <<<EOF
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/lib.js" type="text/javascript"></script>
         <script src="$CFG->wwwroot/blocks/helpmenow/javascript/client/$version/chat.js" type="text/javascript"></script>
         <script type="text/javascript">
-            helpmenow.setServerURL("$CFG->wwwroot/blocks/helpmenow/ajax.php");
+            helpmenow.setServerURL("$serverurl");
+            helpmenow.setUser($idnumber, "$username");
+            helpmenow.setToken("$token");
             helpmenow.chat.setLastMessage($last_message);
             helpmenow.chat.setSessionId($sessionid);
             var plugin_refresh = new Array();

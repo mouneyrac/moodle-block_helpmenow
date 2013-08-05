@@ -6,6 +6,71 @@ var helpmenow = (function (my) {
     my.sharedData.isBlock = true;
 
     /**
+     * initialize block
+     */
+    function initBlock() {
+        var params = {
+            'requests': {
+                'init': {
+                    'id': 'init',
+                    'function': 'init',
+                    'useridnumber': helpmenow.getUserIdNumber(),
+                    'username': helpmenow.getUserName(),
+                    'token': helpmenow.getToken()
+                }
+            }
+        };
+        helpmenow.ajax(params, function (xmlhttp) {
+            if (xmlhttp.readyState !== 4) { return; }
+            try {
+                if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
+                var response = JSON.parse(xmlhttp.responseText);
+                if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
+
+                for (var i = 0; i < response.length; i++) {
+                    if (response[i].links_html) {
+                        var links_div = document.getElementById("helpmenow_links_div");
+                        links_div.innerHTML += response[i].links_html;
+                    }
+                    if (response[i].user_warning) {
+                        var warning_div = document.getElementById("helpmenow_user_warning_div");
+                        warning_div.innerHTML = response[i].user_warning;
+                    }
+                    if (response[i].user_heading) {
+                        var user_heading_div = document.getElementById("helpmenow_users_heading_div");
+                        user_heading_div.innerHTML = response[i].user_heading;
+                    }
+                    if (response[i].show_office) {
+                        var office_div = document.getElementById("helpmenow_office");
+                        office_div.style.display = "block";
+                        if (response[i].office_motd) {
+                            var office_motd_div = document.getElementById("helpmenow_motd");
+                            office_motd_div.innerHTML = response[i].office_motd;
+                        }
+                        if (response[i].office_loggedin) {
+                            helpmenow.toggleLoginDisplay(response[i].office_loggedin);
+                        }
+                    }
+                }
+
+            } catch (e) {
+                var links_div = document.getElementById("helpmenow_links_div");
+                links_div.innerHTML += "An Error occurred while initializing the block " + e;
+            }
+        });
+    }
+
+
+    /**
+     * extend init
+     */
+    var oldInit = my.init;
+    my.init = function () {
+        oldInit();
+        initBlock();
+    }
+
+    /**
      * refresh block
      */
     my.processUpdates = function (response) {
@@ -58,8 +123,8 @@ var helpmenow = (function (my) {
                 'motd': {
                     'id': 'motd',
                     'function': 'motd',
-                    'useridnumber': helpmenow.userIdNumber,
-                    'token': helpmenow.token,
+                    'useridnumber': helpmenow.getUserIdNumber(),
+                    'token': helpmenow.getToken(),
                     'motd': motd
                 }
             }

@@ -198,61 +198,6 @@ var helpmenow = (function () {
         setTimeout(function () { checkUpdates(); }, PROCESS_FREQ);
     }
 
-    /**
-     * initialize block
-     */
-    function initBlock() {
-        var params = {
-            'requests': {
-                'init': {
-                    'id': 'init',
-                    'function': 'init',
-                    'useridnumber': userIdNumber,
-                    'username': userName,
-                    'token': token
-                }
-            }
-        };
-        helpmenow.ajax(params, function (xmlhttp) {
-            if (xmlhttp.readyState !== 4) { return; }
-            try {
-                if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
-                var response = JSON.parse(xmlhttp.responseText);
-                if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
-
-                for (var i = 0; i < response.length; i++) {
-                    if (response[i].links_html) {
-                        var links_div = document.getElementById("helpmenow_links_div");
-                        links_div.innerHTML += response[i].links_html;
-                    }
-                    if (response[i].user_warning) {
-                        var warning_div = document.getElementById("helpmenow_user_warning_div");
-                        warning_div.innerHTML = response[i].user_warning;
-                    }
-                    if (response[i].user_heading) {
-                        var user_heading_div = document.getElementById("helpmenow_users_heading_div");
-                        user_heading_div.innerHTML = response[i].user_heading;
-                    }
-                    if (response[i].show_office) {
-                        var office_div = document.getElementById("helpmenow_office");
-                        office_div.style.display = "block";
-                        if (response[i].office_motd) {
-                            var office_motd_div = document.getElementById("helpmenow_motd");
-                            office_motd_div.innerHTML = response[i].office_motd;
-                        }
-                        if (response[i].office_loggedin) {
-                            helpmenow.toggleLoginDisplay(response[i].office_loggedin);
-                        }
-                    }
-                }
-
-            } catch (e) {
-                var links_div = document.getElementById("helpmenow_links_div");
-                links_div.innerHTML += "An Error occurred while initializing the block " + e;
-            }
-        });
-    }
-
     $(document).ready(function () {     // call our init function onLoad
         helpmenow.init();
     });
@@ -269,7 +214,6 @@ var helpmenow = (function () {
             storage.cleanUp();
             setTimeout(function () { getUpdates(); }, 0);
             setTimeout(function () { checkUpdates(); }, 0);
-            initBlock();
         },
         setServerURL: function (newServerURL) {
             serverURL = newServerURL;
@@ -292,6 +236,9 @@ var helpmenow = (function () {
         },
         getUserIdNumber: function () {
             return userIdNumber;
+        },
+        getToken: function () {
+            return token;
         },
         chime: function () {
             $("#helpmenow_chime").jPlayer("play");

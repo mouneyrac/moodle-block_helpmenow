@@ -76,8 +76,8 @@ var helpmenow = (function (my) {
                         'function': 'message',
                         'message': message,
                         'session': helpmenow.sharedData.session,
-                        'useridnumber': userIdNumber,
-                        'token': token
+                        'useridnumber': helpmenow.getUserIdNumber(),
+                        'token': helpmenow.getToken()
                     }
                 }
             };
@@ -103,8 +103,8 @@ var helpmenow = (function (my) {
                         'function': 'sysmessage',
                         'message': message,
                         'session': helpmenow.sharedData.session,
-                        'useridnumber': userIdNumber,
-                        'token': token
+                        'useridnumber': helpmenow.getUserIdNumber(),
+                        'token': helpmenow.getToken()
                     }
                 }
             };
@@ -128,8 +128,8 @@ var helpmenow = (function (my) {
                         'function': 'last_read',
                         'last_read': messageid,
                         'session': helpmenow.sharedData.session,
-                        'useridnumber': userIdNumber,
-                        'token': token
+                        'useridnumber': helpmenow.getUserIdNumber(),
+                        'token': helpmenow.getToken()
                     }
                 }
             };
