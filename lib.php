@@ -1262,7 +1262,7 @@ EOF;
     # build contact list
     list($html, $pending, $alert) = helpmenow_build_contact_html($USER->id, $isloggedin);
     $response->pending += $pending;
-    $response->alert = $response->alert or $alert;
+    $response->alert = $response->alert || $alert;
     $response->users_html = $html;
 }
 
