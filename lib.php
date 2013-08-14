@@ -360,7 +360,7 @@ function helpmenow_print_hallway($users) {
     foreach ($users as $u) {
         $name = fullname($u);
         if ($admin and $u->isloggedin) {
-            $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+            $connect = new moodle_url(helpmenow_get_wwwroot() . "connect.php");
             $connect->param('userid', $u->id);
             $name = link_to_popup_window($connect->out(), $u->id, $name, 400, 500, null, null, true);
         }
@@ -447,7 +447,7 @@ function helpmenow_office_is_loggedin() {
 function helpmenow_myoffice() {
     global $CFG;
 
-    $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+    $login_url = new moodle_url(helpmenow_get_wwwroot() . "login.php");
     $login_url->param('login', 0);
     $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
     $login_url->param('login', 1);
@@ -468,6 +468,16 @@ EOF;
     return $office;
 }
 
+function helpmenow_get_wwwroot() {
+    global $CFG;
+    $url = "$CFG->wwwroot/blocks/helpmenow/";
+    if (!empty($CFG->helpmenow_alternate_master_server)) {
+        $url = "$CFG->helpmenow_alternate_master_server/blocks/helpmenow/";
+    }
+
+    return $url;
+}
+
 function helpmenow_block_interface() {
     global $CFG, $USER;
 
@@ -479,13 +489,13 @@ function helpmenow_block_interface() {
 
     $username = fullname($USER);
     $idnumber = $USER->idnumber;
-    $token = md5($CFG->helpmenow_master_server_key . $USER->idnumber);
+    $token = '';
+    if (!empty($CFG->helpmenow_master_server_key)) {
+        $token = md5($CFG->helpmenow_master_server_key . $USER->idnumber);
+    }
     $office = helpmenow_myoffice();
 
-    $serverurl = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-    if (!empty($CFG->helpmenow_alternate_master_server)) {
-        $serverurl = "$CFG->helpmenow_alternate_master_server/blocks/helpmenow/ajax.php";
-    }
+    $serverurl = helpmenow_get_wwwroot() . "ajax.php";
 
     $output = <<<EOF
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
@@ -858,7 +868,7 @@ function helpmenow_email_messages() {
         }
 
 
-        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+        $history_url = new moodle_url(helpmenow_get_wwwroot() . "history.php#recent");
         $history_url->param('session', $s2u->sessionid);
         $history_url->param('date', '-1 year');
 
@@ -1111,7 +1121,7 @@ function helpmenow_serverfunc_block($request, &$response) {
      * queues
      */
     $response->queues_html = '';
-    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+    $connect = new moodle_url(helpmenow_get_wwwroot() . "connect.php");
     $queues = helpmenow_queue::get_queues();
     foreach ($queues as $q) {
         $response->queues_html .= '<div>';
@@ -1158,7 +1168,7 @@ function helpmenow_serverfunc_block($request, &$response) {
             } else {
                 $instyle = 'style="display: none;"';
             }
-            $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
+            $login_url = new moodle_url(helpmenow_get_wwwroot() . "login.php");
             $login_url->param('queueid', $q->id);
             $login_url->param('login', 0);
             $logout = link_to_popup_window($login_url->out(), "login", get_string('logout', 'block_helpmenow'), 400, 500, null, null, true);
@@ -1332,7 +1342,7 @@ function helpmenow_build_contact_html($userid, $isloggedin) {
         return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
     });
 
-    $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
+    $connect = new moodle_url(helpmenow_get_wwwroot() . "connect.php");
     foreach ($contacts as $u) {
         $connect->param('userid', $u->id);
         $message = '';
@@ -1429,7 +1439,7 @@ function helpmenow_get_block_footer_links() {
     # admin link
     $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
     if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
-        $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
+        $admin = helpmenow_get_wwwroot() . "admin/manage_queues.php";
         $admin_text = get_string('admin_link', 'block_helpmenow');
         if ($break) {
             $link_html .= "<br />";
@@ -1447,7 +1457,8 @@ function helpmenow_get_block_footer_links() {
         } else {
             $break = true;
         }
-        $link_html .= "<a href='$CFG->wwwroot/blocks/helpmenow/hallway.php'>$who</a>";
+        $helpmenowroot = helpmenow_get_wwwroot();
+        $link_html .= "<a href='$helpmenowroot/hallway.php'>$who</a>";
     }
 
     # Chat histories link
@@ -1457,7 +1468,7 @@ function helpmenow_get_block_footer_links() {
     } else {
         $break = true;
     }
-    $chat_history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
+    $chat_history_url = new moodle_url(helpmenow_get_wwwroot() . "chathistorylist.php");
     $chat_history_url->param('userid', $USER->id);
     $link_html .= "<a href=" . $chat_history_url->out() . ">$chathistories</a>";
 

@@ -32,7 +32,7 @@ $userid = optional_param('userid', 0, PARAM_INT);
 $queueid = optional_param('queueid', 0, PARAM_INT);
 $sessionid = optional_param('sessionid', 0, PARAM_INT);
 
-$chat_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
+$chat_url = new moodle_url(helpmenow_get_wwwroot() . "chat.php");
 
 if ($sessionid) {   # helpers connecting to queue sessions
     $session = get_record('block_helpmenow_session', 'id', $sessionid);

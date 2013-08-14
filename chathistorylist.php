@@ -47,7 +47,7 @@ $nav = array(
 print_header($title, $title, build_navigation($nav));
 print_box_start();
 
-$this_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
+$this_url = new moodle_url(helpmenow_get_wwwroot() . "chathistorylist.php");
 $this_url->param('userid', $userid);
 $orderbyname_url = $this_url->out();
 
@@ -93,14 +93,16 @@ if (count($sessions) < 1) {
     $orderbystring = get_string('orderby', 'block_helpmenow') . " ( <a href=$orderbyname_url>" . get_string('name', 'block_helpmenow') . "</a> | <a href=$orderbydate_url>" . get_string('mostrecentconversation', 'block_helpmenow') . '</a> )';
     print "<div>$orderbystring</div><br />";
 
-    foreach ($other_user_recs as $u) {
-        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
-        $history_url->param('session', $u->sessionid);
-        $history_url->param('date', '-1 year');
-        $name = fullname($u);
-        $history_link = link_to_popup_window($history_url->out(), $u->sessionid, $name, 400, 500, null, null, true);
-        $history_link = '<div>'.$history_link." ($u->username)</div>";
-        print $history_link;
+    if ($other_user_recs) {
+        foreach ($other_user_recs as $u) {
+            $history_url = new moodle_url(helpmenow_get_wwwroot() . "history.php#recent");
+            $history_url->param('session', $u->sessionid);
+            $history_url->param('date', '-1 year');
+            $name = fullname($u);
+            $history_link = link_to_popup_window($history_url->out(), $u->sessionid, $name, 400, 500, null, null, true);
+            $history_link = '<div>'.$history_link." ($u->username)</div>";
+            print $history_link;
+        }
     }
 
 }

@@ -98,7 +98,7 @@ if (count($plugins_init)) {
 }
 
 if (!isset($session->queueid)) {
-    $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+    $history_url = new moodle_url(helpmenow_get_wwwroot() . "history.php#recent");
     $history_url->param('session', $sessionid);
     $history_url->param('date', '-1 year');
     $history_link = link_to_popup_window($history_url->out(), $sessionid, $history_name, 400, 500, null, null, true);
@@ -115,10 +115,7 @@ $username = fullname($USER);
 $idnumber = $USER->idnumber;
 $token = md5($CFG->helpmenow_master_server_key . $USER->idnumber);
 
-$serverurl = "$CFG->wwwroot/blocks/helpmenow/ajax.php";
-if (!empty($CFG->helpmenow_alternate_master_server)) {
-    $serverurl = "$CFG->helpmenow_alternate_master_server/blocks/helpmenow/ajax.php";
-}
+$serverurl = helpmenow_get_wwwroot() . "ajax.php";
 
 if ($history = helpmenow_get_history($sessionid)) {
     $messages = helpmenow_format_messages($history);
