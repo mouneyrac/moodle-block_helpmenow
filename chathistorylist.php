@@ -70,7 +70,7 @@ if (count($sessions) < 1) {
 
     $orderby = "u.lastname, u.firstname";
     if ($recent) {
-        $orderby = "s2u.last_refresh";
+        $orderby = "s2u.last_refresh DESC";
     }
 
     $sql = "
