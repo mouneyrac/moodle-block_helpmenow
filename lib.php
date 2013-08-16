@@ -65,6 +65,9 @@ function helpmenow_verify_session($session) {
     return record_exists_sql($sql);
 }
 
+/**
+ * Check if the user is an admin or teacher or if the user is a queue helper
+ */
 function helpmenow_check_privileged($session) {
     global $USER, $CFG;
 
@@ -579,6 +582,25 @@ function helpmenow_get_history($sessionid) {
 }
 
 /**
+ * returns entirety of session messages
+ * @param array of (int $sessionid)
+ * @return mixed array of messages or false
+ */
+function helpmenow_get_history_list($sessionids) {
+    return get_records_list('block_helpmenow_message', 'sessionid', $sessionids, 'id ASC');
+}
+
+function helpmenow_filter_messages_history($messages) { // $messages is not modified
+    return array_filter($messages,
+        function($m) {
+            if (is_null($m->userid)) {
+                return false;
+            }
+            return true;
+        });
+}
+
+/**
  * formats array of messages
  * todo: move this to the client
  */
@@ -590,15 +612,32 @@ function helpmenow_format_messages($messages) {
     return $output;
 }
 
+function helpmenow_format_messages_history($messages, $userid) {
+    $output = '';
+    foreach ($messages as $m) {
+        $output .= helpmenow_format_message_history($m, $userid);
+    }
+    return $output;
+}
+
 /**
  * formats message
+ * TODO: deprecate helpmenow_format_message() when all callers are updated to use helpmenow_format_message_time()
  */
 function helpmenow_format_message($m, $userid = null) {
     if (!isset($userid)) {
         global $USER;
         $userid = $USER->id;
     }
+    return helpmenow_format_message_time($m, $userid);
+}
 
+function helpmenow_format_message_history($m, $userid) {
+    $time = "<i> " . userdate($m->time, '%b %e, %Y %r') . "</i> ";
+    return helpmenow_format_message_time($m, $userid, $time);
+}
+
+function helpmenow_format_message_time($m, $userid, $time = '') {
     static $users;
     if (!isset($users)) {
         $users = array();
@@ -616,7 +655,7 @@ function helpmenow_format_message($m, $userid = null) {
             }
             $name = fullname($users[$m->userid]);
         }
-        $msg = "<b>$name:</b> $msg";
+        $msg = "$time<b>$name:</b> $msg";
     }
     return "<div>$msg</div>";
 }

@@ -55,6 +55,7 @@ if (!$privileged and isset($session->queueid)) {
         $other_users[] = fullname($r);
     }
     $title = implode(', ', $other_users);
+    $history_name = get_string('chat_history', 'block_helpmenow') . ': ' . $title;
 }
 
 # get plugin links and load necessary javascript
@@ -96,6 +97,15 @@ if (count($plugins_init)) {
     $plugins_init = '';
 }
 
+if (!isset($session->queueid)) {
+    $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php");
+    $history_url->param('session', $sessionid);
+    $history_link = link_to_popup_window($history_url->out(), $sessionid, $history_name, 400, 500, null, null, true);
+    $history_link = '<div>'.$history_link.'</div>';
+} else {
+    $history_link = '';
+}
+
 $textarea_message = get_string('textarea_message', 'block_helpmenow');  # default text in chat input box
 $jplayer = helpmenow_jplayer();     # jquery plugin for bell sound
 $version = HELPMENOW_CLIENT_VERSION;
@@ -109,6 +119,7 @@ if ($history = helpmenow_get_history($sessionid)) {
     $messages = '';
     $last_message = 0;
 }
+$messages = $history_link . $messages;
 
 echo <<<EOF
 <?xml version="1.0" encoding="UTF-8"?>
