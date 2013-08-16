@@ -587,7 +587,16 @@ function helpmenow_get_history($sessionid) {
  * @return mixed array of messages or false
  */
 function helpmenow_get_history_list($sessionids) {
-    return get_records_list('block_helpmenow_message', 'sessionid', $sessionids, 'id ASC');
+    global $CFG;
+    $sql = "
+        SELECT m.*, q.name as queue_name
+        FROM {$CFG->prefix}block_helpmenow_message m
+        JOIN {$CFG->prefix}block_helpmenow_session s on s.id = m.sessionid
+        LEFT JOIN {$CFG->prefix}block_helpmenow_queue q on s.queueid = q.id
+        WHERE sessionid in ($sessionids)
+        ORDER BY m.id ASC
+        ";
+    return get_records_sql($sql);
 }
 
 function helpmenow_filter_messages_history($messages) { // $messages is not modified
@@ -602,12 +611,14 @@ function helpmenow_filter_messages_history($messages) { // $messages is not modi
 
 /**
  * formats array of messages
- * todo: move this to the client
  */
 function helpmenow_format_messages($messages) {
+    global $USER;
+    $userid = $USER->id;
+
     $output = '';
     foreach ($messages as $m) {
-        $output .= helpmenow_format_message($m);
+        $output .= helpmenow_format_message($m, $userid);
     }
     return $output;
 }
@@ -620,24 +631,17 @@ function helpmenow_format_messages_history($messages, $userid) {
     return $output;
 }
 
-/**
- * formats message
- * TODO: deprecate helpmenow_format_message() when all callers are updated to use helpmenow_format_message_time()
- */
-function helpmenow_format_message($m, $userid = null) {
-    if (!isset($userid)) {
-        global $USER;
-        $userid = $USER->id;
-    }
-    return helpmenow_format_message_time($m, $userid);
-}
-
 function helpmenow_format_message_history($m, $userid) {
     $time = "<i> " . userdate($m->time, '%b %e, %Y %r') . "</i> ";
-    return helpmenow_format_message_time($m, $userid, $time);
+
+    $queue_name = '';
+    if ($m->queue_name) {
+        $queue_name = "(" . $m->queue_name . ") ";
+    }
+    return helpmenow_format_message($m, $userid, $time, $queue_name);
 }
 
-function helpmenow_format_message_time($m, $userid, $time = '') {
+function helpmenow_format_message($m, $userid, $time = '', $queue_name = '') {
     static $users;
     if (!isset($users)) {
         $users = array();
@@ -655,7 +659,7 @@ function helpmenow_format_message_time($m, $userid, $time = '') {
             }
             $name = fullname($users[$m->userid]);
         }
-        $msg = "$time<b>$name:</b> $msg";
+        $msg = "$time$queue_name<b>$name:</b> $msg";
     }
     return "<div>$msg</div>";
 }
@@ -762,14 +766,17 @@ function helpmenow_email_messages() {
 
 
         $formatted = '';
+        $formattedhtml = '';
         $content = false;
         if ($messages = helpmenow_get_unread($s2u->sessionid, $s2u->userid)) {
             foreach ($messages as $m) {
                 if (!is_null($m->userid)) { $content = true; }
-                $formatted .= (is_null($m->userid) ?
+                $msg = (is_null($m->userid) ?
                 $m->message :
-                fullname($users[$m->userid]) . ": $m->message")
-                . "\n";
+                fullname($users[$m->userid]) . ": $m->message");
+
+                $formatted .= "$msg\n";
+                $formattedhtml .= "$msg <br />";
             }
         }
 
@@ -783,6 +790,11 @@ function helpmenow_email_messages() {
             continue;
         }
 
+
+        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+        $history_url->param('session', $s2u->sessionid);
+        $history_url->param('date', '-1 year');
+
         $subject = get_string('default_emailsubject', 'block_helpmenow');
         $subject = str_replace('!blockname!', $blockname, $subject);
         $subject = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $subject);
@@ -792,9 +804,15 @@ function helpmenow_email_messages() {
         $text = str_replace('!blockname!', $blockname, $text);
         $text = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $text);
         $text = str_replace('!messages!', $formatted, $text);
+        $texthtml = get_string('default_emailhtml', 'block_helpmenow');
+        $texthtml = str_replace('!username!', fullname($users[$s2u->userid]), $texthtml);
+        $texthtml = str_replace('!blockname!', $blockname, $texthtml);
+        $texthtml = str_replace('!fromusername!', fullname($users[$s2u->fromuserid]), $texthtml);
+        $texthtml = str_replace('!messages!', $formattedhtml, $texthtml);
+        $texthtml = str_replace('!link!', $history_url->out(), $texthtml);
 
         if (!defined('HMN_TESTING')) {
-            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text);
+            $status = email_to_user($users[$s2u->userid], $blockname, $subject, $text, $texthtml);
         } else {
             $status = true;
             print "HMN_TESTING: Pretending email was sent...\n";

@@ -183,6 +183,13 @@ $string['instructors'] = 'Instructors:';
 $string['me'] = 'Me';
 $string['sent'] = 'Sent';
 $string['chat_history'] = 'Chat history';
+$string['chathistories'] = 'Chat Histories';
+$string['viewconversation'] = 'View conversations with:';
+$string['conversations'] = '\'s conversations with:';
+$string['orderby'] = 'Order by';
+$string['name'] = 'Name';
+$string['mostrecentconversation'] = 'Most Recent Conversation';
+$string['history_not_available'] = 'No chat history found';
 
 $string['may_close'] = 'You may now close this window';
 $string['multiple_plugins'] = 'Multiple plugins require further action. Please follow the links below to finish logging in.';
@@ -194,7 +201,12 @@ You may have missed these messages in !blockname! from !fromusername! while you 
 
 !messages!
 EOF;
-$string['default_emailhtml'] = '';
+$string['default_emailhtml'] = <<<EOF
+Hello !username!, <br /><br />
+You may have missed these messages in !blockname! from !fromusername! while you were offline:<br /><br />
+!messages!<br /><br />
+<a href='!link!'>Link to chat history page</a>
+EOF;
 $string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
 
 
