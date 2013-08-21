@@ -60,14 +60,23 @@ $orderbydate_url = $this_url->out();
 
 # Get a list of all session2user sessions to query for users who have had 
 # conversations with $userid
-$sessions = get_records_list('block_helpmenow_session2user', 'userid', $userid, '', 'sessionid');
+$last_year = strtotime("-1 year");
+$sql = "SELECT sessionid
+        FROM {$CFG->prefix}block_helpmenow_session2user
+        WHERE userid = $userid
+        AND last_message > 0
+        AND last_refresh > $last_year";
+$sessions = get_records_sql($sql);
 $sessionids = array();
-foreach ($sessions as $s) {
-    $sessionids[] = $s->sessionid;
+if ($sessions) {
+    foreach ($sessions as $s) {
+        $sessionids[] = $s->sessionid;
+    }
 }
 
-if (count($sessions) < 1) {
+if (count($sessionids) < 1) {
     // No histories availible
+    print get_string('history_not_available', 'block_helpmenow');
 
 } else {
     $sessions = implode(', ', $sessionids);
@@ -97,16 +106,17 @@ if (count($sessions) < 1) {
     $orderbystring = get_string('orderby', 'block_helpmenow') . " ( <a href=$orderbyname_url>" . get_string('name', 'block_helpmenow') . "</a> | <a href=$orderbydate_url>" . get_string('mostrecentconversation', 'block_helpmenow') . '</a> )';
     print "<div>$orderbystring</div><br />";
 
-    foreach ($other_user_recs as $u) {
-        $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
-        $history_url->param('session', $u->sessionid);
-        $history_url->param('date', '-1 year');
-        $name = fullname($u);
-        $history_link = link_to_popup_window($history_url->out(), $u->sessionid, $name, 400, 500, null, null, true);
-        $history_link = '<div>'.$history_link." ($u->username)</div>";
-        print $history_link;
+    if ($other_user_recs) {
+        foreach ($other_user_recs as $u) {
+            $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+            $history_url->param('session', $u->sessionid);
+            $history_url->param('date', '-1 year');
+            $name = fullname($u);
+            $history_link = link_to_popup_window($history_url->out(), $u->sessionid, $name, 400, 500, null, null, true);
+            $history_link = '<div>'.$history_link." ($u->username)</div>";
+            print $history_link;
+        }
     }
-
 }
 
 print_box_end();
