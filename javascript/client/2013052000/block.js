@@ -88,7 +88,6 @@ var helpmenow = (function (my) {
 
             if (response.alert) {
                 if (response.pending && !$(document)[0].hasFocus()) {
-                    //$.titleAlert('"' + response.title_flash + '"', {
                     var titleName = helpmenow.getTitleName();
                     $.titleAlert('(' + response.pending + ') ' + titleName, {
                         interval:1000

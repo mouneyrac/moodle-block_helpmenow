@@ -362,7 +362,7 @@ function helpmenow_print_hallway($users) {
         if ($admin and $u->isloggedin) {
             $connect = new moodle_url(helpmenow_get_wwwroot() . "connect.php");
             $connect->param('userid', $u->id);
-            $name = link_to_popup_window($connect->out(), $u->id, $name, 400, 500, null, null, true);
+            $name = helpmenow_link_to_popup($connect->out(), $name);
         }
         $row = array(
             $name,
@@ -449,9 +449,9 @@ function helpmenow_myoffice() {
 
     $login_url = new moodle_url(helpmenow_get_wwwroot() . "login.php");
     $login_url->param('login', 0);
-    $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
+    $logout = helpmenow_link_to_popup($login_url->out(), get_string('leave_office', 'block_helpmenow'));
     $login_url->param('login', 1);
-    $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
+    $login = helpmenow_link_to_popup($login_url->out(), get_string('enter_office', 'block_helpmenow'));
     $my_office = get_string('my_office', 'block_helpmenow');
     $out_of_office = get_string('out_of_office', 'block_helpmenow');
 
@@ -466,6 +466,10 @@ function helpmenow_myoffice() {
 EOF;
 
     return $office;
+}
+
+function helpmenow_link_to_popup($url, $name) {
+    return '<a target="_blank" href='.$url.">$name</a>";
 }
 
 function helpmenow_get_wwwroot() {
@@ -1153,7 +1157,7 @@ function helpmenow_serverfunc_block($request, &$response) {
                         $response->alert = true;
                     }
                 }
-                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
+                $response->queues_html .= "<div$style>" . helpmenow_link_to_popup($connect->out(), $q->name) . "$message</div>";
             } else {
                 $response->queues_html .= "<div>$q->name</div>";
             }
@@ -1171,9 +1175,9 @@ function helpmenow_serverfunc_block($request, &$response) {
             $login_url = new moodle_url(helpmenow_get_wwwroot() . "login.php");
             $login_url->param('queueid', $q->id);
             $login_url->param('login', 0);
-            $logout = link_to_popup_window($login_url->out(), "login", get_string('logout', 'block_helpmenow'), 400, 500, null, null, true);
+            $logout = helpmenow_link_to_popup($login_url->out(), get_string('logout', 'block_helpmenow'));
             $login_url->param('login', 1);
-            $login = link_to_popup_window($login_url->out(), "login", get_string('login', 'block_helpmenow'), 400, 500, null, null, true);
+            $login = helpmenow_link_to_popup($login_url->out(), get_string('login', 'block_helpmenow'));
             $logout_status = get_string('logout_status', 'block_helpmenow');
 
             $response->queues_html .= <<<EOF
@@ -1254,7 +1258,7 @@ EOF;
                     $message .= '<small>'.$s->helper_names.'</small><br />';
                 }
                 $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
+                $response->queues_html .= "<div$style>" . helpmenow_link_to_popup($connect->out(), fullname($s)) . "$message</div>";
             }
             $response->queues_html .= '</div>';
             break;
@@ -1270,9 +1274,9 @@ EOF;
     }
 
     # build contact list
-    list($html, $pending, $alert) = helpmenow_build_contact_html($USER->id, $isloggedin);
+    list($html, $pending, $alert) = helpmenow_build_contact_html($USER->id, $isloggedin, $response->alert);
     $response->pending += $pending;
-    $response->alert = $response->alert || $alert;
+    $response->alert = $alert;
     $response->users_html = $html;
 }
 
@@ -1283,11 +1287,10 @@ EOF;
  * @return pending - if there are new pending messages
  * @return alert - alert if new messages
  */
-function helpmenow_build_contact_html($userid, $isloggedin) {
+function helpmenow_build_contact_html($userid, $isloggedin, $alert) {
     global $CFG;
     $html = '';
     $pending = 0;
-    $alert = false;
 
     # Get contacts for the user
     $sql = "
@@ -1350,7 +1353,7 @@ function helpmenow_build_contact_html($userid, $isloggedin) {
         if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
                 if ($isloggedin) {
-                    $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                    $name = helpmenow_link_to_popup($connect->out(), fullname($u));
                 } else {
                     $name = fullname($u);
                 }
@@ -1359,7 +1362,7 @@ function helpmenow_build_contact_html($userid, $isloggedin) {
             }
         } else {                        # if isloggedin is set, then 0 = loggedout, any other number is the timestamp of when they logged in
             if ($u->online) {
-                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                $name = helpmenow_link_to_popup($connect->out(), fullname($u));
                 $motd = $u->motd;
             } else {
                 $name = fullname($u);
