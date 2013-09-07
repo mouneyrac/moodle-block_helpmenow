@@ -864,9 +864,7 @@ function helpmenow_email_messages() {
         if (!$content) {    # missed messages are only system messages, don't email
             if (!defined('HMN_TESTING')) {
                 set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
-                // uncomment after testing phase when this data is used, 
-                // otherwise it will be wiped out before being seen
-//                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);   # but do update the last_read so we don't keep catching them
+                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);   # but do update the last_read so we don't keep catching them
             }
             continue;
         }
@@ -900,12 +898,14 @@ function helpmenow_email_messages() {
         }
 
         if ($status) {
+            helpmenow_log($s2u->userid, "missed message email", "subject:$subject text:$text last_message:$s2u->last_message");
             echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text."\nlast_message: $s2u->last_message\n";
             if (!defined('HMN_TESTING')) {
                 set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);
-//                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);
+                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);
             }
         } else {
+            helpmenow_log($s2u->userid, "missed message email", "failed to send email subject:$subject text:$text last_message:$s2u->last_message");
             echo "failed to email user $s2u->userid\n";
         }
     }
