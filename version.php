@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') or die("Direct access to this location is not allowed.");
 
-$plugin->version = 2013050700;
+$plugin->version = 2013090900;
 $plugin->requires = 2007101509;
 $plugin->cron = 60;
 $plugin->component = 'block_helpmenow';

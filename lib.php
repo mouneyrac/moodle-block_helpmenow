@@ -539,13 +539,16 @@ function helpmenow_title() {
     return $title;
 }
 
-function helpmenow_notify_once($messageid) {
-    global $SESSION;
-    if (!isset($SESSION->helpmenow_notifications)) {
-        $SESSION->helpmenow_notifications = array();
-    }
-    if (!isset($SESSION->helpmenow_notifications[$messageid])) {
-        $SESSION->helpmenow_notifications[$messageid] = true;
+function helpmenow_notify_once($messageid, $sessionid) {
+    global $USER;
+
+    $s2u = get_record('block_helpmenow_session2user', 'userid', $USER->id, 'sessionid', $sessionid);
+
+    if( $messageid > $s2u->last_notified ) {
+        $s2u->last_notified = $messageid;
+        if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
+            throw new Exception('Could not update session2user record');
+        }
         return true;
     }
     return false;
@@ -1153,7 +1156,7 @@ function helpmenow_serverfunc_block($request, &$response) {
                     $response->pending++;
                     $style = ' style="background-color:yellow"';
                     $message = '<div style="margin-left: 1em;">' . $session->message . '</div>' . $message;
-                    if (helpmenow_notify_once($session->messageid)) {
+                    if (helpmenow_notify_once($session->messageid, $session->id)) {
                         $response->alert = true;
                     }
                 }
@@ -1249,7 +1252,7 @@ EOF;
                     $style = ' style="background-color:yellow"';
                     $message .= '"'.$s->message.'"<br />';
                     if ($q->helpers[$USER->id]->isloggedin) {
-                        if (helpmenow_notify_once($s->messageid)) {
+                        if (helpmenow_notify_once($s->messageid, $s->sessionid)) {
                             $response->alert = true;
                         }
                     }
@@ -1331,6 +1334,7 @@ function helpmenow_build_contact_html($userid, $isloggedin, $alert) {
             }
             $u->message = $message->message;
             $u->messageid = $message->messageid;
+            $u->sessionid = $message->id;
         }
     }
 
@@ -1374,7 +1378,7 @@ function helpmenow_build_contact_html($userid, $isloggedin, $alert) {
             $pending++;
             $style .= 'background-color:yellow;';
             $message .= '<div>' . $u->message . '</div>';
-            if (helpmenow_notify_once($u->messageid)) {
+            if (helpmenow_notify_once($u->messageid, $u->sessionid)) {
                 $alert = true;
             }
         }

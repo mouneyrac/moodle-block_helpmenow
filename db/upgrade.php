@@ -164,6 +164,17 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && add_field($table, $field);
     }
 
+    if ($result && $oldversion < 2013090900) {
+
+        /// Define field last_notified to be added to block_helpmenow_session2user
+        $table = new XMLDBTable('block_helpmenow_session2user');
+        $field = new XMLDBField('last_notified');
+        $field->setAttributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, null, null, null, null, '0', 'last_read');
+
+        /// Launch add field last_notified
+        $result = $result && add_field($table, $field);
+    }
+
     return $result;
 }
 ?>
