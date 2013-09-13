@@ -164,7 +164,7 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
         $result = $result && add_field($table, $field);
     }
 
-    if ($result && $oldversion < 2013090900) {
+    if ($result && $oldversion < 2013091200) {
 
         /// Define field last_notified to be added to block_helpmenow_session2user
         $table = new XMLDBTable('block_helpmenow_session2user');

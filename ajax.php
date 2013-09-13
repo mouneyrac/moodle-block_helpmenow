@@ -44,71 +44,77 @@ if (isset($requests->error)) {
     die;
 }
 
+// Check if this is not a shell call to the master
+if (isloggedin()) {
+    $SESSION->is_master_server = true;
+}
+
 $original_user = $USER;
 
 # iterate through the requests and create responses
 $responses = array();
-foreach ($requests->requests as $request) {
-    ob_start();
-    try {
-        if (!isloggedin() && $CFG->helpmenow_allow_as_master && $request->useridnumber) {
-            $token = md5($CFG->helpmenow_master_server_key . $request->useridnumber);
-            if ($token == $request->token) {
-                $USER = get_record('user', 'idnumber', $request->useridnumber);
-            } else {
-                header('HTTP/1.1 411 Unauthorized');
-                die;
+if ($requests) {
+    foreach ($requests->requests as $request) {
+        ob_start();
+        try {
+            if (!isloggedin() && $CFG->helpmenow_allow_as_master && $request->useridnumber) {
+                $token = md5($CFG->helpmenow_master_server_key . $request->useridnumber);
+                if ($token == $request->token) {
+                    $USER = get_record('user', 'idnumber', $request->useridnumber);
+                } else {
+                    header('HTTP/1.1 411 Unauthorized');
+                    die;
+                }
             }
-        }
 
-        # all responses need id of the request and client instance
-        $response = (object) array(
-            'id' => $request->id,
-        );
-        if (isset($request->instanceId)) {
-            $response->instanceId = $request->instanceId;
-        }
-
-        # verify session where applicable
-        switch ($request->function) {
-        case 'message':
-        case 'sysmessage':
-        case 'refresh':
-        case 'last_read':
-            if (!$session2user = helpmenow_get_s2u($request->session)) {
-                throw new Exception('Could not get session2user record');
+            # all responses need id of the request and client instance
+            $response = (object) array(
+                'id' => $request->id,
+            );
+            if (isset($request->instanceId)) {
+                $response->instanceId = $request->instanceId;
             }
-            break;
-        }
 
-        # generate response
-        switch ($request->function) {
-        case 'message':
-        case 'sysmessage':
-        case 'refresh':
-        case 'block':
-        case 'init':
-        case 'motd':
-        case 'plugin':
-        case 'last_read':
-            $function = 'helpmenow_serverfunc_' . $request->function;
-            $function($request, $response);
-            break;
-        default:
-            throw new Exception('Unknown function');
+            # verify session where applicable
+            switch ($request->function) {
+            case 'message':
+            case 'sysmessage':
+            case 'refresh':
+            case 'last_read':
+                if (!$session2user = helpmenow_get_s2u($request->session)) {
+                    throw new Exception('Could not get session2user record');
+                }
+                break;
+            }
+
+            # generate response
+            switch ($request->function) {
+            case 'message':
+            case 'sysmessage':
+            case 'refresh':
+            case 'block':
+            case 'init':
+            case 'motd':
+            case 'plugin':
+            case 'last_read':
+                $function = 'helpmenow_serverfunc_' . $request->function;
+                $function($request, $response);
+                break;
+            default:
+                throw new Exception('Unknown function');
+            }
+        } catch (Exception $e) {
+            $response->error = $e->getMessage();
+            // echo json_encode($response);
+            // die;
         }
-    } catch (Exception $e) {
-        $response->error = $e->getMessage();
-        // echo json_encode($response);
-        // die;
+        $debugging = ob_get_clean();
+        if (debugging()) {
+            $response->debugging = $debugging;
+        }
+        $responses[] = $response;
     }
-    $debugging = ob_get_clean();
-    if (debugging()) {
-        $response->debugging = $debugging;
-    }
-    $responses[] = $response;
 }
-
 $USER = $original_user;
 
 header('Content-Type: application/json; charset=utf-8');

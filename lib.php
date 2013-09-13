@@ -106,6 +106,11 @@ function helpmenow_cutoff() {
  */
 function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
     global $CFG;
+
+    if (helpmenow_get_s2u($sessionid, $userid)) {
+        return true;
+    }
+
     $sql = "
         SELECT *
         FROM {$CFG->prefix}block_helpmenow_message
@@ -540,16 +545,29 @@ function helpmenow_title() {
 }
 
 function helpmenow_notify_once($messageid, $sessionid) {
-    global $USER;
+    global $USER, $SESSION;
 
-    $s2u = get_record('block_helpmenow_session2user', 'userid', $USER->id, 'sessionid', $sessionid);
-
-    if( $messageid > $s2u->last_notified ) {
-        $s2u->last_notified = $messageid;
-        if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
-            throw new Exception('Could not update session2user record');
+    if ($s2u = get_record('block_helpmenow_session2user', 'userid', $USER->id, 'sessionid', $sessionid)) {
+        if ($messageid > $s2u->last_notified) {
+            $s2u->last_notified = $messageid;
+            if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
+                throw new Exception('Could not update session2user record');
+            }
+            return true;
         }
-        return true;
+        return false;
+    } else if (isset($SESSION->is_master_server)) {
+        // if not using a master server, can fallback on using sessions
+        // this should only happen for queue notifications - where there is no 
+        // session2user for the user logged in.
+        if (!isset($SESSION->helpmenow_notifications)) {
+            $SESSION->helpmenow_notifications = array();
+        }
+        if (!isset($SESSION->helpmenow_notifications[$messageid])) {
+            $SESSION->helpmenow_notifications[$messageid] = true;
+            return true;
+        }
+        return false;
     }
     return false;
 }
@@ -1216,19 +1234,21 @@ EOF;
                     AND s2u.userid <> $s->id
                     ";
                 $s->helpers = get_records_sql($sql);
-                foreach ($s->helpers as $h) {
-                    if ($s->pending) {
-                        if (($h->last_refresh + 20) > time()) {
-                            $s->pending = false;
+                if ($s->helpers) {
+                    foreach ($s->helpers as $h) {
+                        if ($s->pending) {
+                            if (($h->last_refresh + 20) > time()) {
+                                $s->pending = false;
+                            }
+                            if (($h->last_refresh > $s->time)) {
+                                $s->pending = false;
+                            }
                         }
-                        if (($h->last_refresh > $s->time)) {
-                            $s->pending = false;
+                        if (!isset($s->helper_names)) {
+                            $s->helper_names = fullname($h);
+                        } else {
+                            $s->helper_names .= ', ' . fullname($h);
                         }
-                    }
-                    if (!isset($s->helper_names)) {
-                        $s->helper_names = fullname($h);
-                    } else {
-                        $s->helper_names .= ', ' . fullname($h);
                     }
                 }
             }
