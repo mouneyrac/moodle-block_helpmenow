@@ -2,7 +2,7 @@ var helpmenow = (function () {
     "use strict";
 
     var NAME = 'helpmenow',                             // client name for storage
-        STORAGE_VERSION     = '2013052000',             // versioning storage
+        STORAGE_VERSION     = '2013091700',             // versioning storage
         PREFIX              = NAME + '_' + STORAGE_VERSION + '_',
         CHECKIN_FREQ        = 500,                      // period at which we checkIn
         UPDATE_FREQ         = 2000,                     // period at which we set update requests to the server
