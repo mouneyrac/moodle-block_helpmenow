@@ -135,7 +135,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
     public static function get_js_libs() {
         global $CFG;
 
-        return array("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/lib_2013052000.js");
+        return array("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/lib_2013091700.js");
     }
 
     public static function get_js_init_param() {
