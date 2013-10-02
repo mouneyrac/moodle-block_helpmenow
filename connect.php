@@ -51,6 +51,7 @@ if ($sessionid) {   # helpers connecting to queue sessions
         $sql .= "
             JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid <> s2u.userid
             WHERE s2u2.userid = $userid
+            AND s.queueid IS NULL
         ";
     } else if ($queueid) {
         $sql .= " WHERE s.queueid = $queueid ";
