@@ -123,12 +123,11 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
         'sessionid' => $sessionid,
         'userid' => $userid,
         'last_refresh' => $last_refresh,
-        'new_messages' => addslashes(helpmenow_format_messages($messages)),
-        'cache' => json_encode((object) array(
+        'cache' => addslashes(json_encode((object) array(
             'html' => '',
             'beep' => false,
             'last_message' => 0,
-        )),
+        ))),
     );
     return insert_record('block_helpmenow_session2user', $session2user_rec);
 }
@@ -629,11 +628,12 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         SELECT *
         FROM {$CFG->prefix}block_helpmenow_session2user
         WHERE sessionid = $sessionid
-    "; 
+    ";
     if (isset($userid)) {
         $sql .= "AND userid <> $userid";
     }
-    foreach (get_records_sql($sql) as $s2u) {
+    $s2us = get_records_sql($sql);
+    foreach ($s2us as $s2u) {
         $formatted_message = helpmenow_format_message($message_rec, $s2u->userid);
         $cache = json_decode($s2u->cache);
         $cache->last_message = $last_message;
@@ -1084,11 +1084,11 @@ function helpmenow_serverfunc_refresh($request, &$response) {
     $session2user->last_message = $request->last_message;
     $session2user->optimistic_last_message = $response->last_message;
     $session2user->last_refresh = time();
-    $session2user->cache = json_encode((object) array(
+    $session2user->cache = addslashes(json_encode((object) array(
         'html' => '',
         'beep' => false,
         'last_message' => $request->last_message,
-    ));
+    )));
     if (!update_record('block_helpmenow_session2user', $session2user)) {
         $response->html = '';
         $response->beep = false;
