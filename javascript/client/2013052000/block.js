@@ -56,7 +56,7 @@ var helpmenow = (function (my) {
                     toggleLoginDisplay(response.isloggedin);
                 }
 
-                if (typeof response.users_html !== "undefined") {
+                if (typeof response.users_html !== "undefined" && response.users_html.length > 0) {
                     var users_div = document.getElementById("helpmenow_users_div");
                     users_div.innerHTML = response.users_html;
                 }
