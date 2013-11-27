@@ -1271,7 +1271,7 @@ function helpmenow_serverfunc_motd($request, &$response) {
     if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {
         throw new Exception('No helpmenow_user record');
     }
-    $helpmenow_user->motd = addslashes($request->motd);
+    $helpmenow_user->motd = addslashes(clean_text($request->motd, FORMAT_HTML));
     if (!update_record('block_helpmenow_user', $helpmenow_user)) {
         throw new Exception('Could not update user record');
     }
