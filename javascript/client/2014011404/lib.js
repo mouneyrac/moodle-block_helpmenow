@@ -219,6 +219,15 @@ var helpmenow = (function () {
             $("#helpmenow_chime").jPlayer("play");
             return;
         },
+        getChar: function (event) {
+            if (event.which == null) {
+                return String.fromCharCode(event.keyCode); // IE
+            } else if (event.which!=0 && event.charCode!=0) {
+                return String.fromCharCode(event.which);
+            } else {
+                return null; // special key
+            }
+        },
         ajax: function (request, callback) {
             request = JSON.stringify(request);
 
