@@ -227,13 +227,15 @@ var helpmenow = (function () {
             }
         },
         ajax: function (request, successCallback, failCallback) {
+            request = JSON.stringify(request);
             $.ajax({
                 url: serverURL,
                 type: "POST",
                 data: request,
                 dataType: "json",
+                processData: false,
                 success: successCallback,
-                error: failCallback
+                error: failCallback,
                 timeout: AJAX_TIMEOUT
             });
         },
