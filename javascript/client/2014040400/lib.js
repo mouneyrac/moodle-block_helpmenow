@@ -10,6 +10,7 @@ var helpmenow = (function () {
         PROCESS_FREQ        = 500,                      // period at which we set update requests to the server
         CLEANUP_FREQ        = 2000,                     // period for cleaning up
         REQUEST_FREQ        = 2000,                     // period at which we send all requests to server
+        AJAX_TIMEOUT        = 5000,                     // consider a request as failed
         SOME_LARGE_NUMBER   = Math.pow(2, 40),          // max number for the random portion of the id
 
         id,
@@ -148,33 +149,30 @@ var helpmenow = (function () {
             setTimeout(function () { getUpdates(); }, UPDATE_FREQ);
             return;
         }
-        helpmenow.ajax(params, function (xmlhttp) {
-            if (xmlhttp.readyState !== 4) { return; }
-            if (xmlhttp.status !== 200) {
-                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
-                return;
-            }
-            try {
-                var responses = JSON.parse(xmlhttp.responseText);
-                if (typeof responses !== "undefined") {
-                    var now = new Date().getTime();
-                    for (var i = 0; i < responses.length; i++) {
-                        responses[i].type = 'response';
-                        responses[i].time = now;
-                        if (multiClient) {
-                            storage.set(PREFIX + responses[i].id + '_response', responses[i]);
-                        } else if (responses[i].id === id) {
-                            latestUpdate = responses[i];
-                        } else if (responses[i].id === 'block' && helpmenow.sharedData.isBlock === true) {
-                            latestUpdate = responses[i];
+        helpmenow.ajax(params, function (responses) {
+                try {
+                    if (typeof responses !== "undefined") {
+                        var now = new Date().getTime();
+                        for (var i = 0; i < responses.length; i++) {
+                            responses[i].type = 'response';
+                            responses[i].time = now;
+                            if (multiClient) {
+                                storage.set(PREFIX + responses[i].id + '_response', responses[i]);
+                            } else if (responses[i].id === id) {
+                                latestUpdate = responses[i];
+                            } else if (responses[i].id === 'block' && helpmenow.sharedData.isBlock === true) {
+                                latestUpdate = responses[i];
+                            }
                         }
                     }
+                    setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
+                } catch (e) {
+                    setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
                 }
-                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
-            } catch (e) {
+            }, function () {
                 setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
             }
-        });
+        );
     }
 
     function checkUpdates() {
@@ -228,22 +226,16 @@ var helpmenow = (function () {
                 return null; // special key
             }
         },
-        ajax: function (request, callback) {
-            request = JSON.stringify(request);
-
-            var xmlhttp;
-            if (window.XMLHttpRequest) {    // IE7+, Firefox, Chrome, Opera, Safari
-                xmlhttp = new XMLHttpRequest();
-            } else {                        // IE6, IE5
-                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-            }
-            xmlhttp.onreadystatechange = function() {
-                callback(xmlhttp);
-            };
-            xmlhttp.open("POST", serverURL, true);
-            xmlhttp.setRequestHeader("Accept", "application/json");
-            xmlhttp.setRequestHeader("Content-type", "application/json");
-            xmlhttp.send(request);
+        ajax: function (request, successCallback, failCallback) {
+            $.ajax({
+                url: serverURL,
+                type: "POST",
+                data: request,
+                dataType: "json",
+                success: successCallback,
+                error: failCallback
+                timeout: AJAX_TIMEOUT
+            });
         },
         sharedData: {}
     };

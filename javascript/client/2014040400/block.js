@@ -79,18 +79,15 @@ var helpmenow = (function (my) {
                 }
             }
         };
-        helpmenow.ajax(params, function(xmlhttp) {
-            if (xmlhttp.readyState !== 4) { return; }
-            if (xmlhttp.status !== 200) { return; }      // todo: maybe have a spot on the block that displays errors if they occur
-            var response = JSON.parse(xmlhttp.responseText);
-            if (typeof response.error === 'undefined') {
-                var edit_element = document.getElementById("helpmenow_motd_edit");
-                var motd_element = document.getElementById("helpmenow_motd");
-                edit_element.value = response[0].motd;
-                motd_element.innerHTML = response[0].motd;
-                helpmenow.block.toggleMOTD(false);
-            }
-        });
+        helpmenow.ajax(params, function(response) {
+                if (typeof response.error === 'undefined') {
+                    var edit_element = document.getElementById("helpmenow_motd_edit");
+                    var motd_element = document.getElementById("helpmenow_motd");
+                    edit_element.value = response[0].motd;
+                    motd_element.innerHTML = response[0].motd;
+                    helpmenow.block.toggleMOTD(false);
+                }
+            }, function() {});  // todo: maybe have a spot on the block that displays errors if they occur
     }
 
     my.block = {

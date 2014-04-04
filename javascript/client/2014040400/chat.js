@@ -68,6 +68,10 @@ var helpmenow = (function (my) {
         setSessionId: function (newSessionId) {
             helpmenow.sharedData.session = newSessionId;
         },
+        printError: function () {
+            $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")     // todo: and here
+                .scrollTop($('#chatDiv')[0].scrollHeight);
+        }
         submitMessage: function (message) {
             var params = {
                 'requests': {
@@ -79,21 +83,20 @@ var helpmenow = (function (my) {
                     }
                 }
             };
-            helpmenow.ajax(params, function (xmlhttp) {
-                if (xmlhttp.readyState !== 4) { return; }
-                try {
-                    if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
-                    var response = JSON.parse(xmlhttp.responseText);
-                    if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
-                    $("#chatDiv").append("<div><b>Me:</b> " + message + "</div>")                           // todo: use language string here
-                        .scrollTop($('#chatDiv')[0].scrollHeight);
-                } catch (e) {
-                    $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")     // todo: and here
-                        .scrollTop($('#chatDiv')[0].scrollHeight);
+            helpmenow.ajax(params, function (response) {
+                    try {
+                        if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
+                        $("#chatDiv").append("<div><b>Me:</b> " + message + "</div>")                           // todo: use language string here
+                            .scrollTop($('#chatDiv')[0].scrollHeight);
+                    } catch (e) {
+                        this.printError();
+                    }
+                }, function () {
+                    this.printError();
                 }
-            });
+            );
         },
-        submitSystemMessage: function (message) {
+        submitsystemmessage: function (message) {
             var params = {
                 'requests': {
                     'sysmessage': {
@@ -104,17 +107,16 @@ var helpmenow = (function (my) {
                     }
                 }
             };
-            helpmenow.ajax(params, function (xmlhttp) {
-                if (xmlhttp.readyState !== 4) { return; }
-                try {
-                    if (xmlhttp.status !== 200) { throw "status: " + xmlhttp.status; }
-                    var response = JSON.parse(xmlhttp.responseText);
-                    if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
-                } catch (e) {
-                    $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")     // todo: and here
-                        .scrollTop($('#chatDiv')[0].scrollHeight);
+            helpmenow.ajax(params, function (response) {
+                    try {
+                        if (typeof response.error !== 'undefined') { throw "error: " + response.error; }
+                    } catch (e) {
+                        this.printError();
+                    }
+                }, function () {
+                    this.printError();
                 }
-            });
+            );
         },
         submitLastRead: function (messageid) {
             var params = {
@@ -127,17 +129,18 @@ var helpmenow = (function (my) {
                     }
                 }
             };
-            helpmenow.ajax(params, function (xmlhttp) {
-                if (xmlhttp.readyState !== 4) { return; }
-                try {
-                    if (xmlhttp.status != 200) { throw "status: " + xmlhttp.status; }
-                    var response = JSON.parse(xmlhttp.responseText);
-                    if (typeof response.error !== 'undefined') {throw "error: " + response.error; }
-                } catch (e) {
+            helpmenow.ajax(params, function (response) {
+                    try {
+                        if (typeof response.error !== 'undefined') {throw "error: " + response.error; }
+                    } catch (e) {
+                        $("#chatDiv").append("<div><i>An error occured with your connection to the server, please check your internet connection or contact the help desk for more help.</i></div>")     // todo: language string
+                            .scrollTop($('#chatDiv')[0].scrollHeight);
+                    }
+                }, function () {
                     $("#chatDiv").append("<div><i>An error occured with your connection to the server, please check your internet connection or contact the help desk for more help.</i></div>")     // todo: language string
                         .scrollTop($('#chatDiv')[0].scrollHeight);
                 }
-            });
+            );
         },
         addPluginRefresh: function (callback) {
             pluginRefresh.push(callback);
