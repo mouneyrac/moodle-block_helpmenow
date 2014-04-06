@@ -10,7 +10,7 @@ var helpmenow = (function () {
         PROCESS_FREQ        = 500,                      // period at which we set update requests to the server
         CLEANUP_FREQ        = 2000,                     // period for cleaning up
         REQUEST_FREQ        = 2000,                     // period at which we send all requests to server
-        AJAX_TIMEOUT        = 5000,                     // consider a request as failed
+        AJAX_TIMEOUT        = 30000,                     // consider a request as failed
         SOME_LARGE_NUMBER   = Math.pow(2, 40),          // max number for the random portion of the id
 
         id,
