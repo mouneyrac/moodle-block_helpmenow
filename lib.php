@@ -1010,11 +1010,15 @@ function helpmenow_serverfunc_refresh($request, &$response) {
 function helpmenow_serverfunc_block($request, &$response) {
     global $USER, $CFG;
 
+    #echo "entered serverfunc_block: " . microtime() . "\n";     # DEBUGGING
+
     set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);   # update our user lastaccess
     helpmenow_log($USER->id, 'block refresh', '');
     $response->last_refresh = get_string('updated', 'block_helpmenow').': '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
     $response->alert = false;
+
+    #echo "bumped lastaccess/logged: " . microtime() . "\n";     # DEBUGGING
 
     /**
      * queues
@@ -1162,6 +1166,8 @@ EOF;
         $response->queues_html .= '</div>' . $desc_message . '<hr />';
     }
 
+    #echo "processed queues: " . microtime() . "\n";     # DEBUGGING
+
     # show the correct login state for instructors
     $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
     if (!is_null($isloggedin)) {
@@ -1182,32 +1188,35 @@ EOF;
         return;
     }
 
-    $sql = "
-        SELECT s.id, m.message, m.id AS messageid
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}block_helpmenow_session s ON s.iscurrent = 1 AND s.queueid IS NULL AND s2u.sessionid = s.id
-        JOIN {$CFG->prefix}block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = $USER->id
-        JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-            SELECT MAX(id)
-            FROM {$CFG->prefix}block_helpmenow_message m2
-            WHERE m2.sessionid = s.id
-            AND m2.userid = s2u.userid
-            AND m.time > (s2u2.last_refresh + ".HELPMENOW_BLOCK_ALERT_DELAY.")
-        )
-        WHERE s2u.userid =
-    ";
+    #echo "selected contacts: " . microtime() . "\n";     # DEBUGGING
+
     $cutoff = helpmenow_cutoff();
     foreach ($contacts as $u) {
         $u->online = false;
         if ($u->hmn_lastaccess > $cutoff and (is_null($u->isloggedin) or $u->isloggedin != 0)) {
             $u->online = true;
-            if (!$message = get_record_sql($sql.$u->id)) {
+            $sql = "
+                SELECT s.id, m.message, m.time, m.id AS messageid, s2u2.last_refresh
+                FROM mdl_block_helpmenow_session2user s2u
+                JOIN mdl_block_helpmenow_session s ON s.iscurrent = 1 AND s.queueid IS NULL AND s.id = s2u.sessionid
+                JOIN mdl_block_helpmenow_session2user s2u2 ON s2u2.sessionid = s.id AND s2u2.userid = {$USER->id}
+                JOIN mdl_block_helpmenow_message m ON m.userid = s2u.userid AND m.sessionid = s2u.sessionid
+                WHERE s2u.userid = {$u->id}
+                ORDER BY m.id DESC
+            ";
+            if (!$message = get_record_sql($sql)) {
+                continue;
+            }
+            print_object($message);
+            if ($message->time < ($message->last_refresh + HELPMENOW_BLOCK_ALERT_DELAY)) {
                 continue;
             }
             $u->message = $message->message;
             $u->messageid = $message->messageid;
         }
     }
+
+    #echo "selected contact messages: " . microtime() . "\n";     # DEBUGGING
 
     # sort by unseen messages, online, lastname, firstname
     usort($contacts, function($a, $b) {
@@ -1219,6 +1228,8 @@ EOF;
         }
         return strcmp(strtolower("$a->lastname $a->firstname"), strtolower("$b->lastname $b->firstname"));
     });
+
+    #echo "sorted contacts: " . microtime() . "\n";     # DEBUGGING
 
     $connect->remove_params('queueid');
     $connect->remove_params('sessionid');
@@ -1257,6 +1268,8 @@ EOF;
         $message = '<div style="margin-left: 1em;">'.$message.'</div>';
         $response->users_html .= "<div style=\"$style\">".$name.$message."</div>";
     }
+
+    #echo "printed contacts: " . microtime() . "\n";     # DEBUGGING
 }
 
 /**
