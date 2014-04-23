@@ -44,7 +44,7 @@ define('HELPMENOW_EMAIL_LATECUTOFF', 10 * 60);      # latest missed message shou
 /**
  * defines for our javascript client version, so we only have to change one thing
  */
-define('HELPMENOW_CLIENT_VERSION', 2014040400);
+define('HELPMENOW_CLIENT_VERSION', 2014011404);
 
 /**
  * period (in seconds) we wait for before we decide that the user is in fact not online
