@@ -71,7 +71,7 @@ var helpmenow = (function (my) {
         printError: function () {
             $("#chatDiv").append("<div><i>An error occured submitting your message.</i></div>")     // todo: and here
                 .scrollTop($('#chatDiv')[0].scrollHeight);
-        },
+        }
         submitMessage: function (message) {
             var params = {
                 'requests': {
@@ -96,7 +96,7 @@ var helpmenow = (function (my) {
                 }
             );
         },
-        submitSystemMessage: function (message) {
+        submitsystemmessage: function (message) {
             var params = {
                 'requests': {
                     'sysmessage': {
