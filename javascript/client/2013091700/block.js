@@ -47,9 +47,7 @@ var helpmenow = (function (my) {
                             var office_motd_div = document.getElementById("helpmenow_motd");
                             office_motd_div.innerHTML = response[i].office_motd;
                         }
-                        if (response[i].office_loggedin) {
-                            helpmenow.toggleLoginDisplay(response[i].office_loggedin);
-                        }
+                        helpmenow.toggleLoginDisplay(response[i].office_loggedin);
                     }
                 }
 
