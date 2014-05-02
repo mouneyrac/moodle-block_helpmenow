@@ -1057,6 +1057,10 @@ function helpmenow_serverfunc_refresh($request, &$response) {
         }
     }
 
+    if (!isset($response->last_message)) {
+        $response->last_message = null;
+    }
+
     /**
      * if there aren't any new messages check to see if we should add a "sent: _time_" message
      *

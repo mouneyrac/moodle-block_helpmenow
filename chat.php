@@ -51,8 +51,10 @@ if (!$privileged and isset($session->queueid)) {
     ";
     $other_user_recs = get_records_sql($sql);
     $other_users = array();
-    foreach ($other_user_recs as $r) {
-        $other_users[] = fullname($r);
+    if (!empty($other_user_recs)) {
+        foreach ($other_user_recs as $r) {
+            $other_users[] = fullname($r);
+        }
     }
     $title = implode(', ', $other_users);
     $history_name = get_string('chat_history', 'block_helpmenow') . ': ' . $title;
