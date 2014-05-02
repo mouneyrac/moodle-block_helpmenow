@@ -38,7 +38,7 @@ $block_helpmenow_capabilities = array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legecy'        => array (
+        'legacy'        => array (
             'student'           => CAP_ALLOW,
             'teacher'           => CAP_ALLOW,
             'editingteacher'    => CAP_ALLOW,
@@ -50,7 +50,7 @@ $block_helpmenow_capabilities = array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legecy'        => array (
+        'legacy'        => array (
             'admin'             => CAP_ALLOW
         )
     ),
@@ -58,7 +58,7 @@ $block_helpmenow_capabilities = array (
         'riskbitmask'   => RISK_SPAM + RISK_CONFIG,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legecy'        => array (
+        'legacy'        => array (
             'admin'             => CAP_ALLOW
         )
     ),
