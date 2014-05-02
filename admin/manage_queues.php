@@ -62,24 +62,26 @@ $table = (object) array(
     'data' => array(),
 );
 
-foreach ($queues as $q) {
-    $assign->param('queueid', $q->id);
-    $assign_url = $assign->out();
-    $edit->param('queueid', $q->id);
-    $edit_url = $edit->out();
-    $delete->param('queueid', $q->id);
-    $delete_url = $delete->out();
+if (!empty($queues)) {
+    foreach ($queues as $q) {
+        $assign->param('queueid', $q->id);
+        $assign_url = $assign->out();
+        $edit->param('queueid', $q->id);
+        $edit_url = $edit->out();
+        $delete->param('queueid', $q->id);
+        $delete_url = $delete->out();
 
-    $q->load_helpers();
-    $helper_count = count($q->helpers);
+        $q->load_helpers();
+        $helper_count = count($q->helpers);
 
-    $table->data[] = array(
-        "<a href='$edit_url'>$q->name</a>",
-        $q->description,
-        $q->weight,
-        "<a href='$assign_url'>$helper_count</a>",
-        "<a href='$delete_url'>".get_string('delete')."</a>",
-    );
+        $table->data[] = array(
+            "<a href='$edit_url'>$q->name</a>",
+            $q->description,
+            $q->weight,
+            "<a href='$assign_url'>$helper_count</a>",
+            "<a href='$delete_url'>".get_string('delete')."</a>",
+        );
+    }
 }
 
 print_table($table);

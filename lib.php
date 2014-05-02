@@ -617,16 +617,20 @@ function helpmenow_format_messages($messages) {
     $userid = $USER->id;
 
     $output = '';
-    foreach ($messages as $m) {
-        $output .= helpmenow_format_message($m, $userid);
+    if (!empty($messages)) {
+        foreach ($messages as $m) {
+            $output .= helpmenow_format_message($m, $userid);
+        }
     }
     return $output;
 }
 
 function helpmenow_format_messages_history($messages, $userid) {
     $output = '';
-    foreach ($messages as $m) {
-        $output .= helpmenow_format_message_history($m, $userid);
+    if (!empty($messages)) {
+        foreach ($messages as $m) {
+            $output .= helpmenow_format_message_history($m, $userid);
+        }
     }
     return $output;
 }
@@ -953,6 +957,10 @@ function helpmenow_serverfunc_refresh($request, &$response) {
         } else {
             $response->last_message = $request->last_message;
         }
+    }
+
+    if (!isset($response->last_message)) {
+        $response->last_message = null;
     }
 
     /**

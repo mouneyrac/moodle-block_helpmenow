@@ -90,25 +90,27 @@ $table = (object) array(
     'data' => array(),
 );
 
-foreach ($users as $u) {
-    if (isset($queue->helpers[$u->id])) {
-        $assign = 0;
-        $status = get_string('yes');
-        $link_text = get_string('unassign', 'block_helpmenow');
-    } else {
-        $assign = 1;
-        $status = get_string('no');
-        $link_text = get_string('assign', 'block_helpmenow');
+if (!empty($users)) {
+    foreach ($users as $u) {
+        if (isset($queue->helpers[$u->id])) {
+            $assign = 0;
+            $status = get_string('yes');
+            $link_text = get_string('unassign', 'block_helpmenow');
+        } else {
+            $assign = 1;
+            $status = get_string('no');
+            $link_text = get_string('assign', 'block_helpmenow');
+        }
+        $this_url->param('userid', $u->id);
+        $this_url->param('assign', $assign);
+        $tmp = $this_url->out();
+        $table->data[] = array(
+            "$u->lastname, $u->firstname",
+            $u->username,
+            $status,
+            "<a href='$tmp'>$link_text</a>",
+        );
     }
-    $this_url->param('userid', $u->id);
-    $this_url->param('assign', $assign);
-    $tmp = $this_url->out();
-    $table->data[] = array(
-        "$u->lastname, $u->firstname",
-        $u->username,
-        $status,
-        "<a href='$tmp'>$link_text</a>",
-    );
 }
 
 print_table($table);
