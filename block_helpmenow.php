@@ -159,6 +159,10 @@ EOF;
         $success = $success and helpmenow_clean_sessions(true);
         return $success;
     }
+
+    function has_config() {
+        return true;
+    }
 }
 
 ?>
