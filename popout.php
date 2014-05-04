@@ -30,6 +30,7 @@ require_login(0, false);
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/blocks/helpmenow/login.php');
+$PAGE->set_pagelayout('standard');
 
 if (!empty($CFG->helpmenow_title)) {
     $title = $CFG->helpmenow_title;

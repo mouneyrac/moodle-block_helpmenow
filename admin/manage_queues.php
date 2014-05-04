@@ -41,10 +41,14 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 }
 $PAGE->set_context($sitecontext);
 $PAGE->set_url('/blocks/helpmenow/admin/manage_queues.php');
+$PAGE->set_pagelayout('standard');
 
 # title, navbar, and a nice box
 $title = get_string('admin', 'block_helpmenow');
 $nav = array(array('name' => $title));
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();
@@ -55,16 +59,19 @@ $queues = helpmenow_queue::get_queues();
 
 # start setting up the table
 # todo: figure out a good way to include plugin specific column(s)
-$table = (object) array(
-    'head' => array(
+
+$table = new html_table();
+
+$table->head = array(
         get_string('name'),
         get_string('description'),
         get_string('weight', 'block_helpmenow'),
         get_string('helpers', 'block_helpmenow'),
         get_string('delete'),
-    ),
-    'data' => array(),
-);
+    );
+$table->align = array('left', 'left', 'center', 'center', 'center');
+$table->attributes['class'] = 'generaltable';
+$table->tablealign = 'center';
 
 if (!empty($queues)) {
     foreach ($queues as $q) {

@@ -204,6 +204,6 @@ You may have missed these messages in !blockname! from !fromusername! while you 
 <a href='!link!'>Link to chat history page</a>
 EOF;
 $string['default_emailsubject'] = 'Missed !blockname! messages from !fromusername!';
-
+$string['max_length'] = 'Max length';
 
 ?>

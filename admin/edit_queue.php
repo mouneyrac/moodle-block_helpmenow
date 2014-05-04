@@ -42,6 +42,7 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 }
 $PAGE->set_context($sitecontext);
 $PAGE->set_url('/blocks/helpmenow/admin/edit_queue.php');
+$PAGE->set_pagelayout('standard');
 
 # form stuff
 $form = new helpmenow_queue_form();
@@ -63,6 +64,9 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();

@@ -42,14 +42,16 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
 $PAGE->set_context($sitecontext);
-$PAGE->set_url('/blocks/helpmenow/admin/delete_queue.php');
+$url = '/blocks/helpmenow/admin/delete_queue.php';
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('standard');
 
 if ($delete) {
     $DB->delete_records('block_helpmenow_queue', array('id' => $queueid));
     redirect($admin_url);
 }
 
-$delete_url = new moodle_url();
+$delete_url = new moodle_url($url);
 $delete_url->param('queueid', $queueid);
 $delete_url->param('delete', 1);
 $delete_url = $delete_url->out();
@@ -62,6 +64,9 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();

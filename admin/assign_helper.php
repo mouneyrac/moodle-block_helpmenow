@@ -36,7 +36,8 @@ $assign = optional_param('assign', 0, PARAM_INT);
 
 # urls
 $admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
-$this_url = new moodle_url();
+$url = '/blocks/helpmenow/admin/assign_helper.php';
+$this_url = new moodle_url($url);
 $this_url->param('queueid', $queueid); 
 
 # sitecontext and cap check
@@ -45,7 +46,8 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
 $PAGE->set_context($sitecontext);
-$PAGE->set_url('/blocks/helpmenow/admin/assign_helper.php');
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('standard');
 
 $queue = new helpmenow_queue($queueid);
 $queue->load_helpers();
@@ -72,6 +74,9 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();
@@ -84,15 +89,16 @@ $users = get_users_by_capability($sitecontext, $cap, 'u.id, u.username, u.firstn
 # todo: if we don't get any users we should print a helpful messages about capabilities
 
 # start setting up the table
-$table = (object) array(
-    'head' => array(
-        get_string('name'),
-        get_string('username'),
-        get_string('assigned_status', 'block_helpmenow'),
-        get_string('assigned_link', 'block_helpmenow'),
-    ),
-    'data' => array(),
+$table = new html_table();
+$table->head = array(
+    get_string('name'),
+    get_string('username'),
+    get_string('assigned_status', 'block_helpmenow'),
+    get_string('assigned_link', 'block_helpmenow'),
 );
+$table->align = array('left', 'left', 'center', 'center');
+$table->attributes['class'] = 'generaltable';
+$table->tablealign = 'center';
 
 if (!empty($users)) {
     foreach ($users as $u) {

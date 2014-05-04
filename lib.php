@@ -137,6 +137,9 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
     if ($print_header) {
         $title = get_string('helpmenow', 'block_helpmenow');
         $nav = array(array('name' => $title));
+        foreach($nav as $node) {
+            $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+        }
         $PAGE->set_title($title);
         $PAGE->set_heading($title);
         echo $OUTPUT->header();
@@ -321,10 +324,10 @@ function helpmenow_print_hallway($users) {
 
         $head = array_merge($head, $plugin_names);
     };
-    $table = (object) array(
-        'head' => $head,
-        'data' => array(),
-    );
+    $table = new html_table();
+    $table->head = $head;
+    $table->attributes['class'] = 'generaltable';
+    $table->tablealign = 'center';
 
     usort($users, function($a, $b) {
         if (!($a->isloggedin xor $b->isloggedin)) {

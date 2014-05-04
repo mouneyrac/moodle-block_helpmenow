@@ -38,6 +38,7 @@ if (!empty($CFG->helpmenow_adobeconnect_url)) {
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/blocks/helpmenow/plugins/adobeconnect/meetnow.php');
+$PAGE->set_pagelayout('standard');
 
 $heading = $CFG->helpmenow_adobeconnect_orgname.'-Adobe Connect Redirector';
 $PAGE->set_title($heading);

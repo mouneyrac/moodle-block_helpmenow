@@ -31,6 +31,7 @@ require_login(0, false);
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/blocks/helpmenow/login.php');
+$PAGE->set_pagelayout('standard');
 
 # get our parameters
 $login = required_param('login', PARAM_INT);
@@ -104,6 +105,9 @@ foreach ($redirects as $pluginname => $redirect) {
 }
 $title = get_string('helpmenow', 'block_helpmenow');
 $nav = array(array('name' => $title));
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();

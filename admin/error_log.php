@@ -35,18 +35,23 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
 $PAGE->set_context($sitecontext);
-$PAGE->set_url('/blocks/helpmenow/admin/error_log.php');
+$url = '/blocks/helpmenow/admin/error_log.php';
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('standard');
 
 # parameters
 $page = optional_param('page', 0, PARAM_INT);
 $search = optional_param('search', '', PARAM_TEXT);
 
 # urls
-$this_url = new moodle_url();
+$this_url = new moodle_url($url);
 
 # title and nav
 $title = 'Error Log';
 $nav = array(array('name' => $title));
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 
 # paging
 $per_page = 50;
@@ -78,15 +83,16 @@ if ($count) {
     $errors = $DB->get_records_sql($sql);
 
     # start setting up the table
-    $table = (object) array(
-        'head' => array(
-            get_string('user'),
-            get_string('error'),
-            'object',
-            'raw',
-        ),
-        'data' => array(),
+    $table = new html_table();
+    $table->head = array(
+        get_string('user'),
+        get_string('error'),
+        'object',
+        'raw',
     );
+    $table->align = array('left', 'left', 'center', 'center');
+    $table->attributes['class'] = 'generaltable';
+    $table->tablealign = 'center';
     foreach ($errors as $e) {
         $object = json_decode($e->details);
         $table->data[] = array(

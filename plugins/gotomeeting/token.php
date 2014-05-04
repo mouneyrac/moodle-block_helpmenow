@@ -33,6 +33,12 @@ define('HELPMENOW_G2M_OAUTH_AUTH_URI', 'https://api.citrixonline.com/oauth/autho
 
 require_login(0, false);
 
+$context = context_system::instance();
+$PAGE->set_context($context);
+$url = '/blocks/helpmenow/plugins/gotomeeting/token.php';
+$PAGE->set_url($url);
+$PAGE->set_pagelayout('standard');
+
 # get our parameters
 
 $code = optional_param('code', 0, PARAM_TEXT);
@@ -85,11 +91,14 @@ if ($code) {
 
 $title = 'Token';   # todo: language string
 $nav = array(array('name' => $title));
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();
 
-$this_url = new moodle_url();
+$this_url = new moodle_url($url);
 if ($admin) {
     $this_url->param('admin', 1);
 }

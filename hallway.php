@@ -39,6 +39,7 @@ if (!($admin or $DB->record_exists('block_helpmenow_helper', array('userid' => $
 }
 $PAGE->set_context($context);
 $PAGE->set_url('/blocks/helpmenow/hallway.php');
+$PAGE->set_pagelayout('standard');
 
 # title, navbar, and a nice box
 if (!empty($CFG->helpmenow_title)) {
@@ -51,6 +52,9 @@ $nav = array(
     array('name' => $blockname),
     array('name' => $title)
 );
+foreach($nav as $node) {
+    $PAGE->navbar->add($node['name'], isset($node['link'])?$node['link']:null);
+}
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();
