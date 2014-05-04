@@ -40,10 +40,12 @@ $this_url = new moodle_url();
 $this_url->param('queueid', $queueid); 
 
 # sitecontext and cap check
-$sitecontext = context_system::instance(SITEID);
+$sitecontext = context_system::instance();
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
+$PAGE->set_context($sitecontext);
+$PAGE->set_url('/blocks/helpmenow/admin/assign_helper.php');
 
 $queue = new helpmenow_queue($queueid);
 $queue->load_helpers();

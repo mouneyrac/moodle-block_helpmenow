@@ -32,10 +32,13 @@ $recent = optional_param('recent', 0, PARAM_INT);
 require_login(0, true);
 
 # contexts and cap check
-$admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
+$context = context_system::instance();
+$admin = has_capability(HELPMENOW_CAP_MANAGE, $context);
 if (!($admin or $userid==$USER->id)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
+$PAGE->set_context($context);
+$PAGE->set_url('/blocks/helpmenow/chathistorylist.php');
 
 # title, navbar, and a nice box
 if (!empty($CFG->helpmenow_title)) {

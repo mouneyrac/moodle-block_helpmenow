@@ -35,10 +35,12 @@ $edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/edit_queue.php");
 $delete = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/delete_queue.php");
 
 # contexts and cap check
-$sitecontext = context_system::instance(SITEID);
+$sitecontext = context_system::instance();
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
+$PAGE->set_context($sitecontext);
+$PAGE->set_url('/blocks/helpmenow/admin/manage_queues.php');
 
 # title, navbar, and a nice box
 $title = get_string('admin', 'block_helpmenow');

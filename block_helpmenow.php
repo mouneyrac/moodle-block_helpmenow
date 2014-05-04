@@ -90,7 +90,7 @@ EOF;
             $break = true;
         }
         # admin link
-        $sitecontext = context_system::instance(SITEID);
+        $sitecontext = context_system::instance();
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
             $admin_text = get_string('admin_link', 'block_helpmenow');

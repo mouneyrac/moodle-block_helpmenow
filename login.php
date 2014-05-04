@@ -29,6 +29,9 @@ require_once(dirname(__FILE__) . '/lib.php');
 # require login
 require_login(0, false);
 
+$PAGE->set_context(context_system::instance());
+$PAGE->set_url('/blocks/helpmenow/login.php');
+
 # get our parameters
 $login = required_param('login', PARAM_INT);
 $queueid = optional_param('queueid', 0, PARAM_INT);

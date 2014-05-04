@@ -32,10 +32,13 @@ helpmenow_plugin::get_plugins();
 require_login(0, false);
 
 # contexts and cap check
-$admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
+$context = context_system::instance();
+$admin = has_capability(HELPMENOW_CAP_MANAGE, $context);
 if (!($admin or $DB->record_exists('block_helpmenow_helper', array('userid' => $USER->id)))) {
     redirect();
 }
+$PAGE->set_context($context);
+$PAGE->set_url('/blocks/helpmenow/hallway.php');
 
 # title, navbar, and a nice box
 if (!empty($CFG->helpmenow_title)) {

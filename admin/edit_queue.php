@@ -36,10 +36,12 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 $admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
 
 # contexts and cap check
-$sitecontext = context_system::instance(SITEID);
+$sitecontext = context_system::instance();
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
+$PAGE->set_context($sitecontext);
+$PAGE->set_url('/blocks/helpmenow/admin/edit_queue.php');
 
 # form stuff
 $form = new helpmenow_queue_form();

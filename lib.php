@@ -295,7 +295,7 @@ function helpmenow_print_hallway($users) {
     global $CFG, $OUTPUT;
     static $admin;
     if (!isset($admin)) {
-        $admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
+        $admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance());
     }
     # start setting up the table
     $head = array(
@@ -1443,7 +1443,7 @@ class helpmenow_queue {
             return HELPMENOW_QUEUE_HELPER;
         }
 
-        $context = context_system::instance(SITEID);
+        $context = context_system::instance();
 
         if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
             return HELPMENOW_QUEUE_HELPEE;

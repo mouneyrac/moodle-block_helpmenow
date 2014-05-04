@@ -32,7 +32,7 @@ $session_id = optional_param('sessionid', 0, PARAM_INT);
 $class_id = required_param('classid', PARAM_INT);
 
 if (!$session_id) {
-    $sitecontext = context_system::instance(SITEID);
+    $sitecontext = context_system::instance();
     if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
         redirect();
     }

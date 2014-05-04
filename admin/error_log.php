@@ -30,10 +30,12 @@ require_once(dirname(dirname(__FILE__)) . '/lib.php');
 require_login(0, false);
 
 # contexts and cap check
-$sitecontext = context_system::instance(SITEID);
+$sitecontext = context_system::instance();
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
+$PAGE->set_context($sitecontext);
+$PAGE->set_url('/blocks/helpmenow/admin/error_log.php');
 
 # parameters
 $page = optional_param('page', 0, PARAM_INT);

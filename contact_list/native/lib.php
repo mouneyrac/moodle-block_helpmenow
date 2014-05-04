@@ -148,8 +148,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
     }
 
     public static function is_admin($userid=null) {
-        $sitecontext = context_system::instance(SITEID);
-        return has_capability('moodle/site:doanything', $sitecontext);
+        return is_siteadmin($userid);
     }
 
     public static function is_admin_or_teacher($userid=null) {
