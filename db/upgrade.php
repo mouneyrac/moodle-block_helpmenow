@@ -1,6 +1,7 @@
 <?php
 function xmldb_block_helpmenow_upgrade($oldversion = 0) {
-    global $CFG;
+    global $CFG, $USER, $DB;
+    $dbman = $DB->get_manager();
     $result = true;
 
     if ($result && $oldversion < 2012082101) {
@@ -162,6 +163,82 @@ function xmldb_block_helpmenow_upgrade($oldversion = 0) {
 
         /// Launch add field last_read
         $result = $result && $dbman->add_field($table, $field);
+    }
+
+    if ($result && $oldversion < 2014050401) {
+
+        // Reminder: do not use core/lib function in upgrade script!
+        $contextid = $DB->get_field('context', 'id', array('contextlevel' => CONTEXT_SYSTEM));
+
+        // Hardcode the capability as they must match the value at this upgrade time.
+        $HELPMENOW_CAP_QUEUE_ANSWER = 'block/helpmenow:global_queue_answer';
+        $HELPMENOW_CAP_QUEUE_ASK = 'block/helpmenow:queue_ask';
+        $HELPMENOW_CAP_MANAGE = 'block/helpmenow:manage_queues';
+
+        // Add Help Me Now block manager system role.
+        $role = new stdClass();
+        $role->name        = 'Help Me Now Manager';
+        $role->shortname   = 'helpmenowmanager';
+        $role->description = 'can assign a queue helper - can do anything on helpmenow.';
+        // Find free sortorder number.
+        $role->sortorder = $DB->get_field('role', 'MAX(sortorder) + 1', array());
+        if (empty($role->sortorder)) {
+            $role->sortorder = 1;
+        }
+        $roleid = $DB->insert_record('role', $role);
+        // Set the role as system role.
+        $rcl = new stdClass();
+        $rcl->roleid = $roleid;
+        $rcl->contextlevel = CONTEXT_SYSTEM;
+        $DB->insert_record('role_context_levels', $rcl, false, true);
+        // Assign correct permission to Help Me Now block manager role.
+        $cap = new stdClass();
+        $cap->contextid    = $contextid;
+        $cap->roleid       = $roleid;
+        $cap->capability   = $HELPMENOW_CAP_MANAGE;
+        $cap->permission   = 1;
+        $cap->timemodified = time();
+        $cap->modifierid   = empty($USER->id) ? 0 : $USER->id;
+        $DB->insert_record('role_capabilities', $cap);
+        $cap->capability   = $HELPMENOW_CAP_QUEUE_ANSWER;
+        $DB->insert_record('role_capabilities', $cap);
+        $cap->capability   = $HELPMENOW_CAP_QUEUE_ASK;
+        $DB->insert_record('role_capabilities', $cap);
+
+        // Add Help Me Now block instructor system role.
+        $role = new stdClass();
+        $role->name        = 'Help Me Now instructor';
+        $role->shortname   = 'helpmenowinstructor';
+        $role->description = 'can login in an office and answer questions.';
+        $role->sortorder = $DB->get_field('role', 'MAX(sortorder) + 1', array());
+        $roleid = $DB->insert_record('role', $role);
+        $rcl = new stdClass();
+        $rcl->roleid = $roleid;
+        $rcl->contextlevel = CONTEXT_SYSTEM;
+        $DB->insert_record('role_context_levels', $rcl, false, true);
+        $cap->roleid       = $roleid;
+        $cap->capability   = $HELPMENOW_CAP_QUEUE_ASK;
+        $DB->insert_record('role_capabilities', $cap);
+        $cap->capability   = $HELPMENOW_CAP_QUEUE_ANSWER;
+        $DB->insert_record('role_capabilities', $cap);
+
+        // Add Help Me Now block student system role.
+        $role = new stdClass();
+        $role->name        = 'Help Me Now student';
+        $role->shortname   = 'helpmenowstudent';
+        $role->description = 'can ask questions to instructors and helpers.';
+        $role->sortorder = $DB->get_field('role', 'MAX(sortorder) + 1', array());
+        $roleid = $DB->insert_record('role', $role);
+        $rcl = new stdClass();
+        $rcl->roleid = $roleid;
+        $rcl->contextlevel = CONTEXT_SYSTEM;
+        $DB->insert_record('role_context_levels', $rcl, false, true);
+        $cap->roleid       = $roleid;
+        $cap->capability   = $HELPMENOW_CAP_QUEUE_ASK;
+        $DB->insert_record('role_capabilities', $cap);
+
+        // Helpmenow savepoint reached.
+        upgrade_block_savepoint(true, 2014050401, 'helpmenow');
     }
 
     return $result;
