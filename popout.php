@@ -37,13 +37,13 @@ $PAGE->set_title($title);
 echo $OUTPUT->header();
 
 $output = <<<EOF
-<div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">
-<div id="chatDiv" style="position: absolute; top: 1em; left: 1em; right: 1em; bottom: 1em; padding: .5em; overflow: auto; border: 1px solid black;">
+<div class="helpmenow_popup">
+<div id="chatDiv" class="helpmenow_chat">
 EOF;
 
 $output .= helpmenow_block_interface();
 $output .= <<<EOF
-<div id="helpmenow_last_refresh_div" style="font-size:small;"></div> 
+<div id="helpmenow_last_refresh_div" class="helpmenow_last_refresh_div"></div>
 </div></div></div></body></html>
 EOF;
 

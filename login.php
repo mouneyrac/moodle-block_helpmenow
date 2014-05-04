@@ -60,7 +60,7 @@ if ($queueid) {     # helper
     $DB->update_record('block_helpmenow_helper', $record);
     helpmenow_log($USER->id, 'updated block_helpmenow_helper', "$record->isloggedin");
 } else {    # instructor
-    $DB->update_record('block_helpmenow_user', addslashes_recursive($record));
+    $DB->update_record('block_helpmenow_user', $record);
     helpmenow_log($USER->id, 'updated block_helpmenow_user', "$record->isloggedin");
 }
 
@@ -95,7 +95,9 @@ if (count($redirects) == 1) {
 
 $output = '<p>'.get_string('multiple_plugins', 'block_helpmenow').'</p>';
 foreach ($redirects as $pluginname => $redirect) {
-    $output .= link_to_popup_window($redirect, $pluginname, $pluginname, 400, 500, null, null, true) . "<br />";
+    $action = new popup_action('click', $redirect, $pluginname,
+        array('height' => 400, 'width' => 500));
+    $output .= $OUTPUT->action_link($redirect, $pluginname, $action) . "<br />";
 }
 $title = get_string('helpmenow', 'block_helpmenow');
 $nav = array(array('name' => $title));

@@ -5,3 +5,27 @@
 .helpmenow_floatleft {
     float:left;
 }
+
+.helpmenow_popup {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background-color: white;
+}
+
+.helpmenow_chat {
+    position: absolute;
+    top: 1em;
+    left: 1em;
+    right: 1em;
+    bottom: 1em;
+    padding: .5em;
+    overflow: auto;
+    border: 1px solid black;
+}
+
+.helpmenow_last_refresh_div {
+    font-size:small;
+}

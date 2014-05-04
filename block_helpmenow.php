@@ -44,6 +44,8 @@ class block_helpmenow extends block_base {
     }
 
     function get_content() {
+        global $OUTPUT;
+
         if ($this->content !== NULL) {
             return $this->content;
         }

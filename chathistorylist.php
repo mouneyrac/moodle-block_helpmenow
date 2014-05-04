@@ -114,7 +114,9 @@ if (count($sessionids) < 1) {
             $history_url->param('session', $u->sessionid);
             $history_url->param('date', '-1 year');
             $name = fullname($u);
-            $history_link = link_to_popup_window($history_url->out(), $u->sessionid, $name, 400, 500, null, null, true);
+            $action = new popup_action('click', $history_url->out(), $u->sessionid,
+                array('height' => 400, 'width' => 500));
+            $history_link = $OUTPUT->action_link($history_url->out(), $name, $action);
             $history_link = '<div>'.$history_link." ($u->username)</div>";
             print $history_link;
         }

@@ -132,7 +132,7 @@ function helpmenow_gotomeeting_invite($request) {
         'userid' => null,
         'sessionid' => $request->session,
         'time' => time(),
-        'message' => addslashes($message),
+        'message' => $message,
     );
     $DB->insert_record('block_helpmenow_message', $message_rec);
 

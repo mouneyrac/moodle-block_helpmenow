@@ -110,7 +110,9 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
 
         $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
         $test->param('username', $USER->username);
-        return link_to_popup_window($test->out(), "adobeconnect", 'My Classroom', 800, 900, null, null, true);
+        $action = new popup_action('click', $test->out(), "adobeconnect",
+            array('height' => 800, 'width' => 900));
+        return $OUTPUT->action_link($test->out(), 'My Classroom', $action);
     }
 
     public static function has_user2plugin_data() {

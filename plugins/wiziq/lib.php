@@ -168,17 +168,21 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     }
 
     public static function display($sessionid, $privileged = false) {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
 
         if ($privileged) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
             $connect->param('sessionid', $sessionid);
-            $output = link_to_popup_window($connect->out(), "wiziq", 'Invite to WizIQ', 400, 500, null, null, true);
+            $action = new popup_action('click', $connect->out(), "wiziq",
+                array('height' => 400, 'width' => 500));
+            $output = $OUTPUT->action_link($connect->out(), 'Invite to WizIQ', $action);
 
             $user2plugin = helpmenow_user2plugin_wiziq::get_user2plugin();
             if ($user2plugin->verify_active_meeting(true)) {
                 $connect->param('reopen', 1);
-                $output .= ' | ' . link_to_popup_window($connect->out(), "wiziq_session", 'Re-open WizIQ Window', 400, 500, null, null, true);
+                $action = new popup_action('click', $connect->out(), "wiziq_session",
+                    array('height' => 400, 'width' => 500));
+                $output .= ' | ' . $OUTPUT->action_link($connect->out(), 'Re-open WizIQ Window', $action);
             }
             return $output;
         }
@@ -229,7 +233,9 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
         global $CFG;
         $test = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/wiziq/connect.php");
         $test->param('test', 1);
-        return link_to_popup_window($test->out(), "wiziq", 'Test WizIQ', 800, 900, null, null, true);
+        $action = new popup_action('click', $test->out(), "wiziq",
+            array('height' => 800, 'width' => 900));
+        return $OUTPUT->action_link($test->out(), 'Test WizIQ', $action);
     }
 }
 
@@ -309,7 +315,7 @@ class helpmenow_user2plugin_wiziq extends helpmenow_user2plugin {
             $error = (integer) $response->error['code'];
             $error_msg = (string) $response->error['msg'];
 
-            helpmenow_log($USER->id, 'wiziq_error', addslashes("code: $error; msg: $error_msg"));
+            helpmenow_log($USER->id, 'wiziq_error', "code: $error; msg: $error_msg");
             switch ($error) {
             case 1012:
                 helpmenow_fatal_error('License limit has been reached. Please contact your administrator');

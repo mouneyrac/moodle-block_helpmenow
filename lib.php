@@ -118,7 +118,7 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
         'sessionid' => $sessionid,
         'userid' => $userid,
         'last_refresh' => $last_refresh,
-        'new_messages' => addslashes(helpmenow_format_messages($messages)),
+        'new_messages' => helpmenow_format_messages($messages),
         'cache' => json_encode((object) array(
             'html' => '',
             'beep' => false,
@@ -279,7 +279,7 @@ function helpmenow_autologout_users() {
         helpmenow_log($u->userid, 'maybe_auto_logged_out', "duration: $duration, cutoff: $cutoff, lastaccess: {$u->lastaccess}");
         /*
         $u->isloggedin = 0;
-        $success = $success and $DB->update_record('block_helpmenow_user', addslashes_recursive($u));
+        $success = $success and $DB->update_record('block_helpmenow_user', $u);
          */
     }
 
@@ -291,7 +291,7 @@ function helpmenow_autologout_users() {
  * @param array $users array of users
  */
 function helpmenow_print_hallway($users) {
-    global $CFG;
+    global $CFG, $OUTPUT;
     static $admin;
     if (!isset($admin)) {
         $admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
@@ -343,7 +343,9 @@ function helpmenow_print_hallway($users) {
         if ($admin and $u->isloggedin) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('userid', $u->id);
-            $name = link_to_popup_window($connect->out(), $u->id, $name, 400, 500, null, null, true);
+            $action = new popup_action('click', $connect->out(), $u->id,
+                array('height' => 400, 'width' => 500));
+            $name = $OUTPUT->action_link($connect->out(), $name, $action);
         }
         $row = array(
             $name,
@@ -381,7 +383,7 @@ function helpmenow_print_hallway($users) {
 }
 
 function helpmenow_block_interface() {
-    global $CFG, $USER;
+    global $CFG, $USER, $OUTPUT;
 
     helpmenow_ensure_user_exists();
 
@@ -402,9 +404,15 @@ EOF;
         }
         $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
         $login_url->param('login', 0);
-        $logout = link_to_popup_window($login_url->out(), "login", get_string('leave_office', 'block_helpmenow'), 400, 500, null, null, true);
+        $action = new popup_action('click', $login_url->out(), "login",
+            array('height' => 400, 'width' => 500));
+        $logout = $OUTPUT->action_link($login_url->out(),
+            get_string('leave_office', 'block_helpmenow'), $action);
         $login_url->param('login', 1);
-        $login = link_to_popup_window($login_url->out(), "login", get_string('enter_office', 'block_helpmenow'), 400, 500, null, null, true);
+        $action = new popup_action('click', $login_url->out(), "login",
+            array('height' => 400, 'width' => 500));
+        $login = $OUTPUT->action_link($login_url->out(),
+            get_string('enter_office', 'block_helpmenow'), $action);
         $my_office = get_string('my_office', 'block_helpmenow');
         $out_of_office = get_string('out_of_office', 'block_helpmenow');
         $online_students = get_string('online_students', 'block_helpmenow');
@@ -511,7 +519,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         'message' => $message,
         'notify' => $notify,
     );
-    if (!$last_message = $DB->insert_record('block_helpmenow_message', addslashes_recursive($message_rec))) {
+    if (!$last_message = $DB->insert_record('block_helpmenow_message', $message_rec)) {
         return false;
     }
 
@@ -538,7 +546,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         }
         $cache->html = $cache->html . $formatted_message;
         $s2u->cache = json_encode($cache);
-        $DB->update_record('block_helpmenow_session2user', addslashes_recursive($s2u));
+        $DB->update_record('block_helpmenow_session2user', $s2u);
     }
 
     return true;
@@ -919,7 +927,7 @@ function helpmenow_serverfunc_last_read($request, &$response) {
     # update session2user
     $s2u->last_read = $request->last_read;
 
-    if (!$DB->update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
+    if (!$DB->update_record('block_helpmenow_session2user', $s2u)) {
         throw new Exception('Could not update session2user record');
     }
 }
@@ -1017,7 +1025,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
  * @param object $response response
  */
 function helpmenow_serverfunc_block($request, &$response) {
-    global $USER, $CFG;
+    global $USER, $CFG, $OUTPUT;
 
     #echo "entered serverfunc_block: " . microtime() . "\n";     # DEBUGGING
 
@@ -1065,7 +1073,10 @@ function helpmenow_serverfunc_block($request, &$response) {
                         $response->alert = true;
                     }
                 }
-                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), "queue{$q->id}", $q->name, 400, 500, null, null, true) . "$message</div>";
+                $action = new popup_action('click', $connect->out(), "queue{$q->id}",
+                    array('height' => 400, 'width' => 500));
+                $response->queues_html .= "<div$style>" . $OUTPUT->action_link($connect->out(),
+                        $q->name, $action) . "$message</div>";
             } else {
                 $response->queues_html .= "<div>$q->name</div>";
             }
@@ -1083,9 +1094,15 @@ function helpmenow_serverfunc_block($request, &$response) {
             $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
             $login_url->param('queueid', $q->id);
             $login_url->param('login', 0);
-            $logout = link_to_popup_window($login_url->out(), "login", get_string('logout', 'block_helpmenow'), 400, 500, null, null, true);
+            $action = new popup_action('click', $login_url->out(), "login",
+                array('height' => 400, 'width' => 500));
+            $logout = $OUTPUT->action_link($login_url->out(),
+                get_string('logout', 'block_helpmenow'), $action);
             $login_url->param('login', 1);
-            $login = link_to_popup_window($login_url->out(), "login", get_string('login', 'block_helpmenow'), 400, 500, null, null, true);
+            $action = new popup_action('click', $login_url->out(), "login",
+                array('height' => 400, 'width' => 500));
+            $login = $OUTPUT->action_link($login_url->out(),
+                get_string('login', 'block_helpmenow'), $action);
             $logout_status = get_string('logout_status', 'block_helpmenow');
 
             $response->queues_html .= <<<EOF
@@ -1166,7 +1183,10 @@ EOF;
                     $message .= '<small>'.$s->helper_names.'</small><br />';
                 }
                 $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-                $response->queues_html .= "<div$style>" . link_to_popup_window($connect->out(), $s->sessionid, fullname($s), 400, 500, null, null, true) . "$message</div>";
+                $action = new popup_action('click', $connect->out(), $s->sessionid,
+                    array('height' => 400, 'width' => 500));
+                $response->queues_html .= "<div$style>" . $OUTPUT->action_link($connect->out(),
+                        fullname($s), $action) . "$message</div>";
             }
             $response->queues_html .= '</div>';
             break;
@@ -1249,7 +1269,9 @@ EOF;
         if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
                 if ($isloggedin) {
-                    $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                    $action = new popup_action('click', $connect->out(), $u->id,
+                        array('height' => 400, 'width' => 500));
+                    $name = $OUTPUT->action_link($connect->out(), fullname($u), $action);
                 } else {
                     $name = fullname($u);
                 }
@@ -1258,7 +1280,9 @@ EOF;
             }
         } else {                        # if isloggedin is set, then 0 = loggedout, any other number is the timestamp of when they logged in
             if ($u->online) {
-                $name = link_to_popup_window($connect->out(), $u->id, fullname($u), 400, 500, null, null, true);
+                $action = new popup_action('click', $connect->out(), $u->id,
+                    array('height' => 400, 'width' => 500));
+                $name = $OUTPUT->action_link($connect->out(), fullname($u), $action);
                 $motd = $u->motd;
             } else {
                 $name = fullname($u);
@@ -1293,7 +1317,7 @@ function helpmenow_serverfunc_motd($request, &$response) {
     if (!$helpmenow_user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id))) {
         throw new Exception('No helpmenow_user record');
     }
-    $helpmenow_user->motd = addslashes(clean_text($request->motd, FORMAT_HTML));
+    $helpmenow_user->motd = clean_text($request->motd, FORMAT_HTML);
     if (!$DB->update_record('block_helpmenow_user', $helpmenow_user)) {
         throw new Exception('Could not update user record');
     }
@@ -1325,8 +1349,8 @@ function helpmenow_serverfunc_plugin($request, &$response) {
 function helpmenow_log_error($error) {
     global $USER;
     $new_record = (object) array(
-        'error' => addslashes($error->error),
-        'details' => addslashes($error->details),
+        'error' => $error->error,
+        'details' => $error->details,
         'timecreated' => time(),
         'userid' => $USER->id,
     );
@@ -1539,8 +1563,7 @@ abstract class helpmenow_plugin_object {
     /**
      * Data simulates database fields in child classes by serializing data.
      * This is only used if extra_fields is used, and does not need to be
-     * in the database if it's not being used. Needs to be public for
-     * addslashes_recursive.
+     * in the database if it's not being used.
      * @var string $data
      */
     public $data;
@@ -1589,7 +1612,7 @@ abstract class helpmenow_plugin_object {
 
         $this->serialize_extras();
 
-        return $DB->update_record("block_helpmenow_" . static::table, addslashes_recursive($this));
+        return $DB->update_record("block_helpmenow_" . static::table, $this);
     }
 
     /**
@@ -1606,7 +1629,7 @@ abstract class helpmenow_plugin_object {
 
         $this->serialize_extras();
 
-        if (!$this->id = $DB->insert_record("block_helpmenow_" . static::table, addslashes_recursive($this))) {
+        if (!$this->id = $DB->insert_record("block_helpmenow_" . static::table, $this)) {
             debugging("Could not insert " . static::table);
             return false;
         }
