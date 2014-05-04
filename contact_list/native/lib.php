@@ -25,7 +25,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
      * @return bool success
      */
     public static function update_contacts($userid) {
-        global $CFG;
+        global $CFG, $DB;
         $user = $DB->get_record('user', array('id' => $userid));
 
         # get the new contacts
@@ -129,7 +129,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
 
     public static function is_teacher($userid=null) {
-        global $CFG,$USER;
+        global $CFG,$USER, $DB;
         if ($userid == null) {
             $userid = $USER->id;
         }
@@ -157,7 +157,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
     }
 
     public static function is_student($userid=null) {
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
         if ($userid == null) {
             $userid = $USER->id;
         }

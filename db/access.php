@@ -33,7 +33,7 @@ if (!defined('HELPMENOW_CAP_MANAGE')) {
     define('HELPMENOW_CAP_MANAGE', 'block/helpmenow:manage_queues');
 }
 
-$block_helpmenow_capabilities = array (
+$capabilities = array (
     HELPMENOW_CAP_QUEUE_ASK => array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',

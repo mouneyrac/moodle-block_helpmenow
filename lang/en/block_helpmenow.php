@@ -31,7 +31,7 @@ $string['helpmenow'] = 'Help Me Now';
 # plugin strings
 $plugins = get_list_of_plugins('plugins', '', dirname(dirname(dirname(__FILE__))));
 foreach ($plugins as $pluginname) {
-    $path = dirname(dirname(dirname(__FILE__))) . "/plugins/$pluginname/lang/en_utf8.php";
+    $path = dirname(dirname(dirname(__FILE__))) . "/plugins/$pluginname/lang/en.php";
     if (file_exists($path)) {
         require($path);
     }
@@ -39,7 +39,7 @@ foreach ($plugins as $pluginname) {
 # contact list plugin strings
 $plugins = get_list_of_plugins('contact_list', '', dirname(dirname(dirname(__FILE__))));
 foreach ($plugins as $pluginname) {
-    $path = dirname(dirname(dirname(__FILE__))) . "/contact_list/$pluginname/lang/en_utf8.php";
+    $path = dirname(dirname(dirname(__FILE__))) . "/contact_list/$pluginname/lang/en.php";
     if (file_exists($path)) {
         require($path);
     }

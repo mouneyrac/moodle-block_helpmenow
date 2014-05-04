@@ -54,7 +54,7 @@ define('HELPMENOW_CUTOFF_DELAY', 120);
 define('HELPMENOW_BLOCK_ALERT_DELAY', 5);   # delay so the block isn't alerting when the user is already in the chat
 
 function helpmenow_verify_session($session) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
     $sql = "
         SELECT 1
         FROM {block_helpmenow_session} s
@@ -69,7 +69,7 @@ function helpmenow_verify_session($session) {
  * Check if the user is an admin or teacher or if the user is a queue helper
  */
 function helpmenow_check_privileged($session) {
-    global $USER, $CFG;
+    global $USER, $CFG, $DB;
 
     $contact_list = helpmenow_contact_list::get_plugin();
 
@@ -105,7 +105,7 @@ function helpmenow_cutoff() {
  * @param int $last_refresh timestamp
  */
 function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
-    global $CFG;
+    global $CFG, $DB;
     $sql = "
         SELECT *
         FROM {block_helpmenow_message}
@@ -155,7 +155,7 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
  * ensures users have a helpmenow_user record
  */
 function helpmenow_ensure_user_exists() {
-    global $USER;
+    global $USER, $DB;
     if ($DB->record_exists('block_helpmenow_user', array('userid' => $USER->id))) {
         return;
     }
@@ -175,6 +175,7 @@ function helpmenow_ensure_user_exists() {
  * @param string $details details of the action
  */
 function helpmenow_log($userid, $action, $details) {
+    global $DB;
     $new_record = (object) array(
         'userid' => $userid,
         'action' => $action,
@@ -185,7 +186,7 @@ function helpmenow_log($userid, $action, $details) {
 }
 
 function helpmenow_clean_sessions($all = false) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
 
     $sql = "";
     if (!$all) {
@@ -232,7 +233,7 @@ function helpmenow_clean_sessions($all = false) {
 }
 
 function helpmenow_autologout_helpers() {
-    global $CFG;
+    global $CFG, $DB;
 
     $cutoff = helpmenow_cutoff();
     $sql = "
@@ -260,7 +261,7 @@ function helpmenow_autologout_helpers() {
 }
 
 function helpmenow_autologout_users() {
-    global $CFG;
+    global $CFG, $DB;
 
     $cutoff = helpmenow_cutoff();
     $sql = "
@@ -383,7 +384,7 @@ function helpmenow_print_hallway($users) {
 }
 
 function helpmenow_block_interface() {
-    global $CFG, $USER, $OUTPUT;
+    global $CFG, $USER, $OUTPUT, $DB;
 
     helpmenow_ensure_user_exists();
 
@@ -510,7 +511,7 @@ EOF;
  * @return boolean success
  */
 function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
-    global $CFG;
+    global $CFG, $DB;
 
     $message_rec = (object) array(
         'userid' => $userid,
@@ -559,7 +560,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
  * @return mixed array of messages or false
  */
 function helpmenow_get_unread($sessionid, $userid) {
-    global $CFG;
+    global $CFG, $DB;
 
     $s2u = $DB->get_record('block_helpmenow_session2user', array('userid' => $userid, 'sessionid' => $sessionid));
     if ($s2u->last_read > 0)
@@ -587,6 +588,8 @@ function helpmenow_get_unread($sessionid, $userid) {
  * @return mixed array of messages or false
  */
 function helpmenow_get_history($sessionid) {
+    global $DB;
+
     return $DB->get_records('block_helpmenow_message', array('sessionid' => $sessionid), 'id ASC');
 }
 
@@ -596,7 +599,7 @@ function helpmenow_get_history($sessionid) {
  * @return mixed array of messages or false
  */
 function helpmenow_get_history_list($sessionids) {
-    global $CFG;
+    global $CFG, $DB;
     $sql = "
         SELECT m.*, q.name as queue_name
         FROM {block_helpmenow_message} m
@@ -681,7 +684,7 @@ function helpmenow_format_message($m, $userid, $time = '', $queue_name = '') {
  * email messages users have missed
  */
 function helpmenow_email_messages() {
-    global $CFG;
+    global $CFG, $DB;
 
     echo "\n";
 
@@ -853,6 +856,8 @@ function helpmenow_email_messages() {
  * @return mixed object if success, false if fail
  */
 function helpmenow_get_s2u($sessionid, $userid = null) {
+    global $DB;
+
     static $s2u_cache;
     if (!isset($s2u_cache)) {
         $s2u_cache = array();
@@ -920,7 +925,7 @@ function helpmenow_serverfunc_sysmessage($request, &$response) {
  * @param object $response response
  */
 function helpmenow_serverfunc_last_read($request, &$response) {
-    global $USER;
+    global $USER, $DB;
 
     $s2u = helpmenow_get_s2u($request->session);
 
@@ -939,7 +944,7 @@ function helpmenow_serverfunc_last_read($request, &$response) {
  * @param object $response response
  */
 function helpmenow_serverfunc_refresh($request, &$response) {
-    global $USER, $CFG;
+    global $USER, $CFG, $DB;
 
     $session2user = helpmenow_get_s2u($request->session);
 
@@ -1025,7 +1030,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
  * @param object $response response
  */
 function helpmenow_serverfunc_block($request, &$response) {
-    global $USER, $CFG, $OUTPUT;
+    global $USER, $CFG, $OUTPUT, $DB;
 
     #echo "entered serverfunc_block: " . microtime() . "\n";     # DEBUGGING
 
@@ -1312,7 +1317,7 @@ EOF;
  * @param object $response response
  */
 function helpmenow_serverfunc_motd($request, &$response) {
-    global $USER;
+    global $USER, $DB;
 
     if (!$helpmenow_user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id))) {
         throw new Exception('No helpmenow_user record');
@@ -1347,7 +1352,7 @@ function helpmenow_serverfunc_plugin($request, &$response) {
  * log error from the client
  */
 function helpmenow_log_error($error) {
-    global $USER;
+    global $USER, $DB;
     $new_record = (object) array(
         'error' => $error->error,
         'details' => $error->details,
@@ -1414,6 +1419,8 @@ class helpmenow_queue {
      * @param object $record db record
      */
     public function __construct($id=null, $record=null) {
+        global $DB;
+
         if (isset($id)) {
             $record = $DB->get_record('block_helpmenow_queue', array('id' => $id));
         }
@@ -1468,6 +1475,8 @@ class helpmenow_queue {
      * @return boolean success
      */
     public function add_helper($userid) {
+        global $DB;
+
         $this->load_helpers();
 
         if (isset($this->helpers[$userid])) {
@@ -1494,6 +1503,8 @@ class helpmenow_queue {
      * @return boolean success
      */
     public function remove_helper($userid) {
+        global $DB;
+
         $this->load_helpers();
 
         if (!isset($this->helpers[$userid])) {
@@ -1512,6 +1523,8 @@ class helpmenow_queue {
      * Loads helpers into $this->helpers array
      */
     public function load_helpers() {
+        global $DB;
+
         if (isset($this->helpers)) {
             return true;
         }
@@ -1528,7 +1541,7 @@ class helpmenow_queue {
     }
 
     public static function get_queues() {
-        global $CFG;
+        global $CFG, $DB;
         if (!$records = $DB->get_records_sql("SELECT * FROM {block_helpmenow_queue} ORDER BY weight ASC")) {
             return false;
         }
@@ -1587,6 +1600,8 @@ abstract class helpmenow_plugin_object {
      * @param object $record db record
      */
     public function __construct($id=null, $record=null) {
+        global $DB;
+
         if (isset($id)) {
             $record = $DB->get_record('block_helpmenow_'.static::table, array('id' => $id));
         }
@@ -1603,7 +1618,7 @@ abstract class helpmenow_plugin_object {
      * @return boolean success
      */
     public function update() {
-        global $USER;
+        global $USER, $DB;
 
         if (empty($this->id)) {
             debugging("Can not update " . static::table . ", no id!");
@@ -1620,7 +1635,7 @@ abstract class helpmenow_plugin_object {
      * @return int PK ID if successful, false otherwise
      */
     public function insert() {
-        global $USER;
+        global $USER, $DB;
 
         if (!empty($this->id)) {
             debugging(static::table . " already exists in db.");
@@ -1642,6 +1657,8 @@ abstract class helpmenow_plugin_object {
      * @return boolean success
      */
     public function delete() {
+        global $DB;
+
         if (empty($this->id)) {
             debugging("Can not delete " . static::table . ", no id!");
             return false;
@@ -1656,7 +1673,7 @@ abstract class helpmenow_plugin_object {
      * @return object
      */
     public final static function get_instance($id=null, $record=null) {
-        global $CFG;
+        global $CFG, $DB;
 
         # we have to get the record instead of passing the id to the
         # constructor as we have no idea what class the record belongs to
@@ -1857,6 +1874,8 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      * @return boolean
      */
     public final static function cron_all() {
+        global $DB;
+
         $success = true;
         foreach (self::get_plugins() as $pluginname) {
             $class = "helpmenow_plugin_$pluginname";
@@ -1930,6 +1949,8 @@ abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
      * @return object
      */
     public static function get_user2plugin($userid = null) {
+        global $DB;
+
         if (!isset($userid)) {
             global $USER;
             $userid = $USER->id;
@@ -2002,6 +2023,8 @@ abstract class helpmenow_contact_list {
      * @return bool success
      */
     public static function update_all_contacts() {
+        global $DB;
+
         $rval = true;
         foreach ($DB->get_records_select('user', "auth <> 'nologin'") as $u) {
             $rval = true and static::update_contacts($u->id);

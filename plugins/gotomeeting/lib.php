@@ -36,7 +36,7 @@ define('HELPMENOW_G2M_REST_BASE_URI', 'https://api.citrixonline.com/G2M/rest/');
  * @return mixed
  */
 function helpmenow_gotomeeting_api($uri, $verb, $params = array(), $userid = null) {
-    global $CFG, $USER;
+    global $CFG, $USER, $DB;
     if (!isset($userid)) {
         $userid = $USER->id;
     }
@@ -115,7 +115,7 @@ function helpmenow_gotomeeting_api($uri, $verb, $params = array(), $userid = nul
  * @return object
  */
 function helpmenow_gotomeeting_invite($request) {
-    global $USER, $CFG;
+    global $USER, $CFG, $DB;
 
     # verify sesion
     if (!helpmenow_verify_session($request->session)) {
@@ -185,7 +185,7 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
     }
 
     public static function on_logout() {
-        global $CFG, $USER;
+        global $CFG, $USER, $DB;
 
         $user2plugin = helpmenow_user2plugin_gotomeeting::get_user2plugin();
 

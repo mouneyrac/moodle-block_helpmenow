@@ -50,7 +50,7 @@ class block_helpmenow extends block_base {
             return $this->content;
         }
 
-        global $CFG, $USER, $SESSION;
+        global $CFG, $USER, $SESSION, $DB;
 
         $this->content = (object) array(
             'text' => '',
