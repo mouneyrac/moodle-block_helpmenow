@@ -11,9 +11,6 @@ $longopts = array(
 );
 $opts = (object)getopt(null, $longopts);
 
-global $db;
-$db->debug = true;
-
 $function = $opts->function;
 switch($function) {
 case 'helpmenow_email_messages':

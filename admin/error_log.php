@@ -55,15 +55,17 @@ $sql = "
     FROM {block_helpmenow_error_log} e
     LEFT JOIN {user} u ON e.userid = u.id
 ";
+$params = array();
 if ($search) {
-    $ilike = sql_ilike();
-    $sql .= "
-        WHERE e.error $ilike '%$search%'
-        OR u.firstname $ilike '%$search%'
-        OR u.lastname $ilike '%$search%'
-    ";
+    $sql .= " WHERE "
+            . $DB->sql_like('e.error', ':substringerror', false) . " OR "
+            . $DB->sql_like('u.firstname', ':substringfirstname', false) . " OR "
+            . $DB->sql_like('u.lastname', ':substringlastname', false);
+    $params['substringerror'] = '%'.$search.'%';
+    $params['substringfirstname'] = '%'.$search.'%';
+    $params['substringlastname'] = '%'.$search.'%';
 }
-$count = $DB->count_records_sql('SELECT COUNT(*) '.$sql);
+$count = $DB->count_records_sql('SELECT COUNT(*) '.$sql, $params);
 if ($count) {
     $sql = "
         SELECT e.*, u.firstname, u.lastname
@@ -89,7 +91,7 @@ if ($count) {
             "$e->lastname, $e->firstname",
             $e->error,
             $object ? "<pre>".htmlspecialchars(print_r($object, true))."</pre>" : "Error decoding JSON",
-            "<div style='max-width:700px; overflow-x:scroll;'><pre>".htmlspecialchars($e->details)."</pre></div>",
+            "<div class='helpmenow_errorlog'><pre>".htmlspecialchars($e->details)."</pre></div>",
         );
     }
 }
@@ -106,9 +108,11 @@ $submit = get_string('submit');
 echo $OUTPUT->box("<form><input type='text' name='search' value='$search' /><input type='submit' value='$submit' /></form>");
 
 if ($count) {
-    print_paging_bar($count, $page, $per_page, $this_url);
+    $pagingbar = new paging_bar($count, $page, $per_page, $this_url);
+    $pagingbar->pagevar = $pagevar;
+    echo $OUTPUT->render($pagingbar);
     echo html_writer::table($table);
-    print_paging_bar($count, $page, $per_page, $this_url);
+    echo $OUTPUT->render($pagingbar);
 } else {
     echo $OUTPUT->box('No errors matched your search');
 }

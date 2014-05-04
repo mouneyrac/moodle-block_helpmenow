@@ -29,3 +29,8 @@
 .helpmenow_last_refresh_div {
     font-size:small;
 }
+
+.helpmenow_errorlog {
+    max-width:700px;
+    overflow-x:scroll;
+}
