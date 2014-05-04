@@ -37,13 +37,13 @@ $delete = optional_param('delete', 0, PARAM_INT);
 $admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
 
 # contexts and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$sitecontext = context_system::instance(SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
 
 if ($delete) {
-    delete_records('block_helpmenow_queue', 'id', $queueid);
+    $DB->delete_records('block_helpmenow_queue', array('id' => $queueid));
     redirect($admin_url);
 }
 
@@ -60,14 +60,16 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
-notice_yesno(get_string('confirm_delete', 'block_helpmenow') . $queue->name, $delete_url, $admin_url);
+echo $OUTPUT->confirm(get_string('confirm_delete', 'block_helpmenow') . $queue->name, $delete_url, $admin_url);
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

@@ -40,7 +40,7 @@ $this_url = new moodle_url();
 $this_url->param('queueid', $queueid); 
 
 # sitecontext and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$sitecontext = context_system::instance(SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
@@ -70,10 +70,12 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
-print_heading(get_string('assign_heading', 'block_helpmenow') . $queue->name);
+echo $OUTPUT->heading(get_string('assign_heading', 'block_helpmenow') . $queue->name);
 
 $users = get_users_by_capability($sitecontext, $cap, 'u.id, u.username, u.firstname, u.lastname', '', '', '', '', '', false);
 
@@ -113,14 +115,14 @@ if (!empty($users)) {
     }
 }
 
-print_table($table);
+echo html_writer::table($table);
 
 $back = get_string('back', 'block_helpmenow');
 echo "<p><a href='$admin_url'>$back</a></p>";
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

@@ -35,21 +35,21 @@ if (!helpmenow_verify_session($sessionid)) {
 }
 
 # figure out if the user should see plugins
-$session = get_record('block_helpmenow_session', 'id',  $sessionid);
+$session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
 $privileged = helpmenow_check_privileged($session);
 
 # title
 if (!$privileged and isset($session->queueid)) {
-    $title = get_field('block_helpmenow_queue', 'name', 'id', $session->queueid);
+    $title = $DB->get_field('block_helpmenow_queue', 'name', array('id' => $session->queueid));
 } else {
     $sql = "
         SELECT u.*
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {user} u ON u.id = s2u.userid
         WHERE s2u.sessionid = $sessionid
         AND s2u.userid <> $USER->id
     ";
-    $other_user_recs = get_records_sql($sql);
+    $other_user_recs = $DB->get_records_sql($sql);
     $other_users = array();
     if (!empty($other_user_recs)) {
         foreach ($other_user_recs as $r) {
@@ -103,7 +103,9 @@ if (!isset($session->queueid)) {
     $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
     $history_url->param('session', $sessionid);
     $history_url->param('date', '-1 year');
-    $history_link = link_to_popup_window($history_url->out(), $sessionid, $history_name, 400, 500, null, null, true);
+    $action = new popup_action('click', $history_url->out(), $sessionid,
+        array('height' => 400, 'width' => 500));
+    $history_link = $OUTPUT->action_link($history_url->out(), $history_name, $action);
     $history_link = '<div>'.$history_link.'</div>';
 } else {
     $history_link = '';

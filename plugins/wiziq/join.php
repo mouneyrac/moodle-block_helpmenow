@@ -32,7 +32,7 @@ $session_id = optional_param('sessionid', 0, PARAM_INT);
 $class_id = required_param('classid', PARAM_INT);
 
 if (!$session_id) {
-    $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+    $sitecontext = context_system::instance(SITEID);
     if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
         redirect();
     }
@@ -42,7 +42,7 @@ if (!$session_id) {
         helpmenow_fatal_error('You do not have permission to view this page.');
     }
 
-    if (!$s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
+    if (!$s2p_rec = $DB->get_record('block_helpmenow_s2p', array('sessionid' => $session_id, 'plugin' => 'wiziq'))) {
         helpmenow_fatal_error('Invalid session.');
     }
     $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);

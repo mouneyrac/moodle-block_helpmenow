@@ -47,22 +47,22 @@ if (!(helpmenow_verify_session($sessionid) or $is_admin)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
 
-$session = get_record('block_helpmenow_session', 'id',  $sessionid);
+$session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
 
 # title
 $sql = "
     SELECT u.*
-    FROM {$CFG->prefix}block_helpmenow_session2user s2u
-    JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+    FROM {block_helpmenow_session2user} s2u
+    JOIN {user} u ON u.id = s2u.userid
     WHERE s2u.sessionid = $sessionid
     ";
-$chat_users = get_records_sql($sql);
+$chat_users = $DB->get_records_sql($sql);
 $other_users = array();
 $i=0;
 $joinlist = '';
 foreach ($chat_users as $r) {
     $other_users[] = fullname($r);
-    $joinlist .= "JOIN {$CFG->prefix}block_helpmenow_session2user s2u$i ON s.id = s2u$i.sessionid AND s2u$i.userid=$r->id ";
+    $joinlist .= "JOIN {block_helpmenow_session2user} s2u$i ON s.id = s2u$i.sessionid AND s2u$i.userid=$r->id ";
     $i += 1;
 }
 $title = get_string('chat_history', 'block_helpmenow') . ': ' . implode(', ', $other_users);
@@ -70,14 +70,14 @@ $title = get_string('chat_history', 'block_helpmenow') . ': ' . implode(', ', $o
 
 $sql = "
     SELECT s.id
-    FROM {$CFG->prefix}block_helpmenow_session s
+    FROM {block_helpmenow_session} s
     $joinlist
     WHERE s.timecreated > $date
     ";
 
 $messages = '';
 $sessionids = array();
-if ($sessions = get_records_sql($sql)) {
+if ($sessions = $DB->get_records_sql($sql)) {
     foreach ($sessions as $s) {
         $sessionids[] = $s->id;
     }

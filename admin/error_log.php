@@ -30,7 +30,7 @@ require_once(dirname(dirname(__FILE__)) . '/lib.php');
 require_login(0, false);
 
 # contexts and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$sitecontext = context_system::instance(SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
@@ -52,8 +52,8 @@ $offset = $per_page * $page;
 
 # get stuff from the db
 $sql = "
-    FROM {$CFG->prefix}block_helpmenow_error_log e
-    LEFT JOIN {$CFG->prefix}user u ON e.userid = u.id
+    FROM {block_helpmenow_error_log} e
+    LEFT JOIN {user} u ON e.userid = u.id
 ";
 if ($search) {
     $ilike = sql_ilike();
@@ -63,7 +63,7 @@ if ($search) {
         OR u.lastname $ilike '%$search%'
     ";
 }
-$count = count_records_sql('SELECT COUNT(*) '.$sql);
+$count = $DB->count_records_sql('SELECT COUNT(*) '.$sql);
 if ($count) {
     $sql = "
         SELECT e.*, u.firstname, u.lastname
@@ -71,7 +71,7 @@ if ($count) {
         LIMIT $per_page
         OFFSET $offset
     ";
-    $errors = get_records_sql($sql);
+    $errors = $DB->get_records_sql($sql);
 
     # start setting up the table
     $table = (object) array(
@@ -97,21 +97,23 @@ if ($count) {
 /**
  * output
  */
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
 $submit = get_string('submit');
-print_box("<form><input type='text' name='search' value='$search' /><input type='submit' value='$submit' /></form>");
+echo $OUTPUT->box("<form><input type='text' name='search' value='$search' /><input type='submit' value='$submit' /></form>");
 
 if ($count) {
     print_paging_bar($count, $page, $per_page, $this_url);
-    print_table($table);
+    echo html_writer::table($table);
     print_paging_bar($count, $page, $per_page, $this_url);
 } else {
-    print_box('No errors matched your search');
+    echo $OUTPUT->box('No errors matched your search');
 }
 
-print_box_end();
-print_footer();
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer();
 
 ?>

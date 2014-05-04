@@ -42,7 +42,7 @@ function helpmenow_gotomeeting_api($uri, $verb, $params = array(), $userid = nul
     }
 
     $uri = HELPMENOW_G2M_REST_BASE_URI . $uri;
-    if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', 'gotomeeting')) {
+    if (!$record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $userid, 'plugin' => 'gotomeeting'))) {
         return false;
     }
     $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
@@ -122,7 +122,7 @@ function helpmenow_gotomeeting_invite($request) {
         throw new Exception('Invalid session');
     }
 
-    if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $USER->id, 'plugin', 'gotomeeting')) {
+    if (!$record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $USER->id, 'plugin' => 'gotomeeting'))) {
         throw new Exception('No u2p record');
     }
     $user2plugin = new helpmenow_user2plugin_gotomeeting(null, $record);
@@ -134,7 +134,7 @@ function helpmenow_gotomeeting_invite($request) {
         'time' => time(),
         'message' => addslashes($message),
     );
-    insert_record('block_helpmenow_message', $message_rec);
+    $DB->insert_record('block_helpmenow_message', $message_rec);
 
     return new stdClass;
 }
@@ -194,19 +194,19 @@ class helpmenow_plugin_gotomeeting extends helpmenow_plugin {
             SELECT 1
             WHERE EXISTS (
                 SELECT 1
-                FROM {$CFG->prefix}block_helpmenow_helper
+                FROM {block_helpmenow_helper}
                 WHERE userid = $USER->id
                 AND isloggedin <> 0
             )
             OR EXISTS (
                 SELECT 1
-                FROM {$CFG->prefix}block_helpmenow_user
+                FROM {block_helpmenow_user}
                 WHERE userid = $USER->id
                 AND isloggedin <> 0
             )
         ";
         # if they aren't, delete the meeting info from user2plugin record and update the db
-        if (!record_exists_sql($sql)) {
+        if (!$DB->record_exists_sql($sql)) {
             foreach (array('join_url', 'max_participants', 'unique_meetingid', 'meetingid') as $attribute) {
                 $user2plugin->$attribute = null;
             }

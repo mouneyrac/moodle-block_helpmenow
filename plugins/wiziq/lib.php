@@ -119,7 +119,7 @@ function helpmenow_wiziq_hmacsha1($key, $data) {
 function helpmenow_wiziq_invite($session_id, $class_id) {
     global $CFG, $USER;
 
-    if ($s2p_rec = get_record('block_helpmenow_s2p', 'sessionid', $session_id, 'plugin', 'wiziq')) {
+    if ($s2p_rec = $DB->get_record('block_helpmenow_s2p', array('sessionid' => $session_id, 'plugin' => 'wiziq'))) {
         $s2p = new helpmenow_session2plugin_wiziq(null, $s2p_rec);
         $method = 'update';
     } else {
@@ -186,7 +186,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
     }
 
     public static function on_chat_refresh($request, &$response) {
-        $session = get_record('block_helpmenow_session', 'id', $request->session);
+        $session = $DB->get_record('block_helpmenow_session', array('id' => $request->session));
         if (helpmenow_check_privileged($session)) {
             $response->wiziq = self::display($request->session, true);
         }
@@ -208,7 +208,7 @@ class helpmenow_plugin_wiziq extends helpmenow_plugin {
 
     public static function get_user2plugin_link($userid) {
         $plugin = 'wiziq';
-        if (!$u2p = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', $plugin)) {
+        if (!$u2p = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $userid, 'plugin' => $plugin))) {
             return false;
         } else {
             $class = "helpmenow_user2plugin_".$plugin;

@@ -31,8 +31,8 @@ require_login(0, false);
 $test = optional_param('test', 0, PARAM_INT);
 
 # make sure user is instructor or helper
-$user = get_record('block_helpmenow_user', 'userid', $USER->id);
-$helper = get_records('block_helpmenow_helper', 'userid', $USER->id);
+$user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id));
+$helper = $DB->get_records('block_helpmenow_helper', array('userid' => $USER->id));
 if (!$user and !$helper) {
     helpmenow_fatal_error('You do not have permission to view this page.');
 }

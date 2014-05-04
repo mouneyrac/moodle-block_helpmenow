@@ -37,7 +37,9 @@ if (!empty($CFG->helpmenow_adobeconnect_url)) {
 }
 
 $heading = $CFG->helpmenow_adobeconnect_orgname.'-Adobe Connect Redirector';
-print_header($heading, $heading);
+$PAGE->set_title($heading);
+$PAGE->set_heading($heading);
+echo $OUTPUT->header();
 
 $me = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
 $me->param('username', $username);
@@ -60,6 +62,6 @@ if ($testing || navigator.userAgent.indexOf("Chrome") != -1) {
 </script>
 EOF;
 
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

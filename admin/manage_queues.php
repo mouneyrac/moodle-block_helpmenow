@@ -35,7 +35,7 @@ $edit = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/edit_queue.php");
 $delete = new moodle_url("$CFG->wwwroot/blocks/helpmenow/admin/delete_queue.php");
 
 # contexts and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$sitecontext = context_system::instance(SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
@@ -43,10 +43,12 @@ if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
 # title, navbar, and a nice box
 $title = get_string('admin', 'block_helpmenow');
 $nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
-print_heading(get_string('global_admin', 'block_helpmenow'));
+echo $OUTPUT->heading(get_string('global_admin', 'block_helpmenow'));
 $queues = helpmenow_queue::get_queues();
 
 # start setting up the table
@@ -84,7 +86,7 @@ if (!empty($queues)) {
     }
 }
 
-print_table($table);
+echo html_writer::table($table);
 
 # link to add queue
 $edit->param('queueid', 0);
@@ -92,9 +94,9 @@ $edit_url = $edit->out();
 $new_queue_text = get_string('new_queue', 'block_helpmenow');
 echo "<p><a href='$edit_url'>$new_queue_text</a></p>";
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

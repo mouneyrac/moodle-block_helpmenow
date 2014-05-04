@@ -32,8 +32,8 @@ helpmenow_plugin::get_plugins();
 require_login(0, false);
 
 # contexts and cap check
-$admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
-if (!($admin or record_exists('block_helpmenow_helper', 'userid', $USER->id))) {
+$admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
+if (!($admin or $DB->record_exists('block_helpmenow_helper', array('userid' => $USER->id)))) {
     redirect();
 }
 
@@ -48,24 +48,26 @@ $nav = array(
     array('name' => $blockname),
     array('name' => $title)
 );
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
 $where = $admin ? '' : "WHERE h.userid = {$USER->id}";
 $sql = "
     SELECT q.*
-    FROM {$CFG->prefix}block_helpmenow_queue q
-    JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
+    FROM {block_helpmenow_queue} q
+    JOIN {block_helpmenow_helper} h ON h.queueid = q.id
     $where
 ";
 # helpers see other helpers in the same queue
-if ($queues = get_records_sql($sql)) {
+if ($queues = $DB->get_records_sql($sql)) {
     foreach ($queues as $q) {
-        print_heading($q->name, '', 3);
-        $helpers = get_records_sql("
+        echo $OUTPUT->heading($q->name, 3);
+        $helpers = $DB->get_records_sql("
             SELECT *
-            FROM {$CFG->prefix}block_helpmenow_helper h
-            JOIN {$CFG->prefix}user u ON u.id = h.userid
+            FROM {block_helpmenow_helper} h
+            JOIN {user} u ON u.id = h.userid
             WHERE h.queueid = {$q->id}
         ");
         helpmenow_print_hallway($helpers);
@@ -74,18 +76,18 @@ if ($queues = get_records_sql($sql)) {
 
 # admins see all instructors
 if ($admin) {
-    print_heading("Instructors", '', 3);
-    $instructors = get_records_sql("
+    echo $OUTPUT->heading("Instructors", 3);
+    $instructors = $DB->get_records_sql("
         SELECT *
-        FROM {$CFG->prefix}block_helpmenow_user hu
-        JOIN {$CFG->prefix}user u ON u.id = hu.userid
+        FROM {block_helpmenow_user} hu
+        JOIN {user} u ON u.id = hu.userid
     ");
     helpmenow_print_hallway($instructors);
 }
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

@@ -45,8 +45,7 @@ foreach ($plugins as $pluginname) {
     }
 }
 
-# block
-$string['noscript'] = "<div style='background-color:yellow;'>JavaScript is currently disabled. To use this block, please enable JavaScript</div>";
+$string['noscript'] = '<div style=\'background-color:yellow;\'>JavaScript is currently disabled. To use this block, please enable JavaScript</div>';
 $string['new_request'] = '(Click to get help)';
 $string['pending'] = '(Click to view your request)';
 $string['queue_na_short'] = '(Currently Offline)';
@@ -128,8 +127,7 @@ $string['settings_plugin'] = 'Default plugin';
 $string['settings_plugin_desc'] = 'Default plugin queues should use';
 $string['settings_block_message'] = 'Block message';
 $string['settings_block_message_desc'] = 'Message displayed in the block';
-$string['settings_meeting_timeout'] = 'Meeting timeout';
-$string['settings_meeting_timeout_desc'] = "Time meeting is 'active' when using plugins that aren't able to track this";
+$string['settings_meeting_timeout_desc'] = 'Time meeting is \'active\' when using plugins that aren\'t able to track this';
 $string['settings_request_timeout'] = 'Request timeout';
 $string['settings_request_timeout_desc'] = 'Time before request is deemed abandoned';
 $string['settings_refresh_rate'] = 'Request refresh rate';
@@ -156,11 +154,9 @@ $string['helpmenow:queue_ask'] = 'Ask for meetings in queues';
 
 $string['permission_error'] = 'You do not have permission to view this page. You may have been linked to it in error.';
 
-$string['logout'] = 'Log Out';
-$string['logout_status'] = "You're Logged Out";
+$string['logout_status'] = 'You\'re Logged Out';
 $string['login'] = 'Log In';
-
-$string['who'] = "Who's Here";
+$string['who'] = 'Who\'s Here';
 $string['popout'] = 'Popout';
 
 $string['textarea_message'] = 'Type your message here and press the &quot;enter&quot; or &quot;return&quot; key.';

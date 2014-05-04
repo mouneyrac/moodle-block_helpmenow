@@ -57,12 +57,12 @@ function helpmenow_verify_session($session) {
     global $CFG, $USER;
     $sql = "
         SELECT 1
-        FROM {$CFG->prefix}block_helpmenow_session s
-        JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id
+        FROM {block_helpmenow_session} s
+        JOIN {block_helpmenow_session2user} s2u ON s2u.sessionid = s.id
         WHERE s2u.userid = $USER->id
         AND s.id = $session
     ";
-    return record_exists_sql($sql);
+    return $DB->record_exists_sql($sql);
 }
 
 /**
@@ -76,12 +76,12 @@ function helpmenow_check_privileged($session) {
     if (isset($session->queueid)) {
         $sql = "
             SELECT 1
-            FROM {$CFG->prefix}block_helpmenow_queue q
-            JOIN {$CFG->prefix}block_helpmenow_helper h ON h.queueid = q.id
+            FROM {block_helpmenow_queue} q
+            JOIN {block_helpmenow_helper} h ON h.queueid = q.id
             WHERE q.id = $session->queueid
             AND h.userid = $USER->id
         ";
-        if (record_exists_sql($sql)) {
+        if ($DB->record_exists_sql($sql)) {
             return true;
         }
     } else if ($contact_list::is_admin_or_teacher()) {
@@ -108,11 +108,11 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
     global $CFG;
     $sql = "
         SELECT *
-        FROM {$CFG->prefix}block_helpmenow_message
+        FROM {block_helpmenow_message}
         WHERE sessionid = $sessionid
         ORDER BY id ASC
     ";
-    $messages = get_records_sql($sql);
+    $messages = $DB->get_records_sql($sql);
 
     $session2user_rec = (object) array(
         'sessionid' => $sessionid,
@@ -125,7 +125,7 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
             'last_message' => 0,
         )),
     );
-    return insert_record('block_helpmenow_session2user', $session2user_rec);
+    return $DB->insert_record('block_helpmenow_session2user', $session2user_rec);
 }
 
 /**
@@ -137,9 +137,11 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
     if ($print_header) {
         $title = get_string('helpmenow', 'block_helpmenow');
         $nav = array(array('name' => $title));
-        print_header($title, $title, build_navigation($nav));
-        print_box($message);
-        print_footer();
+        $PAGE->set_title($title);
+        $PAGE->set_heading($title);
+        echo $OUTPUT->header();
+        echo $OUTPUT->box($message);
+        echo $OUTPUT->footer();
     } else {
         echo $message;
     }
@@ -154,7 +156,7 @@ function helpmenow_fatal_error($message, $print_header = true, $close = false) {
  */
 function helpmenow_ensure_user_exists() {
     global $USER;
-    if (record_exists('block_helpmenow_user', 'userid', $USER->id)) {
+    if ($DB->record_exists('block_helpmenow_user', array('userid' => $USER->id))) {
         return;
     }
 
@@ -163,7 +165,7 @@ function helpmenow_ensure_user_exists() {
         'motd' => '',
     );
 
-    insert_record('block_helpmenow_user', $helpmenow_user);
+    $DB->insert_record('block_helpmenow_user', $helpmenow_user);
 }
 
 /**
@@ -179,7 +181,7 @@ function helpmenow_log($userid, $action, $details) {
         'details' => $details,
         'timecreated' => time(),
     );
-    insert_record('block_helpmenow_log', $new_record);
+    $DB->insert_record('block_helpmenow_log', $new_record);
 }
 
 function helpmenow_clean_sessions($all = false) {
@@ -187,35 +189,35 @@ function helpmenow_clean_sessions($all = false) {
 
     $sql = "";
     if (!$all) {
-        $sql = "JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id";
+        $sql = "JOIN {block_helpmenow_session2user} s2u ON s2u.sessionid = s.id AND s2u.userid = $USER->id";
     }
     $sql = "
         SELECT s.*
-        FROM {$CFG->prefix}block_helpmenow_session s
+        FROM {block_helpmenow_session} s
         $sql
         WHERE s.iscurrent = 1
         ";
-    if ($sessions = get_records_sql($sql)) {
+    if ($sessions = $DB->get_records_sql($sql)) {
         foreach ($sessions as $s) {
             if (!is_null($s->queueid)) {    # queue specific
                 # if there are any messages that no helpers have seen, this isn't old
                 $sql = "
                     SELECT 1
-                    FROM {$CFG->prefix}block_helpmenow_message m
+                    FROM {block_helpmenow_message} m
                     WHERE sessionid = $s->id
                     AND notify = 1
                     AND time > (
                         SELECT max(last_refresh)
-                        FROM {$CFG->prefix}block_helpmenow_session2user
+                        FROM {block_helpmenow_session2user}
                         WHERE sessionid = $s->id
                         AND userid <> $s->createdby
                     )
                 ";
-                if (record_exists_sql($sql)) {
+                if ($DB->record_exists_sql($sql)) {
                     continue;
                 }
             }
-            $session_users = get_records('block_helpmenow_session2user', 'sessionid', $s->id);
+            $session_users = $DB->get_records('block_helpmenow_session2user', array('sessionid' => $s->id));
             foreach ($session_users as $su) {
                 if (!is_null($s->queueid) and $s->createdby == $su->userid and count($session_users) > 1) {
                     continue;
@@ -224,7 +226,7 @@ function helpmenow_clean_sessions($all = false) {
                     continue 2;
                 }
             }
-            set_field('block_helpmenow_session', 'iscurrent', 0, 'id', $s->id);
+            $DB->set_field('block_helpmenow_session', 'iscurrent', 0, array('id' => $s->id));
         }
     }
 }
@@ -235,12 +237,12 @@ function helpmenow_autologout_helpers() {
     $cutoff = helpmenow_cutoff();
     $sql = "
         SELECT h.*, hu.lastaccess AS lastaccess
-        FROM {$CFG->prefix}block_helpmenow_helper h
-        JOIN {$CFG->prefix}block_helpmenow_user hu ON hu.userid = h.userid
+        FROM {block_helpmenow_helper} h
+        JOIN {block_helpmenow_user} hu ON hu.userid = h.userid
         WHERE h.isloggedin <> 0
         AND hu.lastaccess < $cutoff
         ";
-    if (!$helpers = get_records_sql($sql)) {
+    if (!$helpers = $DB->get_records_sql($sql)) {
         return true;
     }
 
@@ -250,7 +252,7 @@ function helpmenow_autologout_helpers() {
         helpmenow_log($h->userid, 'maybe_auto_logged_out', "queueid: $h->queueid, duration: $duration, cutoff: $cutoff, lastaccess: {$h->lastaccess}");
         /*
         $h->isloggedin = 0;
-        $success = $success and update_record('block_helpmenow_helper', $h);
+        $success = $success and $DB->update_record('block_helpmenow_helper', $h);
          */
     }
 
@@ -263,11 +265,11 @@ function helpmenow_autologout_users() {
     $cutoff = helpmenow_cutoff();
     $sql = "
         SELECT hu.*
-        FROM {$CFG->prefix}block_helpmenow_user hu
+        FROM {block_helpmenow_user} hu
         WHERE hu.isloggedin <> 0
         AND hu.lastaccess < $cutoff
         ";
-    if (!$users = get_records_sql($sql)) {
+    if (!$users = $DB->get_records_sql($sql)) {
         return true;
     }
 
@@ -277,7 +279,7 @@ function helpmenow_autologout_users() {
         helpmenow_log($u->userid, 'maybe_auto_logged_out', "duration: $duration, cutoff: $cutoff, lastaccess: {$u->lastaccess}");
         /*
         $u->isloggedin = 0;
-        $success = $success and update_record('block_helpmenow_user', addslashes_recursive($u));
+        $success = $success and $DB->update_record('block_helpmenow_user', addslashes_recursive($u));
          */
     }
 
@@ -292,7 +294,7 @@ function helpmenow_print_hallway($users) {
     global $CFG;
     static $admin;
     if (!isset($admin)) {
-        $admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
+        $admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
     }
     # start setting up the table
     $head = array(
@@ -375,7 +377,7 @@ function helpmenow_print_hallway($users) {
         $table->data[] = $row;
     }
 
-    print_table($table);
+    echo html_writer::table($table);
 }
 
 function helpmenow_block_interface() {
@@ -390,9 +392,8 @@ function helpmenow_block_interface() {
 EOF;
 
     $contact_list = helpmenow_contact_list::get_plugin();
-    
     if($contact_list::is_teacher()) {
-        $helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id);
+        $helpmenow_user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id));
         $instyle = $outstyle = '';
         if ($helpmenow_user->isloggedin) {
             $outstyle = 'style="display: none;"';
@@ -510,24 +511,24 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         'message' => $message,
         'notify' => $notify,
     );
-    if (!$last_message = insert_record('block_helpmenow_message', addslashes_recursive($message_rec))) {
+    if (!$last_message = $DB->insert_record('block_helpmenow_message', addslashes_recursive($message_rec))) {
         return false;
     }
 
-    $session = get_record('block_helpmenow_session', 'id', $sessionid);
+    $session = $DB->get_record('block_helpmenow_session', array('id' => $sessionid));
     $session->last_message = $last_message;
     $session->iscurrent = 1;
-    update_record('block_helpmenow_session', $session);
+    $DB->update_record('block_helpmenow_session', $session);
 
     $sql = "
         SELECT *
-        FROM {$CFG->prefix}block_helpmenow_session2user
+        FROM {block_helpmenow_session2user}
         WHERE sessionid = $sessionid
     "; 
     if (isset($userid)) {
         $sql .= "AND userid <> $userid";
     }
-    foreach (get_records_sql($sql) as $s2u) {
+    foreach ($DB->get_records_sql($sql) as $s2u) {
         $formatted_message = helpmenow_format_message($message_rec, $s2u->userid);
         $cache = json_decode($s2u->cache);
         $cache->last_message = $last_message;
@@ -537,7 +538,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         }
         $cache->html = $cache->html . $formatted_message;
         $s2u->cache = json_encode($cache);
-        update_record('block_helpmenow_session2user', addslashes_recursive($s2u));
+        $DB->update_record('block_helpmenow_session2user', addslashes_recursive($s2u));
     }
 
     return true;
@@ -552,7 +553,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
 function helpmenow_get_unread($sessionid, $userid) {
     global $CFG;
 
-    $s2u = get_record('block_helpmenow_session2user', 'userid', $userid, 'sessionid', $sessionid);
+    $s2u = $DB->get_record('block_helpmenow_session2user', array('userid' => $userid, 'sessionid' => $sessionid));
     if ($s2u->last_read > 0)
         $last_message = $s2u->last_read;
     else
@@ -560,7 +561,7 @@ function helpmenow_get_unread($sessionid, $userid) {
 
     $sql = "
         SELECT *
-        FROM {$CFG->prefix}block_helpmenow_message
+        FROM {block_helpmenow_message}
         WHERE sessionid = $sessionid
         AND id > $last_message
         AND (
@@ -569,7 +570,7 @@ function helpmenow_get_unread($sessionid, $userid) {
         )
         ORDER BY id ASC
     ";
-    return get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 /**
@@ -578,7 +579,7 @@ function helpmenow_get_unread($sessionid, $userid) {
  * @return mixed array of messages or false
  */
 function helpmenow_get_history($sessionid) {
-    return get_records('block_helpmenow_message', 'sessionid', $sessionid, 'id ASC');
+    return $DB->get_records('block_helpmenow_message', array('sessionid' => $sessionid), 'id ASC');
 }
 
 /**
@@ -590,13 +591,13 @@ function helpmenow_get_history_list($sessionids) {
     global $CFG;
     $sql = "
         SELECT m.*, q.name as queue_name
-        FROM {$CFG->prefix}block_helpmenow_message m
-        JOIN {$CFG->prefix}block_helpmenow_session s on s.id = m.sessionid
-        LEFT JOIN {$CFG->prefix}block_helpmenow_queue q on s.queueid = q.id
+        FROM {block_helpmenow_message} m
+        JOIN {block_helpmenow_session} s on s.id = m.sessionid
+        LEFT JOIN {block_helpmenow_queue} q on s.queueid = q.id
         WHERE sessionid in ($sessionids)
         ORDER BY m.id ASC
         ";
-    return get_records_sql($sql);
+    return $DB->get_records_sql($sql);
 }
 
 function helpmenow_filter_messages_history($messages) { // $messages is not modified
@@ -659,7 +660,7 @@ function helpmenow_format_message($m, $userid, $time = '', $queue_name = '') {
             $name = get_string('me', 'block_helpmenow');
         } else {
             if (!isset($users[$m->userid])) {
-                $users[$m->userid] = get_record('user', 'id', $m->userid);
+                $users[$m->userid] = $DB->get_record('user', array('id' => $m->userid));
             }
             $name = fullname($users[$m->userid]);
         }
@@ -686,23 +687,23 @@ function helpmenow_email_messages() {
     $sql = "
         SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
             SELECT userid
-            FROM {$CFG->prefix}block_helpmenow_session2user s2u2
+            FROM {block_helpmenow_session2user} s2u2
             WHERE s2u2.sessionid = s2u.sessionid
             AND s2u2.userid <> s2u.userid
         ) AS fromuserid
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {block_helpmenow_session} s ON s.id = s2u.sessionid
         WHERE s.queueid IS NULL
         AND s.last_message <> 0
         AND s2u.last_message < s.last_message
         AND $latecutoff > (
             SELECT m.time
-            FROM {$CFG->prefix}block_helpmenow_message m
+            FROM {block_helpmenow_message} m
             WHERE m.id = s.last_message
         )
         AND $earlycutoff > (
             SELECT min(m2.time)
-            FROM {$CFG->prefix}block_helpmenow_message m2
+            FROM {block_helpmenow_message} m2
             WHERE m2.sessionid = s2u.sessionid
             AND m2.id > s2u.last_message
         )
@@ -716,13 +717,13 @@ function helpmenow_email_messages() {
 /*    $sql = "
         SELECT s2u.id, s2u.userid, s2u.sessionid, s.last_message, (
             SELECT userid
-            FROM {$CFG->prefix}block_helpmenow_session2user s2u2
+            FROM {block_helpmenow_session2user} s2u2
             WHERE s2u2.sessionid = s2u.sessionid
             AND s2u2.userid <> s2u.userid
         ) AS fromuserid
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}block_helpmenow_session s ON s.id = s2u.sessionid
-        JOIN {$CFG->prefix}block_helpmenow_user u ON u.userid = s2u.userid
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {block_helpmenow_session} s ON s.id = s2u.sessionid
+        JOIN {block_helpmenow_user} u ON u.userid = s2u.userid
         WHERE s.queueid IS NULL
         AND ((s.last_message <> 0 AND s2u.last_message < s.last_message) 
         OR (s2u.last_read = 0 AND s2u.last_message = 0))
@@ -732,12 +733,12 @@ function helpmenow_email_messages() {
             OR
             ($latecutoff > (
                 SELECT m.time
-                FROM {$CFG->prefix}block_helpmenow_message m
+                FROM {block_helpmenow_message} m
                 WHERE m.id = s.last_message
             )
             AND $earlycutoff > (
                 SELECT min(m2.time)
-                FROM {$CFG->prefix}block_helpmenow_message m2
+                FROM {block_helpmenow_message} m2
                 WHERE m2.sessionid = s2u.sessionid
                 AND m2.id > s2u.last_read
             ))
@@ -746,7 +747,7 @@ function helpmenow_email_messages() {
  */
 
     echo $sql . "\n";
-    if (!$session2users = get_records_sql($sql)) {
+    if (!$session2users = $DB->get_records_sql($sql)) {
         echo "we don't have any users to email\n";
         return true;    # we got nothin' to do
     }
@@ -762,10 +763,10 @@ function helpmenow_email_messages() {
     foreach ($session2users as $s2u) {
         $rval = true;
         if (!isset($users[$s2u->userid])) {
-            $users[$s2u->userid] = get_record('user', 'id', $s2u->userid);
+            $users[$s2u->userid] = $DB->get_record('user', array('id' => $s2u->userid));
         }
         if (!isset($users[$s2u->fromuserid])) {
-            $users[$s2u->fromuserid] = get_record('user', 'id', $s2u->fromuserid);
+            $users[$s2u->fromuserid] = $DB->get_record('user', array('id' => $s2u->fromuserid));
         }
 
 
@@ -786,8 +787,8 @@ function helpmenow_email_messages() {
 
         if (!$content) {    # missed messages are only system messages, don't email
             if (!defined('HMN_TESTING')) {
-                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);   # but do update the last_message so we don't keep catching them
-                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);   # but do update the last_read so we don't keep catching them
+                $DB->set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, array('id' => $s2u->id));   # but do update the last_message so we don't keep catching them
+                $DB->set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, array('id' => $s2u->id));   # but do update the last_read so we don't keep catching them
             }
             continue;
         }
@@ -824,8 +825,8 @@ function helpmenow_email_messages() {
             helpmenow_log($s2u->userid, "missed message email", "subject:$subject text:$text last_message:$s2u->last_message");
             echo "emailed ".fullname($users[$s2u->userid]).": ".$subject."\n".$text."\nlast_message: $s2u->last_message\n";
             if (!defined('HMN_TESTING')) {
-                set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, 'id', $s2u->id);
-                set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, 'id', $s2u->id);
+                $DB->set_field('block_helpmenow_session2user', 'last_message', $s2u->last_message, array('id' => $s2u->id));
+                $DB->set_field('block_helpmenow_session2user', 'last_read', $s2u->last_message, array('id' => $s2u->id));
             }
         } else {
             helpmenow_log($s2u->userid, "missed message email", "failed to send email subject:$subject text:$text last_message:$s2u->last_message");
@@ -857,7 +858,7 @@ function helpmenow_get_s2u($sessionid, $userid = null) {
     if (isset($s2u_cache[$sessionid . $userid])) {
         return $s2u_cache[$sessionid . $userid];
     }
-    if ($s2u = get_record('block_helpmenow_session2user', 'userid', $userid, 'sessionid', $sessionid)) {
+    if ($s2u = $DB->get_record('block_helpmenow_session2user', array('userid' => $userid, 'sessionid' => $sessionid))) {
         $s2u_cache[$sessionid . $userid] = $s2u;
         return $s2u;
     }
@@ -918,7 +919,7 @@ function helpmenow_serverfunc_last_read($request, &$response) {
     # update session2user
     $s2u->last_read = $request->last_read;
 
-    if (!update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
+    if (!$DB->update_record('block_helpmenow_session2user', addslashes_recursive($s2u))) {
         throw new Exception('Could not update session2user record');
     }
 }
@@ -972,13 +973,13 @@ function helpmenow_serverfunc_refresh($request, &$response) {
     if ($response->last_message == $request->last_message) {
         $sql = "
             SELECT *
-            FROM {$CFG->prefix}block_helpmenow_message
+            FROM {block_helpmenow_message}
             WHERE id = (
                 SELECT max(id)
-                FROM {$CFG->prefix}block_helpmenow_message
+                FROM {block_helpmenow_message}
                 WHERE sessionid = {$request->session}
             )";
-        if ($last_message = get_record_sql($sql)) {
+        if ($last_message = $DB->get_record_sql($sql)) {
             if (!is_null($last_message->userid) and $last_message->time < time() - 30) {
                 $message = get_string('sent', 'block_helpmenow').': '.userdate($last_message->time, '%r');
                 helpmenow_message($request->session, null, $message, 0);
@@ -995,7 +996,7 @@ function helpmenow_serverfunc_refresh($request, &$response) {
         'beep' => false,
         'last_message' => $request->last_message,
     ));
-    if (!update_record('block_helpmenow_session2user', $session2user)) {
+    if (!$DB->update_record('block_helpmenow_session2user', $session2user)) {
         $response->html = '';
         $response->beep = false;
         $response->last_message = $request->last_message;
@@ -1020,7 +1021,7 @@ function helpmenow_serverfunc_block($request, &$response) {
 
     #echo "entered serverfunc_block: " . microtime() . "\n";     # DEBUGGING
 
-    set_field('block_helpmenow_user', 'lastaccess', time(), 'userid', $USER->id);   # update our user lastaccess
+    $DB->set_field('block_helpmenow_user', 'lastaccess', time(), array('userid' => $USER->id));   # update our user lastaccess
     helpmenow_log($USER->id, 'block refresh', '');
     $response->last_refresh = get_string('updated', 'block_helpmenow').': '.userdate(time(), '%r');   # datetime for debugging
     $response->pending = 0;
@@ -1041,10 +1042,10 @@ function helpmenow_serverfunc_block($request, &$response) {
         case HELPMENOW_QUEUE_HELPER:
             $sql = "
                 SELECT s.*, m.message, m.id AS messageid
-                FROM {$CFG->prefix}block_helpmenow_session s
-                JOIN {$CFG->prefix}block_helpmenow_session2user s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
-                JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
+                FROM {block_helpmenow_session} s
+                JOIN {block_helpmenow_session2user} s2u ON s2u.sessionid = s.id AND s2u.userid = s.createdby
+                JOIN {block_helpmenow_message} m ON m.id = (
+                    SELECT MAX(id) FROM {block_helpmenow_message} m2 WHERE m2.sessionid = s.id AND m2.userid <> s.createdby
                 )
                 WHERE s.iscurrent = 1
                 AND s.createdby = $USER->id
@@ -1052,7 +1053,7 @@ function helpmenow_serverfunc_block($request, &$response) {
                 AND (s2u.last_refresh + 20) < ".time()."
                 AND s2u.last_refresh < m.time
                 ";
-            if ($session = get_record_sql($sql) or $q->is_open()) {
+            if ($session = $DB->get_record_sql($sql) or $q->is_open()) {
                 $connect->remove_params('sessionid');
                 $connect->param('queueid', $q->id);
                 $message = $style = '';
@@ -1097,15 +1098,15 @@ EOF;
             # sessions
             $sql = "
                 SELECT u.*, s.id AS sessionid, m.message, m.time, m.id AS messageid
-                FROM {$CFG->prefix}block_helpmenow_session s
-                JOIN {$CFG->prefix}user u ON u.id = s.createdby
-                JOIN {$CFG->prefix}block_helpmenow_message m ON m.id = (
-                    SELECT MAX(id) FROM {$CFG->prefix}block_helpmenow_message m2 WHERE m2.sessionid = s.id AND m2.userid = s.createdby
+                FROM {block_helpmenow_session} s
+                JOIN {user} u ON u.id = s.createdby
+                JOIN {block_helpmenow_message} m ON m.id = (
+                    SELECT MAX(id) FROM {block_helpmenow_message} m2 WHERE m2.sessionid = s.id AND m2.userid = s.createdby
                 )
                 WHERE s.queueid = $q->id
                 AND s.iscurrent = 1
                 ";
-            if (!$sessions = get_records_sql($sql)) {
+            if (!$sessions = $DB->get_records_sql($sql)) {
                 break;
             }
             $response->queues_html .= '<div style="margin-left: 1em;">';
@@ -1114,12 +1115,12 @@ EOF;
                 $s->pending = true;
                 $sql = "
                     SELECT *
-                    FROM {$CFG->prefix}block_helpmenow_session2user s2u
-                    JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+                    FROM {block_helpmenow_session2user} s2u
+                    JOIN {user} u ON u.id = s2u.userid
                     WHERE s2u.sessionid = $s->sessionid
                     AND s2u.userid <> $s->id
                     ";
-                $s->helpers = get_records_sql($sql);
+                $s->helpers = $DB->get_records_sql($sql);
                 foreach ($s->helpers as $h) {
                     if ($s->pending) {
                         if (($h->last_refresh + 20) > time()) {
@@ -1177,7 +1178,7 @@ EOF;
     #echo "processed queues: " . microtime() . "\n";     # DEBUGGING
 
     # show the correct login state for instructors
-    $isloggedin = get_field('block_helpmenow_user', 'isloggedin', 'userid', $USER->id);
+    $isloggedin = $DB->get_field('block_helpmenow_user', 'isloggedin', array('userid' => $USER->id));
     if (!is_null($isloggedin)) {
         $response->isloggedin = $isloggedin ? true : false;
     }
@@ -1186,12 +1187,12 @@ EOF;
     $response->users_html = '';
     $sql = "
         SELECT u.*, hu.isloggedin, hu.motd, hu.lastaccess AS hmn_lastaccess
-        FROM {$CFG->prefix}block_helpmenow_contact c
-        JOIN {$CFG->prefix}user u ON u.id = c.contact_userid
-        JOIN {$CFG->prefix}block_helpmenow_user hu ON c.contact_userid = hu.userid
+        FROM {block_helpmenow_contact} c
+        JOIN {user} u ON u.id = c.contact_userid
+        JOIN {block_helpmenow_user} hu ON c.contact_userid = hu.userid
         WHERE c.userid = $USER->id
     ";
-    $contacts = get_records_sql($sql);
+    $contacts = $DB->get_records_sql($sql);
     if (!$contacts) {
         return;
     }
@@ -1212,7 +1213,7 @@ EOF;
                 WHERE s2u.userid = {$u->id}
                 ORDER BY m.id DESC
             ";
-            if (!$message = get_record_sql($sql)) {
+            if (!$message = $DB->get_record_sql($sql)) {
                 continue;
             }
             print_object($message);
@@ -1289,11 +1290,11 @@ EOF;
 function helpmenow_serverfunc_motd($request, &$response) {
     global $USER;
 
-    if (!$helpmenow_user = get_record('block_helpmenow_user', 'userid', $USER->id)) {
+    if (!$helpmenow_user = $DB->get_record('block_helpmenow_user', array('userid' => $USER->id))) {
         throw new Exception('No helpmenow_user record');
     }
     $helpmenow_user->motd = addslashes(clean_text($request->motd, FORMAT_HTML));
-    if (!update_record('block_helpmenow_user', $helpmenow_user)) {
+    if (!$DB->update_record('block_helpmenow_user', $helpmenow_user)) {
         throw new Exception('Could not update user record');
     }
     $response->motd = $request->motd;
@@ -1329,7 +1330,7 @@ function helpmenow_log_error($error) {
         'timecreated' => time(),
         'userid' => $USER->id,
     );
-    insert_record('block_helpmenow_error_log', $new_record);
+    $DB->insert_record('block_helpmenow_error_log', $new_record);
 
 }
 
@@ -1390,7 +1391,7 @@ class helpmenow_queue {
      */
     public function __construct($id=null, $record=null) {
         if (isset($id)) {
-            $record = get_record('block_helpmenow_queue', 'id', $id);
+            $record = $DB->get_record('block_helpmenow_queue', array('id' => $id));
         }
         foreach ($record as $k => $v) {
             $this->$k = $v;
@@ -1411,7 +1412,7 @@ class helpmenow_queue {
             return HELPMENOW_QUEUE_HELPER;
         }
 
-        $context = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $context = context_system::instance(SITEID);
 
         if (has_capability(HELPMENOW_CAP_QUEUE_ASK, $context)) {
             return HELPMENOW_QUEUE_HELPEE;
@@ -1455,7 +1456,7 @@ class helpmenow_queue {
             'isloggedin' => 0,
         );
 
-        if (!$helper->id = insert_record('block_helpmenow_helper', $helper)) {
+        if (!$helper->id = $DB->insert_record('block_helpmenow_helper', $helper)) {
             return false;
         }
         $this->helpers[$userid] = $helper;
@@ -1475,7 +1476,7 @@ class helpmenow_queue {
             return false;
         }
 
-        if (!delete_records('block_helpmenow_helper', 'id', $this->helpers[$userid]->id)) {
+        if (!$DB->delete_records('block_helpmenow_helper', array('id' => $this->helpers[$userid]->id))) {
             return false;
         }
         unset($this->helpers[$userid]);
@@ -1491,7 +1492,7 @@ class helpmenow_queue {
             return true;
         }
 
-        if (!$helpers = get_records('block_helpmenow_helper', 'queueid', $this->id)) {
+        if (!$helpers = $DB->get_records('block_helpmenow_helper', array('queueid' => $this->id))) {
             return false;
         }
 
@@ -1504,7 +1505,7 @@ class helpmenow_queue {
 
     public static function get_queues() {
         global $CFG;
-        if (!$records = get_records_sql("SELECT * FROM {$CFG->prefix}block_helpmenow_queue ORDER BY weight ASC")) {
+        if (!$records = $DB->get_records_sql("SELECT * FROM {block_helpmenow_queue} ORDER BY weight ASC")) {
             return false;
         }
         return self::queues_from_recs($records);
@@ -1564,7 +1565,7 @@ abstract class helpmenow_plugin_object {
      */
     public function __construct($id=null, $record=null) {
         if (isset($id)) {
-            $record = get_record('block_helpmenow_'.static::table, 'id', $id);
+            $record = $DB->get_record('block_helpmenow_'.static::table, array('id' => $id));
         }
         if (isset($record)) {
             foreach ($record as $k => $v) {
@@ -1588,7 +1589,7 @@ abstract class helpmenow_plugin_object {
 
         $this->serialize_extras();
 
-        return update_record("block_helpmenow_" . static::table, addslashes_recursive($this));
+        return $DB->update_record("block_helpmenow_" . static::table, addslashes_recursive($this));
     }
 
     /**
@@ -1605,7 +1606,7 @@ abstract class helpmenow_plugin_object {
 
         $this->serialize_extras();
 
-        if (!$this->id = insert_record("block_helpmenow_" . static::table, addslashes_recursive($this))) {
+        if (!$this->id = $DB->insert_record("block_helpmenow_" . static::table, addslashes_recursive($this))) {
             debugging("Could not insert " . static::table);
             return false;
         }
@@ -1623,7 +1624,7 @@ abstract class helpmenow_plugin_object {
             return false;
         }
 
-        return delete_records("block_helpmenow_" . static::table, 'id', $this->id);
+        return $DB->delete_records("block_helpmenow_" . static::table, array('id' => $this->id));
     }
 
     /**
@@ -1637,7 +1638,7 @@ abstract class helpmenow_plugin_object {
         # we have to get the record instead of passing the id to the
         # constructor as we have no idea what class the record belongs to
         if (isset($id)) {
-            if (!$record = get_record("block_helpmenow_" . static::table, 'id', $id)) {
+            if (!$record = $DB->get_record("block_helpmenow_" . static::table, array('id' => $id))) {
                 return false;
             }
         }
@@ -1836,7 +1837,7 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
         $success = true;
         foreach (self::get_plugins() as $pluginname) {
             $class = "helpmenow_plugin_$pluginname";
-            $record = get_record('block_helpmenow_plugin', 'plugin', $pluginname);
+            $record = $DB->get_record('block_helpmenow_plugin', array('plugin' => $pluginname));
             $plugin = new $class(null, $record);
             if (($plugin->cron_interval != 0) and (time() >= $plugin->last_cron + $plugin->cron_interval)) {
                 $class = "helpmenow_plugin_$pluginname";
@@ -1913,7 +1914,7 @@ abstract class helpmenow_user2plugin extends helpmenow_plugin_object {
 
         $plugin = preg_replace('/helpmenow_user2plugin_/', '', get_called_class());
 
-        if ($record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', $plugin)) {
+        if ($record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $userid, 'plugin' => $plugin))) {
             return new static(null, $record);
         }
         return false;
@@ -1979,7 +1980,7 @@ abstract class helpmenow_contact_list {
      */
     public static function update_all_contacts() {
         $rval = true;
-        foreach (get_records_select('user', "auth <> 'nologin'") as $u) {
+        foreach ($DB->get_records_select('user', "auth <> 'nologin'") as $u) {
             $rval = true and static::update_contacts($u->id);
         }
         return $rval;

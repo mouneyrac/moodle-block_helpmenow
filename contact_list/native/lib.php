@@ -26,7 +26,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
      */
     public static function update_contacts($userid) {
         global $CFG;
-        $user = get_record('user', 'id', $userid);
+        $user = $DB->get_record('user', array('id' => $userid));
 
         # get the new contacts
         $new_contacts = array();
@@ -34,14 +34,14 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
             $sql = "
                 SELECT c.id
-                FROM {$CFG->prefix}course c
-                INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE . "
-                INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-                INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-                INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id AND usr.id = $userid
+                FROM {course} c
+                INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE . "
+                INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+                INNER JOIN {role} r ON ra.roleid = r.id
+                INNER JOIN {user} usr ON ra.userid = usr.id AND usr.id = $userid
                 WHERE r.shortname in ('teacher', 'editingteacher')
                 ";
-            $courses = get_records_sql($sql);
+            $courses = $DB->get_records_sql($sql);
             if ($courses) {
                 $courseids = array();
                 foreach($courses as $c) {
@@ -51,28 +51,28 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
                 $sql = "
                     SELECT usr.*
-                    FROM {$CFG->prefix}course c
-                    INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
-                    INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-                    INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-                    INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id
+                    FROM {course} c
+                    INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
+                    INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+                    INNER JOIN {role} r ON ra.roleid = r.id
+                    INNER JOIN {user} usr ON ra.userid = usr.id
                     WHERE r.shortname = 'student'
                     AND c.id in ($courseids)
                     ";
-                $new_contacts = get_records_sql($sql);
+                $new_contacts = $DB->get_records_sql($sql);
             }
         } else if (self::is_student($userid)) {
 
             $sql = "
                 SELECT c.id
-                FROM {$CFG->prefix}course c
-                INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
-                INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-                INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-                INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id AND usr.id = $userid
+                FROM {course} c
+                INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
+                INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+                INNER JOIN {role} r ON ra.roleid = r.id
+                INNER JOIN {user} usr ON ra.userid = usr.id AND usr.id = $userid
                 WHERE r.shortname = 'student'
                 ";
-            $courses = get_records_sql($sql);
+            $courses = $DB->get_records_sql($sql);
             if ($courses) {
                 $courseids = array();
                 foreach($courses as $c) {
@@ -82,15 +82,15 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
                 $sql = "
                     SELECT usr.*
-                    FROM {$CFG->prefix}course c
-                    INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
-                    INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-                    INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-                    INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id
+                    FROM {course} c
+                    INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = '50'
+                    INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+                    INNER JOIN {role} r ON ra.roleid = r.id
+                    INNER JOIN {user} usr ON ra.userid = usr.id
                     WHERE r.shortname in ('teacher', 'editingteacher')
                     AND c.id in ($courseids)
                     ";
-                $new_contacts = get_records_sql($sql);
+                $new_contacts = $DB->get_records_sql($sql);
             }
         } else if (self::is_admin($userid)) {
             # for new this will make it so we can at least hack some contacts
@@ -103,12 +103,12 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
         $rval = true;
         # get the current contacts
-        if ($current_contacts = get_records('block_helpmenow_contact', 'userid', $userid, '', 'contact_userid, id')) {
+        if ($current_contacts = $DB->get_records('block_helpmenow_contact', array('userid' => $userid), '', 'contact_userid, id')) {
 
             # remove current contacts we shouldn't have
             foreach ($current_contacts as $cc) {
                 if (!isset($new_contacts[$cc->contact_userid])) {
-                    $rval = $rval and delete_records('block_helpmenow_contact', 'id', $cc->id);
+                    $rval = $rval and $DB->delete_records('block_helpmenow_contact', array('id' => $cc->id));
                 }
             }
         }
@@ -121,7 +121,7 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
                     'contact_userid' => $nc->id,
                     'timecreated' => time(),
                 );
-                $rval = $rval and insert_record('block_helpmenow_contact', $contact_rec);
+                $rval = $rval and $DB->insert_record('block_helpmenow_contact', $contact_rec);
             }
         }
         return $rval;
@@ -136,19 +136,19 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
         $sql = "
             SELECT usr.id
-            FROM {$CFG->prefix}course c
-            INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE . "
-            INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-            INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-            INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id and usr.id = $userid
+            FROM {course} c
+            INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE . "
+            INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+            INNER JOIN {role} r ON ra.roleid = r.id
+            INNER JOIN {user} usr ON ra.userid = usr.id and usr.id = $userid
             WHERE r.shortname in ('teacher', 'editingteacher')
             ";
 
-        return record_exists_sql($sql);
+        return $DB->record_exists_sql($sql);
     }
 
     public static function is_admin($userid=null) {
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $sitecontext = context_system::instance(SITEID);
         return has_capability('moodle/site:doanything', $sitecontext);
     }
 
@@ -164,15 +164,15 @@ class helpmenow_contact_list_native extends helpmenow_contact_list {
 
         $sql = "
             SELECT usr.id
-            FROM {$CFG->prefix}course c
-            INNER JOIN {$CFG->prefix}context cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE ."
-            INNER JOIN {$CFG->prefix}role_assignments ra ON cx.id = ra.contextid
-            INNER JOIN {$CFG->prefix}role r ON ra.roleid = r.id
-            INNER JOIN {$CFG->prefix}user usr ON ra.userid = usr.id and usr.id = $userid
+            FROM {course} c
+            INNER JOIN {context} cx ON c.id = cx.instanceid AND cx.contextlevel = " . CONTEXT_COURSE ."
+            INNER JOIN {role_assignments} ra ON cx.id = ra.contextid
+            INNER JOIN {role} r ON ra.roleid = r.id
+            INNER JOIN {user} usr ON ra.userid = usr.id and usr.id = $userid
             WHERE r.shortname in ('student')
             ";
 
-        return record_exists_sql($sql);
+        return $DB->record_exists_sql($sql);
     }
 }
 

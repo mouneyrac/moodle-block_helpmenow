@@ -36,7 +36,7 @@ $queueid = optional_param('queueid', 0, PARAM_INT);
 $admin_url = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
 
 # contexts and cap check
-$sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+$sitecontext = context_system::instance(SITEID);
 if (!has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
     redirect();
 }
@@ -47,10 +47,10 @@ if ($form->is_cancelled()) {                # cancelled
     redirect($admin_url);
 } else if ($formdata = $form->get_data()) {     # submitted
     if (!$formdata->queueid) {
-        insert_record('block_helpmenow_queue', $formdata);
+        $DB->insert_record('block_helpmenow_queue', $formdata);
     } else {
         $formdata->id = $formdata->queueid;
-        update_record('block_helpmenow_queue', $formdata);
+        $DB->update_record('block_helpmenow_queue', $formdata);
     }
     redirect($admin_url);
 } 
@@ -61,8 +61,10 @@ $nav = array(
     array('name' => get_string('admin', 'block_helpmenow'), 'link' => $admin_url),
     array('name' => $title),
 );
-print_header($title, $title, build_navigation($nav));
-print_box_start('generalbox centerpara');
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start('generalbox centerpara');
 
 $toform = array(
     'queueid' => $queueid,
@@ -77,9 +79,9 @@ if ($queueid) {
 $form->set_data($toform);
 $form->display();
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

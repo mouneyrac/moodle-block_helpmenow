@@ -69,7 +69,7 @@ if ($code) {
     }
 
     # save the reponse to user2plugin record
-    if (!$record = get_record('block_helpmenow_user2plugin', 'userid', $userid, 'plugin', 'gotomeeting')) {
+    if (!$record = $DB->get_record('block_helpmenow_user2plugin', array('userid' => $userid, 'plugin' => 'gotomeeting'))) {
         $user2plugin = new helpmenow_user2plugin_gotomeeting();
         $user2plugin->userid = $userid;
         $user2plugin->insert();
@@ -85,7 +85,9 @@ if ($code) {
 
 $title = 'Token';   # todo: language string
 $nav = array(array('name' => $title));
-print_header($title, $title, build_navigation($nav));
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
 
 $this_url = new moodle_url();
 if ($admin) {
@@ -107,6 +109,6 @@ $citrix_url .= "?$fields";
 echo "<p>" . get_string('gotomeeting_token_desc', 'block_helpmenow') . "</p>";
 echo "<p><a href='$citrix_url'>" . get_string('gotomeeting_token_link', 'block_helpmenow') . "</a></p>";
 
-print_footer();
+echo $OUTPUT->footer();
 
 ?>

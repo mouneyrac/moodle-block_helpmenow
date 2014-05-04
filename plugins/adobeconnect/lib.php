@@ -40,7 +40,7 @@ function helpmenow_adobeconnect_urlexists($userid = false) {
         $userid = $USER->id;
         $username = $USER->username;
     } else {
-        $username = get_field('user', 'username', 'id', $userid);
+        $username = $DB->get_field('user', 'username', array('id' => $userid));
     }
 
     if (!isset($SESSION->helpmenow_adobeconnect_urlexists[$userid])) {
@@ -121,7 +121,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
         global $CFG;
         if (helpmenow_adobeconnect_urlexists($userid)) {
             $join_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/plugins/adobeconnect/meetnow.php");
-            $username = get_field('user', 'username', 'id', $userid);
+            $username = $DB->get_field('user', 'username', array('id' => $userid));
             $join_url->param('username', $username);
             $join_url = $join_url->out();
             return $join_url;

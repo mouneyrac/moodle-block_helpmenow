@@ -37,7 +37,7 @@ class block_helpmenow extends block_base {
             $this->title = get_string('helpmenow', 'block_helpmenow'); 
         }
 
-        $plugin = new object;
+        $plugin = new stdClass();
         require(dirname(__FILE__) . "/version.php");
         $this->version = $plugin->version;
         $this->cron = $plugin->cron;
@@ -88,7 +88,7 @@ EOF;
             $break = true;
         }
         # admin link
-        $sitecontext = get_context_instance(CONTEXT_SYSTEM, SITEID);
+        $sitecontext = context_system::instance(SITEID);
         if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext)) {
             $admin = "$CFG->wwwroot/blocks/helpmenow/admin/manage_queues.php";
             $admin_text = get_string('admin_link', 'block_helpmenow');
@@ -101,7 +101,7 @@ EOF;
         }
 
         # "hallway" link
-        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or record_exists('block_helpmenow_helper', 'userid', $USER->id)) {
+        if (has_capability(HELPMENOW_CAP_MANAGE, $sitecontext) or $DB->record_exists('block_helpmenow_helper', array('userid' => $USER->id))) {
             $who = get_string('who', 'block_helpmenow');
             if ($break) {
                 $this->content->footer .= "<br />";
@@ -138,15 +138,18 @@ EOF;
         }
         $this->content->footer .= <<<EOF
 <div id="helpmenow_last_refresh_div"></div>
-<div style="text-align:right;">
-    <div style="float:left;">
+<div class="helpmenow_textalignright">
+    <div class="helpmenow_floatleft">
         <a href="javascript:void(0)" onclick="helpmenow.chime();">
             <img src="$CFG->wwwroot/blocks/helpmenow/media/Bell.png" />
         </a>
     </div>
 EOF;
         $popout = get_string('popout', 'block_helpmenow');
-        $this->content->footer .= link_to_popup_window($popout_url, 'hmn_popout', $popout, 400, 250, null, null, true) . '</div>';
+        $action = new popup_action('click', $popout_url, 'hmn_popout',
+            array('height' => 400, 'width' => 250));
+        $this->content->footer .=
+            $OUTPUT->action_link($popout_url, $popout, $action)  . '</div>';
 
         return $this->content;
     }

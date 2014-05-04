@@ -33,7 +33,8 @@ if (!empty($CFG->helpmenow_title)) {
 } else {
     $title = get_string('helpmenow', 'block_helpmenow'); 
 }
-print_header($title);
+$PAGE->set_title($title);
+echo $OUTPUT->header();
 
 $output = <<<EOF
 <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: white;">

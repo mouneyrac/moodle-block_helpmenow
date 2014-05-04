@@ -32,7 +32,7 @@ $recent = optional_param('recent', 0, PARAM_INT);
 require_login(0, true);
 
 # contexts and cap check
-$admin = has_capability(HELPMENOW_CAP_MANAGE, get_context_instance(CONTEXT_SYSTEM, SITEID));
+$admin = has_capability(HELPMENOW_CAP_MANAGE, context_system::instance(SITEID));
 if (!($admin or $userid==$USER->id)) {
     helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
 }
@@ -48,8 +48,10 @@ $nav = array(
     array('name' => $blockname),
     array('name' => $title)
 );
-print_header($title, $title, build_navigation($nav));
-print_box_start();
+$PAGE->set_title($title);
+$PAGE->set_heading($title);
+echo $OUTPUT->header();
+echo $OUTPUT->box_start();
 
 $this_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chathistorylist.php");
 $this_url->param('userid', $userid);
@@ -62,11 +64,11 @@ $orderbydate_url = $this_url->out();
 # conversations with $userid
 $last_year = strtotime("-1 year");
 $sql = "SELECT sessionid
-        FROM {$CFG->prefix}block_helpmenow_session2user
+        FROM {block_helpmenow_session2user}
         WHERE userid = $userid
         AND last_message > 0
         AND last_refresh > $last_year";
-$sessions = get_records_sql($sql);
+$sessions = $DB->get_records_sql($sql);
 $sessionids = array();
 if ($sessions) {
     foreach ($sessions as $s) {
@@ -88,21 +90,21 @@ if (count($sessionids) < 1) {
 
     $sql = "
         SELECT u.*, s2u.sessionid
-        FROM {$CFG->prefix}block_helpmenow_session2user s2u
-        JOIN {$CFG->prefix}user u ON u.id = s2u.userid
+        FROM {block_helpmenow_session2user} s2u
+        JOIN {user} u ON u.id = s2u.userid
         WHERE s2u.userid <> $userid
         AND s2u.sessionid IN ($sessions)
         ORDER BY $orderby
         ";
-    $other_user_recs = get_records_sql($sql);
+    $other_user_recs = $DB->get_records_sql($sql);
 
     $heading = get_string('viewconversation', 'block_helpmenow');
     if ($userid != $USER->id) {
-        $mainuser = get_record('user', 'id', $userid);
+        $mainuser = $DB->get_record('user', array('id' => $userid));
         $name = fullname($mainuser);
         $heading = $name . get_string('conversations', 'block_helpmenow');
     }
-    print_heading($heading, 'left');
+    echo $OUTPUT->heading($heading);
     $orderbystring = get_string('orderby', 'block_helpmenow') . " ( <a href=$orderbyname_url>" . get_string('name', 'block_helpmenow') . "</a> | <a href=$orderbydate_url>" . get_string('mostrecentconversation', 'block_helpmenow') . '</a> )';
     print "<div>$orderbystring</div><br />";
 
@@ -119,9 +121,9 @@ if (count($sessionids) < 1) {
     }
 }
 
-print_box_end();
+echo $OUTPUT->box_end();
 
 # footer
-print_footer();
+echo $OUTPUT->footer();
 
 ?>
