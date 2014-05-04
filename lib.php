@@ -134,6 +134,8 @@ function helpmenow_add_user($userid, $sessionid, $last_refresh = 0) {
  * @param bool $print_header print generic helpmenow header or not
  */
 function helpmenow_fatal_error($message, $print_header = true, $close = false) {
+    global $OUTPUT, $PAGE;
+
     if ($print_header) {
         $title = get_string('helpmenow', 'block_helpmenow');
         $nav = array(array('name' => $title));
@@ -661,6 +663,8 @@ function helpmenow_format_message_history($m, $userid) {
 }
 
 function helpmenow_format_message($m, $userid, $time = '', $queue_name = '') {
+    global $DB;
+
     static $users;
     if (!isset($users)) {
         $users = array();

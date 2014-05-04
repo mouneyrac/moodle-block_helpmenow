@@ -85,7 +85,6 @@ echo $OUTPUT->box_start('generalbox centerpara');
 echo $OUTPUT->heading(get_string('assign_heading', 'block_helpmenow') . $queue->name);
 
 $users = get_users_by_capability($sitecontext, $cap, 'u.id, u.username, u.firstname, u.lastname', '', '', '', '', '', false);
-
 # todo: if we don't get any users we should print a helpful messages about capabilities
 
 # start setting up the table

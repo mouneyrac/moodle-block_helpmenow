@@ -38,7 +38,7 @@ $capabilities = array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legacy'        => array (
+        'archetypes'        => array (
             'student'           => CAP_ALLOW,
             'teacher'           => CAP_ALLOW,
             'editingteacher'    => CAP_ALLOW,
@@ -50,7 +50,7 @@ $capabilities = array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legacy'        => array (
+        'archetypes'        => array (
             'admin'             => CAP_ALLOW
         )
     ),
@@ -58,7 +58,7 @@ $capabilities = array (
         'riskbitmask'   => RISK_SPAM + RISK_CONFIG,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'legacy'        => array (
+        'archetypes'        => array (
             'admin'             => CAP_ALLOW
         )
     ),
