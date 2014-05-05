@@ -1216,9 +1216,9 @@ EOF;
                 return $a->pending ? -1 : 1;
             });
 
-            $chaturl = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
             foreach ($sessions as $s) {
-                $chaturl->param('session', $s->sessionid);
+                $connect->remove_params('queueid');
+                $connect->param('sessionid', $s->sessionid);
                 $message = $style = '';
                 if ($s->pending) {
                     $response->pending++;
@@ -1235,7 +1235,7 @@ EOF;
                 }
                 $message = '<div style="margin-left: 1em;">'.$message.'</div>';
                 $response->queues_html .= "<div$style>" . create_popup(fullname($s),
-                        $chaturl->out(), $s->sessionid) . "$message</div>";
+                        $connect->out(), $s->sessionid) . "$message</div>";
             }
             $response->queues_html .= '</div>';
             break;
