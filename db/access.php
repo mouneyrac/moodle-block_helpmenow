@@ -38,30 +38,48 @@ $capabilities = array (
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'archetypes'        => array (
+        'archetypes'    => array (
             'student'           => CAP_ALLOW,
             'teacher'           => CAP_ALLOW,
             'editingteacher'    => CAP_ALLOW,
             'coursecreator'     => CAP_ALLOW,
-            'admin'             => CAP_ALLOW
+            'manager'           => CAP_ALLOW
         )
     ),
     HELPMENOW_CAP_QUEUE_ANSWER => array(
         'riskbitmask'   => RISK_SPAM,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'archetypes'        => array (
-            'admin'             => CAP_ALLOW
+        'archetypes'    => array (
+            'manager'           => CAP_ALLOW
         )
     ),
     HELPMENOW_CAP_MANAGE => array(
         'riskbitmask'   => RISK_SPAM + RISK_CONFIG,
         'captype'       => 'write',
         'contextlevel'  => CONTEXT_SYSTEM,
-        'archetypes'        => array (
-            'admin'             => CAP_ALLOW
+        'archetypes'    => array (
+            'manager'             => CAP_ALLOW
         )
     ),
+    'block/helpmenow:addinstance' => array(
+        'captype'      => 'read',
+        'contextlevel' => CONTEXT_BLOCK,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+        'clonepermissionsfrom' => 'moodle/site:manageblocks'
+    ),
+    'block/helpmenow:myaddinstance' => array(
+        'riskbitmask'  => RISK_PERSONAL,
+        'captype'      => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes'   => array(
+            'user' => CAP_ALLOW,
+        ),
+        'clonepermissionsfrom' => 'moodle/my:manageblocks'
+    )
 );
 
 ?>

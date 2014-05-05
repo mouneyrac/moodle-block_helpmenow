@@ -66,6 +66,49 @@ function helpmenow_verify_session($session) {
 }
 
 /**
+ * We can't use popup_action and action_link as helpmenow reload the html.
+ * popup_action/action_link have generated YUI3 call into the HTML end code.
+ * Their is currently no function that reload this piece of code, and it seems overkill
+ * to reload the full HTML end code for this specific block only. So we created this function
+ * create_popup.
+ *
+ * @param $title
+ * @param $url
+ * @param $target
+ * @param int $menubar
+ * @param int $location
+ * @param bool $scrollbars
+ * @param bool $resizable
+ * @param int $width
+ * @param int $height
+ * @return string
+ */
+function create_popup($title, $url, $target, $menubar=0, $location=0, $scrollbars=true,
+                      $resizable=true, $width=500, $height=400) {
+    global $CFG;
+
+    if ($scrollbars) {
+        $scrollbars = ',scrollbars';
+    } else {
+        $scrollbars = '';
+    }
+
+    if ($resizable) {
+        $resizable = ',resizable';
+    } else {
+        $resizable = '';
+    }
+
+    $onclick = 'this.target=\''.$target.'\'; return openpopup(\''.$url.'\', \''.$target.'\', \'menubar='.$menubar.
+        ',location='.$location.$scrollbars.resizable.',width='.$width.',height='.$height.'\', 0);';
+
+    $html = html_writer::link(new moodle_url($url), $title, array('onclick' => $onclick,
+    'title' => $title));
+
+    return $html;
+}
+
+/**
  * Check if the user is an admin or teacher or if the user is a queue helper
  */
 function helpmenow_check_privileged($session) {
@@ -1085,10 +1128,9 @@ function helpmenow_serverfunc_block($request, &$response) {
                         $response->alert = true;
                     }
                 }
-                $action = new popup_action('click', $connect->out(), "queue{$q->id}",
-                    array('height' => 400, 'width' => 500));
-                $response->queues_html .= "<div$style>" . $OUTPUT->action_link($connect->out(),
-                        $q->name, $action) . "$message</div>";
+                $response->queues_html .= "<div$style>" .
+                    create_popup($q->name, $connect->out(), "queue{$q->id}") .
+                    "$message</div>";
             } else {
                 $response->queues_html .= "<div>$q->name</div>";
             }
@@ -1106,15 +1148,11 @@ function helpmenow_serverfunc_block($request, &$response) {
             $login_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/login.php");
             $login_url->param('queueid', $q->id);
             $login_url->param('login', 0);
-            $action = new popup_action('click', $login_url->out(), "login",
-                array('height' => 400, 'width' => 500));
-            $logout = $OUTPUT->action_link($login_url->out(),
-                get_string('logout', 'block_helpmenow'), $action);
+            $logout = create_popup(get_string('logout', 'block_helpmenow'),
+                $login_url->out(), "login");
             $login_url->param('login', 1);
-            $action = new popup_action('click', $login_url->out(), "login",
-                array('height' => 400, 'width' => 500));
-            $login = $OUTPUT->action_link($login_url->out(),
-                get_string('login', 'block_helpmenow'), $action);
+            $login = create_popup(get_string('login', 'block_helpmenow'),
+                $login_url->out(), "login");
             $logout_status = get_string('logout_status', 'block_helpmenow');
 
             $response->queues_html .= <<<EOF
