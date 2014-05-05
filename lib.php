@@ -84,7 +84,8 @@ function helpmenow_verify_session($session) {
  * @return string
  */
 function create_popup($title, $url, $target, $menubar=0, $location=0, $scrollbars=true,
-                      $resizable=true, $width=500, $height=400) {
+                      $resizable=true, $width=500, $height=400, $fullscreen=false,
+                      $toolbar=true, $status=true, $dependent=true, $directories=0) {
     global $CFG;
 
     if ($scrollbars) {
@@ -99,11 +100,44 @@ function create_popup($title, $url, $target, $menubar=0, $location=0, $scrollbar
         $resizable = '';
     }
 
-    $onclick = 'this.target=\''.$target.'\'; return openpopup(\''.$url.'\', \''.$target.'\', \'menubar='.$menubar.
-        ',location='.$location.$scrollbars.$resizable.',width='.$width.',height='.$height.'\', 0);';
+    if ($fullscreen) {
+        $fullscreen = ',fullscreen';
+    } else {
+        $fullscreen = '';
+    }
 
-    $html = html_writer::link(new moodle_url($url), $title, array('onclick' => $onclick,
-    'title' => $title));
+    if ($toolbar) {
+        $toolbar = ',toolbar';
+    } else {
+        $toolbar = '';
+    }
+
+    if ($status) {
+        $status = ',status';
+    } else {
+        $status = '';
+    }
+
+    if ($dependent) {
+        $dependent = ',dependent';
+    } else {
+        $dependent = '';
+    }
+
+    $onclick = 'this.target=\''.$target.'\'; return openpopup(null,{"url":"'.$url.'","name":"'
+        . $target.'","options":"menubar='.$menubar
+        . ',location='.$location.$scrollbars.$resizable.$fullscreen.$toolbar.$status.$dependent
+        . ',width='.$width.',height='.$height.',directories='.$directories
+        . '"});';
+
+    $html = html_writer::link(new moodle_url($url), $title,
+        array('onclick' => $onclick, 'title' => $title));
+
+    // Argh - very ugly hack - we convert the $amp; wrongly converted by html_writer back to &.
+    // (there could more issues than just the $amp but we don't use complicate params, so it should be fine.)
+    // The proper fix, I think, would be avoid using such long onclick.
+    // Note: Chrome browser likes to reformat the onclick content making creating a proper onclick string a nightmare :)
+    $html = str_replace('&amp;', '&', $html);
 
     return $html;
 }
