@@ -100,7 +100,7 @@ function create_popup($title, $url, $target, $menubar=0, $location=0, $scrollbar
     }
 
     $onclick = 'this.target=\''.$target.'\'; return openpopup(\''.$url.'\', \''.$target.'\', \'menubar='.$menubar.
-        ',location='.$location.$scrollbars.resizable.',width='.$width.',height='.$height.'\', 0);';
+        ',location='.$location.$scrollbars.$resizable.',width='.$width.',height='.$height.'\', 0);';
 
     $html = html_writer::link(new moodle_url($url), $title, array('onclick' => $onclick,
     'title' => $title));
@@ -392,9 +392,7 @@ function helpmenow_print_hallway($users) {
         if ($admin and $u->isloggedin) {
             $connect = new moodle_url("$CFG->wwwroot/blocks/helpmenow/connect.php");
             $connect->param('userid', $u->id);
-            $action = new popup_action('click', $connect->out(), $u->id,
-                array('height' => 400, 'width' => 500));
-            $name = $OUTPUT->action_link($connect->out(), $name, $action);
+            $name = create_popup($name, $connect->out(), $u->id);
         }
         $row = array(
             $name,
@@ -1233,10 +1231,8 @@ EOF;
                     $message .= '<small>'.$s->helper_names.'</small><br />';
                 }
                 $message = '<div style="margin-left: 1em;">'.$message.'</div>';
-                $action = new popup_action('click', $connect->out(), $s->sessionid,
-                    array('height' => 400, 'width' => 500));
-                $response->queues_html .= "<div$style>" . $OUTPUT->action_link($connect->out(),
-                        fullname($s), $action) . "$message</div>";
+                $response->queues_html .= "<div$style>" . create_popup(fullname($s),
+                        $connect->out(), $s->sessionid) . "$message</div>";
             }
             $response->queues_html .= '</div>';
             break;
