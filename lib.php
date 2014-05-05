@@ -1006,6 +1006,9 @@ function helpmenow_serverfunc_refresh($request, &$response) {
 
         # todo: move this to the client
         if ($messages) {
+            if (!isset($response->html)) {
+                $response->html = '';
+            }
             $response->html .= helpmenow_format_messages($messages);
 
             # determine if we need to beep
@@ -1213,9 +1216,9 @@ EOF;
                 return $a->pending ? -1 : 1;
             });
 
+            $chaturl = new moodle_url("$CFG->wwwroot/blocks/helpmenow/chat.php");
             foreach ($sessions as $s) {
-                $connect->remove_params('queueid');
-                $connect->param('sessionid', $s->sessionid);
+                $chaturl->param('session', $s->sessionid);
                 $message = $style = '';
                 if ($s->pending) {
                     $response->pending++;
@@ -1232,7 +1235,7 @@ EOF;
                 }
                 $message = '<div style="margin-left: 1em;">'.$message.'</div>';
                 $response->queues_html .= "<div$style>" . create_popup(fullname($s),
-                        $connect->out(), $s->sessionid) . "$message</div>";
+                        $chaturl->out(), $s->sessionid) . "$message</div>";
             }
             $response->queues_html .= '</div>';
             break;
