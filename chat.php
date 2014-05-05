@@ -28,6 +28,8 @@ require_once(dirname(__FILE__) . '/lib.php');
 
 require_login(0, false);
 
+$PAGE->set_context(context_system::instance());
+
 # verify session
 $sessionid = required_param('session', PARAM_INT);
 if (!helpmenow_verify_session($sessionid)) {

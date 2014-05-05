@@ -96,7 +96,7 @@ if (count($sessionids) < 1) {
     }
 
     $sql = "
-        SELECT u.*, s2u.sessionid
+        SELECT s2u.sessionid, u.*
         FROM {block_helpmenow_session2user} s2u
         JOIN {user} u ON u.id = s2u.userid
         WHERE s2u.userid <> $userid
@@ -116,16 +116,20 @@ if (count($sessionids) < 1) {
     print "<div>$orderbystring</div><br />";
 
     if ($other_user_recs) {
+        $displayedcontacts = array();
         foreach ($other_user_recs as $u) {
-            $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
-            $history_url->param('session', $u->sessionid);
-            $history_url->param('date', '-1 year');
-            $name = fullname($u);
-            $action = new popup_action('click', $history_url->out(), $u->sessionid,
-                array('height' => 400, 'width' => 500));
-            $history_link = $OUTPUT->action_link($history_url->out(), $name, $action);
-            $history_link = '<div>'.$history_link." ($u->username)</div>";
-            print $history_link;
+            if (!isset($displayedcontacts[$u->id])) {
+                $history_url = new moodle_url("$CFG->wwwroot/blocks/helpmenow/history.php#recent");
+                $history_url->param('session', $u->sessionid);
+                $history_url->param('date', '-1 year');
+                $name = fullname($u);
+                $action = new popup_action('click', $history_url->out(), $u->sessionid,
+                    array('height' => 400, 'width' => 500));
+                $history_link = $OUTPUT->action_link($history_url->out(), $name, $action);
+                $history_link = '<div>'.$history_link." ($u->username)</div>";
+                print $history_link;
+                $displayedcontacts[$u->id] = true;
+            }
         }
     }
 }

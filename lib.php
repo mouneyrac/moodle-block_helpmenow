@@ -1319,9 +1319,7 @@ EOF;
         if (!isset($u->isloggedin)) {   # if isloggedin is null, the user is always logged in when they are online
             if ($u->online) {
                 if ($isloggedin) {
-                    $action = new popup_action('click', $connect->out(), $u->id,
-                        array('height' => 400, 'width' => 500));
-                    $name = $OUTPUT->action_link($connect->out(), fullname($u), $action);
+                    $name = create_popup(fullname($u), $connect->out(), $u->id);
                 } else {
                     $name = fullname($u);
                 }
@@ -1330,9 +1328,7 @@ EOF;
             }
         } else {                        # if isloggedin is set, then 0 = loggedout, any other number is the timestamp of when they logged in
             if ($u->online) {
-                $action = new popup_action('click', $connect->out(), $u->id,
-                    array('height' => 400, 'width' => 500));
-                $name = $OUTPUT->action_link($connect->out(), fullname($u), $action);
+                $name = create_popup(fullname($u), $connect->out(), $u->id);
                 $motd = $u->motd;
             } else {
                 $name = fullname($u);
