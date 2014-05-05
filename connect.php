@@ -39,7 +39,11 @@ if ($sessionid) {   # helpers connecting to queue sessions
     if (!record_exists('block_helpmenow_helper', 'queueid', $session->queueid, 'userid', $USER->id)) {
         helpmenow_fatal_error(get_string('permission_error', 'block_helpmenow'));
     }
-    helpmenow_add_user($USER->id, $session->id);
+    // Only add user if the session doesn't already exist.
+    if (!record_exists('block_helpmenow_session2user', 'userid', $USER->id,
+        'sessionid', $sessionid)) {
+        helpmenow_add_user($USER->id, $session->id);
+    }
 } else {    # users connecting to users or users making new queue sessions
     # build sql to check for existing sesssions
     $sql = "
