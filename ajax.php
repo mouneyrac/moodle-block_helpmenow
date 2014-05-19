@@ -26,7 +26,12 @@
 # capture output
 ob_start();
 
+#echo "entry: " . microtime() . "\n";     # DEBUGGING
+
 require_once((dirname(dirname(dirname(__FILE__)))) . '/config.php');
+
+#echo "moodle started: " . microtime() . "\n";     # DEBUGGING
+
 require_once(dirname(__FILE__) . '/lib.php');
 
 if (!isloggedin()) {
@@ -34,8 +39,12 @@ if (!isloggedin()) {
     die;
 }
 
+#echo "isloggedin: " . microtime() . "\n";     # DEBUGGING
+
 # requests are sent as JSON object from the client
 $requests = json_decode(file_get_contents('php://input'));
+
+#echo "json decoded: " . microtime() . "\n";     # DEBUGGING
 
 # special case for logging errors
 if (isset($requests->error)) {
@@ -47,7 +56,6 @@ if (isset($requests->error)) {
 # iterate through the requests and create responses
 $responses = array();
 foreach ($requests->requests as $request) {
-    ob_start();
     try {
         # all responses need id of the request and client instance
         $response = (object) array(
@@ -66,6 +74,7 @@ foreach ($requests->requests as $request) {
             if (!$session2user = helpmenow_get_s2u($request->session)) {
                 throw new Exception('Could not get session2user record');
             }
+            #echo "verrified session2user: " . microtime() . "\n";     # DEBUGGING
             break;
         }
 
@@ -91,6 +100,7 @@ foreach ($requests->requests as $request) {
     }
     $debugging = ob_get_clean();
     if (debugging()) {
+        #echo "done: " . microtime() . "\n";     # DEBUGGING
         $response->debugging = $debugging;
     }
     $responses[] = $response;

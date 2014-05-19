@@ -41,10 +41,10 @@ class helpmenow_queue_form extends moodleform {
         $mform->addElement('text', 'name', get_string('name'), array('size' => 50));
         $mform->addRule('name', null, 'required', null, 'client');
 
-        # description textarea with max length of 140
+        # description textarea with max length of 240
         $mform->addElement('textarea', 'description', get_string('description', 'block_helpmenow'), "wrap='virtual' rows='6' cols='40'");
         $mform->addRule('description', null, 'required', null, 'client');
-        $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 140, 'client');
+        $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 240, 'client');
 
         $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 4));
         $mform->addRule('weight', null, 'required', null, 'client');

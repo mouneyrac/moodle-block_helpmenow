@@ -5,16 +5,17 @@ var helpmenow = (function () {
         STORAGE_VERSION     = '2013052000',             // versioning storage
         PREFIX              = NAME + '_' + STORAGE_VERSION + '_',
         CHECKIN_FREQ        = 500,                      // period at which we checkIn
-        UPDATE_FREQ         = 2000,                     // period at which we set update requests to the server
-        BLOCK_FREQ          = 10000,
+        UPDATE_FREQ         = 5000,                     // period at which we set update requests to the server
+        BLOCK_FREQ          = 20000,
         PROCESS_FREQ        = 500,                      // period at which we set update requests to the server
         CLEANUP_FREQ        = 2000,                     // period for cleaning up
-        REQUEST_FREQ        = 2000,                     // period at which we send all requests to server
+        REQUEST_FREQ        = 5000,                     // period at which we send all requests to server
         SOME_LARGE_NUMBER   = Math.pow(2, 40),          // max number for the random portion of the id
 
         id,
         serverURL,
         titleName,
+        timeOfLastUpdate    = 0,
         latestUpdate,
         lastBlockUpdate     = 0,
         multiClient         = true;                     // are we using localStorage to minimize the number of connections we make to the server?
@@ -144,35 +145,35 @@ var helpmenow = (function () {
                 'function': 'block'
             };
         }
-        if (!haveRequests) {
-            setTimeout(function () { getUpdates(); }, UPDATE_FREQ);
-            return;
-        }
+        setTimeout(function () { getUpdates(); }, UPDATE_FREQ);
+        var sent = new Date().getTime();
         helpmenow.ajax(params, function (xmlhttp) {
             if (xmlhttp.readyState !== 4) { return; }
-            if (xmlhttp.status !== 200) {
-                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
-                return;
-            }
+
+            // TODO: keep track of failed requests and print a message when we think we've lost connection
+            if (xmlhttp.status !== 200) { return; }
+
             try {
                 var responses = JSON.parse(xmlhttp.responseText);
                 if (typeof responses !== "undefined") {
-                    var now = new Date().getTime();
-                    for (var i = 0; i < responses.length; i++) {
-                        responses[i].type = 'response';
-                        responses[i].time = now;
-                        if (multiClient) {
-                            storage.set(PREFIX + responses[i].id + '_response', responses[i]);
-                        } else if (responses[i].id === id) {
-                            latestUpdate = responses[i];
-                        } else if (responses[i].id === 'block' && helpmenow.sharedData.isBlock === true) {
-                            latestUpdate = responses[i];
+                    if (sent > timeOfLastUpdate) {
+                        var now = new Date().getTime();
+                        timeOfLastUpdate = now;
+                        for (var i = 0; i < responses.length; i++) {
+                            responses[i].type = 'response';
+                            responses[i].time = now;
+                            if (multiClient) {
+                                storage.set(PREFIX + responses[i].id + '_response', responses[i]);
+                            } else if (responses[i].id === id) {
+                                latestUpdate = responses[i];
+                            } else if (responses[i].id === 'block' && helpmenow.sharedData.isBlock === true) {
+                                latestUpdate = responses[i];
+                            }
                         }
                     }
                 }
-                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
             } catch (e) {
-                setTimeout(function () { getUpdates(); }, REQUEST_FREQ);
+                // TODO: error?
             }
         });
     }
@@ -218,6 +219,15 @@ var helpmenow = (function () {
         chime: function () {
             $("#helpmenow_chime").jPlayer("play");
             return;
+        },
+        getChar: function (event) {
+            if (event.which == null) {
+                return String.fromCharCode(event.keyCode); // IE
+            } else if (event.which!=0 && event.charCode!=0) {
+                return String.fromCharCode(event.which);
+            } else {
+                return null; // special key
+            }
         },
         ajax: function (request, callback) {
             request = JSON.stringify(request);

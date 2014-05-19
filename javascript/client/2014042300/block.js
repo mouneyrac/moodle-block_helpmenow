@@ -128,7 +128,8 @@ var helpmenow = (function (my) {
             }
 
             // limit the length to 140
-            if (edit_element.value.length >= 140) {
+            var char = helpmenow.getChar(e);
+            if (char && edit_element.value.length >= 140) {
                 return false;
             }
 
