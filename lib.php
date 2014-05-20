@@ -612,7 +612,7 @@ function helpmenow_message($sessionid, $userid, $message, $notify = 1) {
         SELECT *
         FROM {block_helpmenow_session2user}
         WHERE sessionid = $sessionid
-    "; 
+    ";
     if (isset($userid)) {
         $sql .= "AND userid <> $userid";
     }
@@ -817,7 +817,7 @@ function helpmenow_email_messages() {
         JOIN {block_helpmenow_session} s ON s.id = s2u.sessionid
         JOIN {block_helpmenow_user} u ON u.userid = s2u.userid
         WHERE s.queueid IS NULL
-        AND ((s.last_message <> 0 AND s2u.last_message < s.last_message) 
+        AND ((s.last_message <> 0 AND s2u.last_message < s.last_message)
         OR (s2u.last_read = 0 AND s2u.last_message = 0))
         AND s2u.last_read < s.last_message
         AND (
@@ -848,7 +848,7 @@ function helpmenow_email_messages() {
     if (!empty($CFG->helpmenow_title)) {
         $blockname = $CFG->helpmenow_title;
     } else {
-        $blockname = get_string('helpmenow', 'block_helpmenow'); 
+        $blockname = get_string('helpmenow', 'block_helpmenow');
     }
 
     # get messages, format and send the email
@@ -999,7 +999,7 @@ function helpmenow_serverfunc_sysmessage($request, &$response) {
 
 
 /**
- * chat last_read message from client - records that last read message that the 
+ * chat last_read message from client - records that last read message that the
  * user has seen - save to email unread messages to user
  *
  * @param object $request request from client
@@ -1880,7 +1880,9 @@ abstract class helpmenow_plugin extends helpmenow_plugin_object {
      * @param bool $privileged
      * @return string
      */
-    public abstract static function display($sessionid, $privileged = false);
+    public static function display($sessionid, $privileged = false) {
+        throw new coding_error('You should have implemented a display() function.');
+    }
 
     /**
      * Code to be run when USER logs in
@@ -2086,7 +2088,9 @@ abstract class helpmenow_contact_list {
      * @param int $userid user.id
      * @return bool success
      */
-    public abstract static function update_contacts($userid);
+    public static function update_contacts($userid) {
+        throw new coding_error('You should have implemented a update_contacts() function.');
+    }
 
     /**
      * run update_contacts for everybody
@@ -2115,27 +2119,35 @@ abstract class helpmenow_contact_list {
     }
 
     /**
-     * Check if user is a teacher - teachers have capabilities to see their 
+     * Check if user is a teacher - teachers have capabilities to see their
      * enrolled students and may sometimes be added to queue helper lists
      */
-    public abstract static function is_teacher($userid=null);
+    public static function is_teacher($userid=null) {
+        throw new coding_error('You should have implemented a is_teacher() function.');
+    }
 
     /*
      * Check if user is an admin - admins have additional management capabilites 
      * over other users
      */
-    public abstract static function is_admin($userid=null);
+    public static function is_admin($userid=null) {
+        throw new coding_error('You should have implemented a is_admin() function.');
+    }
 
     /**
-     * Check if user is admin or teacher - sometimes optimized over calling 
+     * Check if user is admin or teacher - sometimes optimized over calling
      * bother functions
      */
-    public abstract static function is_admin_or_teacher($userid=null);
+    public static function is_admin_or_teacher($userid=null) {
+        throw new coding_error('You should have implemented a is_admin_or_teacher() function.');
+    }
 
     /**
      * Check if user is a student
      */
-    public abstract static function is_student($userid=null);
+    public static function is_student($userid=null) {
+        throw new coding_error('You should have implemented a is_student() function.');
+    }
 }
 
 ?>
