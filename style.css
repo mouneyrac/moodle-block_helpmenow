@@ -46,13 +46,24 @@
 }
 #page-blocks-helpmenow-login #page-content #region-main-box {
     left: 0px;
+    width: 100%;
 }
 #page-blocks-helpmenow-login .side-pre-only #page-content #region-post-box {
     margin-left: 0px;
+    float: none;
+    left: 0px;
 }
 #page-blocks-helpmenow-login #page-content #region-post-box {
     margin-left: 0px;
+    float: none;
+    left: 0px;
 }
 #page-blocks-helpmenow-login #page-content #region-main-wrap {
     width: 100%;
+    float: none;
+    position: static;
+}
+
+#page-blocks-helpmenow-login.side-pre-only #page-content #region-main {
+    margin-left: 0px;
 }
