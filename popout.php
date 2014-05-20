@@ -32,6 +32,9 @@ $PAGE->set_context(context_system::instance());
 $PAGE->set_url('/blocks/helpmenow/login.php');
 $PAGE->set_pagelayout('standard');
 
+// Add style.css.
+$PAGE->requires->css('/blocks/helpmenow/style.css');
+
 if (!empty($CFG->helpmenow_title)) {
     $title = $CFG->helpmenow_title;
 } else {

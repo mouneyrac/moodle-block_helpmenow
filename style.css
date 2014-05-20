@@ -7,23 +7,23 @@
 }
 
 .helpmenow_popup {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    background-color: white;
+    /*position: absolute;*/
+    /*top: 0px;*/
+    /*left: 0px;*/
+    /*right: 0px;*/
+    /*bottom: 0px;*/
+    /*background-color: white;*/
 }
 
 .helpmenow_chat {
-    position: absolute;
-    top: 1em;
-    left: 1em;
-    right: 1em;
-    bottom: 1em;
-    padding: .5em;
-    overflow: auto;
-    border: 1px solid black;
+    /*position: absolute;*/
+    /*top: 1em;*/
+    /*left: 1em;*/
+    /*right: 1em;*/
+    /*bottom: 1em;*/
+    /*padding: .5em;*/
+    /*overflow: auto;*/
+    /*border: 1px solid black;*/
 }
 
 .helpmenow_last_refresh_div {
@@ -35,6 +35,24 @@
     overflow-x:scroll;
 }
 
+/* Fix for queue form */
 #fgroup_id_buttonar {
     text-align: center;
+}
+
+/* Fix for popout */
+#page-blocks-helpmenow-login #page-content {
+    min-width: 0px;
+}
+#page-blocks-helpmenow-login #page-content #region-main-box {
+    left: 0px;
+}
+#page-blocks-helpmenow-login .side-pre-only #page-content #region-post-box {
+    margin-left: 0px;
+}
+#page-blocks-helpmenow-login #page-content #region-post-box {
+    margin-left: 0px;
+}
+#page-blocks-helpmenow-login #page-content #region-main-wrap {
+    width: 100%;
 }
