@@ -102,7 +102,7 @@ class helpmenow_plugin_adobeconnect extends helpmenow_plugin {
      * @return a link to adobe connect user page
      */
     public static function block_display() {
-        global $CFG, $USER;
+        global $CFG, $USER, $OUTPUT;
 
         if (!helpmenow_adobeconnect_urlexists()) {
             return false;

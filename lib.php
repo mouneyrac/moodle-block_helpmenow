@@ -86,7 +86,6 @@ function helpmenow_verify_session($session) {
 function create_popup($title, $url, $target, $menubar=0, $location=0, $scrollbars=true,
                       $resizable=true, $width=500, $height=400, $fullscreen=false,
                       $toolbar=true, $status=true, $dependent=true, $directories=0) {
-    global $CFG;
 
     if ($scrollbars) {
         $scrollbars = ',scrollbars';
