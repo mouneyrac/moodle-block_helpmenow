@@ -68,8 +68,9 @@ class block_helpmenow extends block_base {
         # do stuff that stuff that should be done when a user first logs in
         if (!isset($SESSION->helpmenow_first_load)) {
             $SESSION->helpmenow_first_load = true;
-            # try to popout the interface
-            $this->content->text .= <<<EOF
+            # try to popout the interface (except if the user is not logged in)
+            if (!empty($USER->id)) {
+                $this->content->text .= <<<EOF
 <script>
     try {
         var popout = window.open('', 'hmn_popout', 'menubar=0,location=0,scrollbars,resizable,width=250,height=400');
@@ -80,6 +81,7 @@ class block_helpmenow extends block_base {
     }
 </script>
 EOF;
+            }
             # update the users contacts
         }
 
