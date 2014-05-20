@@ -29,37 +29,33 @@ require_once($CFG->libdir.'/formslib.php');
 
 class helpmenow_queue_form extends moodleform {
     function definition() {
-        global $CFG;
 
         $mform =& $this->_form;
 
-        $hiddenfields = array(
-            'queueid',
-        );
+        $mform->addElement('hidden', 'queueid', '');
+        $mform->setType('queueid', PARAM_INT);
 
         # name
         $mform->addElement('text', 'name', get_string('name'), array('size' => 50));
         $mform->addRule('name', null, 'required', null, 'client');
+        $mform->setType('name', PARAM_TEXT);
 
         # description textarea with max length of 240
         $mform->addElement('textarea', 'description', get_string('description', 'block_helpmenow'), "wrap='virtual' rows='6' cols='40'");
         $mform->addRule('description', null, 'required', null, 'client');
         $mform->addRule('description', get_string('max_length', 'block_helpmenow'), 'maxlength', 240, 'client');
+        $mform->setType('description', PARAM_TEXT);
 
         $mform->addElement('text', 'weight', get_string('weight', 'block_helpmenow'), array('size' => 4));
         $mform->addRule('weight', null, 'required', null, 'client');
         $mform->addRule('weight', null, 'numeric', null, 'client');
+        $mform->setType('weight', PARAM_INT);
 
         $buttonarray = array();
         $buttonarray[] = &$mform->createElement('submit', 'submitbutton', get_string('savechanges'));
         $buttonarray[] = &$mform->createElement('reset', 'resetbutton', get_string('revert'));
         $buttonarray[] = &$mform->createElement('cancel');
         $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
-
-        foreach ($hiddenfields as $hf) {
-            $mform->addElement('hidden', $hf, '');
-        }
     }
 }
 
-?>
