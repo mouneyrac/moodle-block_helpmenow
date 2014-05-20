@@ -44,6 +44,9 @@ $PAGE->set_context($sitecontext);
 $PAGE->set_url('/blocks/helpmenow/admin/edit_queue.php');
 $PAGE->set_pagelayout('standard');
 
+// Add style.css.
+$PAGE->requires->css('/blocks/helpmenow/style.css');
+
 # form stuff
 $form = new helpmenow_queue_form();
 if ($form->is_cancelled()) {                # cancelled
@@ -70,7 +73,7 @@ foreach($nav as $node) {
 $PAGE->set_title($title);
 $PAGE->set_heading($title);
 echo $OUTPUT->header();
-echo $OUTPUT->box_start('generalbox centerpara');
+echo $OUTPUT->box_start('generalbox');
 
 $toform = array(
     'queueid' => $queueid,
