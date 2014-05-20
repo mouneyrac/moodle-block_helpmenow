@@ -67,3 +67,11 @@
 #page-blocks-helpmenow-login.side-pre-only #page-content #region-main {
     margin-left: 0px;
 }
+
+#page-blocks-helpmenow-login .navbar, #page-blocks-helpmenow-login #page-header {
+    display: none;
+}
+
+#page-blocks-helpmenow-login {
+    padding-top: 15px;
+}
